@@ -1,0 +1,33 @@
+name: messmax_app
+description: "MessMax — universal mess meal counter."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.9
+
+  # State management
+  flutter_bloc: ^9.1.1
+  equatable: ^2.1.0
+
+  # Networking
+  dio: ^5.11.0
+
+  # Logging
+  logger: ^2.7.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  bloc_test: ^10.0.0
+
+flutter:
+  uses-material-design: true
