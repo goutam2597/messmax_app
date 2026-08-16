@@ -118,7 +118,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -181,7 +181,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 // Actions are pinned above the safe-area inset, never
                 // flush against the very bottom edge or the system nav bar.
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(

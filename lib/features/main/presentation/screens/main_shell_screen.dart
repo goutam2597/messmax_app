@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../ads/presentation/cubit/ads_cubit.dart';
 import '../../../ads/presentation/screens/ads_screen.dart';
@@ -27,6 +28,17 @@ class _MainShellScreenState extends State<MainShellScreen> {
     ProfileScreen(),
   ];
 
+  static const _navItems = [
+    _NavItem(asset: 'assets/icons/nav_home.svg', label: 'Home'),
+    _NavItem(
+      asset: 'assets/icons/nav_seats.svg',
+      label: 'Find Seats',
+      badge: 'LIVE',
+    ),
+    _NavItem(asset: 'assets/icons/nav_blog.svg', label: 'Blog'),
+    _NavItem(asset: 'assets/icons/nav_profile.svg', label: 'Profile'),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -48,137 +60,171 @@ class _MainShellScreenState extends State<MainShellScreen> {
         BlocProvider(create: (_) => AdsCubit()),
       ],
       child: Scaffold(
+        extendBody: true,
         body: IndexedStack(
           index: _currentIndex,
           children: _screens,
         ),
-        bottomNavigationBar: _buildBottomNav(),
+        bottomNavigationBar: _FloatingNavBar(
+          currentIndex: _currentIndex,
+          items: _navItems,
+          onTap: _onTabSelected,
+        ),
       ),
     );
   }
+}
 
-  Widget _buildBottomNav() {
+/// Floating rounded nav bar, same pattern as the market app.
+class _FloatingNavBar extends StatelessWidget {
+  final int currentIndex;
+  final List<_NavItem> items;
+  final ValueChanged<int> onTap;
+
+  const _FloatingNavBar({
+    required this.currentIndex,
+    required this.items,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
+      color: Colors.transparent,
       child: SafeArea(
+        top: false,
+        bottom: false,
         child: Container(
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(
-                index: 0,
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home_rounded,
-                label: 'Home',
+          margin: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.paperRaised,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
-              _navItem(
-                index: 1,
-                icon: Icons.travel_explore_outlined,
-                activeIcon: Icons.travel_explore_rounded,
-                label: 'Find Seats',
-                badge: 'LIVE',
-              ),
-              _navItem(
-                index: 2,
-                icon: Icons.article_outlined,
-                activeIcon: Icons.article_rounded,
-                label: 'Blog',
-              ),
-              _navItem(
-                index: 3,
-                icon: Icons.person_outline_rounded,
-                activeIcon: Icons.person_rounded,
-                label: 'Profile',
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
+          child: Row(
+            children: List.generate(items.length, (i) {
+              return Expanded(
+                child: _NavTile(
+                  item: items[i],
+                  isActive: i == currentIndex,
+                  onTap: () => onTap(i),
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _navItem({
-    required int index,
-    required IconData icon,
-    required IconData activeIcon,
-    required String label,
-    String? badge,
-  }) {
-    final isSelected = _currentIndex == index;
+class _NavTile extends StatelessWidget {
+  final _NavItem item;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _NavTile({
+    required this.item,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isActive ? AppColors.brand : AppColors.inkFaded;
+
     return GestureDetector(
-      onTap: () => _onTabSelected(index),
+      onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandDark
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(
-                  isSelected ? activeIcon : icon,
-                  size: 22,
-                  color: isSelected
-                      ? Colors.white
-                      : AppColors.inkFaded,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeInOut,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7,
                 ),
-                if (badge != null && !isSelected)
-                  Positioned(
-                    top: -4,
-                    right: -6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        badge,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.w900,
-                        ),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? AppColors.brand.withValues(alpha: 0.10)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: SvgPicture.asset(
+                    item.asset,
+                    colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                  ),
+                ),
+              ),
+              if (item.badge != null && !isActive)
+                Positioned(
+                  top: -2,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      item.badge!,
+                      style: const TextStyle(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        height: 1.3,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ),
-              ],
-            ),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
                 ),
-              ),
             ],
-          ],
-        ),
+          ),
+          const SizedBox(height: 3),
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 220),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
+              color: color,
+              letterSpacing: isActive ? 0.1 : 0,
+            ),
+            child: Text(item.label),
+          ),
+        ],
       ),
     );
   }
+}
+
+class _NavItem {
+  final String asset;
+  final String label;
+  final String? badge;
+
+  const _NavItem({required this.asset, required this.label, this.badge});
 }

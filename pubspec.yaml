@@ -23,6 +23,12 @@ dependencies:
   # Logging
   logger: ^2.7.0
 
+  # SVG icons
+  flutter_svg: ^2.3.0
+
+  # Carousel slider
+  carousel_slider: ^5.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -31,3 +37,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/icons/

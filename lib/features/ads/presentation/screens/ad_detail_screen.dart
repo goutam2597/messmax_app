@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/dot_indicator_row.dart';
 import '../../data/models/ad_model.dart';
 
-class AdDetailScreen extends StatelessWidget {
+class AdDetailScreen extends StatefulWidget {
   final AdModel ad;
 
   const AdDetailScreen({super.key, required this.ad});
+
+  @override
+  State<AdDetailScreen> createState() => _AdDetailScreenState();
+}
+
+class _AdDetailScreenState extends State<AdDetailScreen> {
+  int _galleryIndex = 0;
+
+  AdModel get ad => widget.ad;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +32,7 @@ class AdDetailScreen extends StatelessWidget {
                 _buildHeroGallery(context),
 
                 Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -208,23 +218,63 @@ class AdDetailScreen extends StatelessWidget {
 
   Widget _buildHeroGallery(BuildContext context) {
     if (ad.imageUrls.isNotEmpty) {
-      return SizedBox(
-        height: 260,
-        width: double.infinity,
-        child: PageView.builder(
-          itemCount: ad.imageUrls.length,
-          itemBuilder: (context, index) {
-            return Image.network(
-              ad.imageUrls[index],
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
-                color: AppColors.brandSoft,
-                child: const Icon(Icons.home_rounded,
-                    color: AppColors.inkFaded, size: 48),
+      return Stack(
+        children: [
+          SizedBox(
+            height: 260,
+            width: double.infinity,
+            child: PageView.builder(
+              itemCount: ad.imageUrls.length,
+              onPageChanged: (index) =>
+                  setState(() => _galleryIndex = index),
+              itemBuilder: (context, index) {
+                return Image.network(
+                  ad.imageUrls[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => Container(
+                    color: AppColors.brandSoft,
+                    child: const Icon(Icons.home_rounded,
+                        color: AppColors.inkFaded, size: 48),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (ad.imageUrls.length > 1) ...[
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_galleryIndex + 1}/${ad.imageUrls.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
-            );
-          },
-        ),
+            ),
+            Positioned(
+              bottom: 12,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: DotIndicatorRow(
+                  count: ad.imageUrls.length,
+                  activeIndex: _galleryIndex,
+                  light: true,
+                ),
+              ),
+            ),
+          ],
+        ],
       );
     }
 
@@ -473,7 +523,7 @@ class AdDetailScreen extends StatelessWidget {
 
   Widget _buildBottomContactBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
         boxShadow: [
