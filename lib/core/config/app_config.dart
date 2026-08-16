@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// Environment-agnostic app configuration.
 class AppConfig {
   AppConfig._();
