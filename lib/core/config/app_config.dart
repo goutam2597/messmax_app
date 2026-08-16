@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 
 /// Environment-agnostic app configuration.
@@ -8,16 +7,16 @@ class AppConfig {
   static const String appName = 'MessMax';
   static const String appTagline = 'Universal mess meal counter & seat locator';
 
-  /// Backend origin base URL.
-  /// Automatically uses 10.0.2.2 for Android emulator and localhost for Desktop/Web/iOS.
+  /// Host LAN IP address for backend connection across physical mobile devices,
+  /// emulators, and local development environments.
+  static const String hostIp = '192.168.0.173';
+
+  /// Backend origin base URL using host IP.
   static String get apiBaseUrl {
     const override = String.fromEnvironment('API_BASE_URL');
     if (override.isNotEmpty) return override;
 
-    if (!kIsWeb && Platform.isAndroid) {
-      return 'http://10.0.2.2/messmax/backend/public/api';
-    }
-    return 'http://localhost/messmax/backend/public/api';
+    return 'http://$hostIp/messmax/backend/public/api';
   }
 
   /// API request timeout.
