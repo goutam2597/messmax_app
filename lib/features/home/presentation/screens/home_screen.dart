@@ -49,8 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppColors.brandSoft,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.cloud_off_rounded,
-                            size: 44, color: AppColors.inkFaded),
+                        child: const Icon(
+                          Icons.cloud_off_rounded,
+                          size: 44,
+                          color: AppColors.inkFaded,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -76,9 +79,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           backgroundColor: AppColors.brandDark,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () =>
                             context.read<HomeCubit>().fetchHomeData(),
@@ -210,8 +216,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: const Row(
               children: [
-                Icon(Icons.location_on_rounded,
-                    size: 13, color: AppColors.accent),
+                Icon(
+                  Icons.location_on_rounded,
+                  size: 13,
+                  color: AppColors.accent,
+                ),
                 SizedBox(width: 4),
                 Text(
                   'Dhaka',
@@ -258,14 +267,16 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.stars_rounded, color: AppColors.accentSoft, size: 14),
+                  Icon(
+                    Icons.stars_rounded,
+                    color: AppColors.accentSoft,
+                    size: 14,
+                  ),
                   SizedBox(width: 4),
                   Text(
                     'VERIFIED MESS NETWORK',
@@ -314,9 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -391,10 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 2),
                   Text(
                     'Top verified seats posted by mess managers',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.inkFaded,
-                    ),
+                    style: TextStyle(fontSize: 12, color: AppColors.inkFaded),
                   ),
                 ],
               ),
@@ -433,9 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ad: ad,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => AdDetailScreen(ad: ad),
-                  ),
+                  MaterialPageRoute(builder: (_) => AdDetailScreen(ad: ad)),
                 ),
               );
             },
@@ -481,8 +485,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   margin: const EdgeInsets.only(right: 8),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.brandDark
@@ -508,8 +514,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       cat,
                       style: TextStyle(
                         fontSize: 12.5,
-                        fontWeight:
-                            isSelected ? FontWeight.w800 : FontWeight.w600,
+                        fontWeight: isSelected
+                            ? FontWeight.w800
+                            : FontWeight.w600,
                         color: isSelected ? Colors.white : AppColors.inkSoft,
                       ),
                     ),
@@ -566,8 +573,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.search_off_rounded,
-                      size: 40, color: AppColors.inkFaded),
+                  const Icon(
+                    Icons.search_off_rounded,
+                    size: 40,
+                    color: AppColors.inkFaded,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'No $_selectedCategory seats currently listed.',
@@ -592,9 +602,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ad: ad,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => AdDetailScreen(ad: ad),
-                    ),
+                    MaterialPageRoute(builder: (_) => AdDetailScreen(ad: ad)),
                   ),
                 );
               },
@@ -647,14 +655,20 @@ class _FeaturedCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           errorBuilder: (_, _, _) => Container(
                             color: AppColors.brandSoft,
-                            child: const Icon(Icons.home_rounded,
-                                color: AppColors.inkFaded, size: 36),
+                            child: const Icon(
+                              Icons.home_rounded,
+                              color: AppColors.inkFaded,
+                              size: 36,
+                            ),
                           ),
                         )
                       : Container(
                           color: AppColors.brandSoft,
-                          child: const Icon(Icons.home_rounded,
-                              color: AppColors.inkFaded, size: 36),
+                          child: const Icon(
+                            Icons.home_rounded,
+                            color: AppColors.inkFaded,
+                            size: 36,
+                          ),
                         ),
                 ),
                 // Rent Tag overlay
@@ -662,8 +676,10 @@ class _FeaturedCard extends StatelessWidget {
                   bottom: 10,
                   left: 10,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.brandDark,
                       borderRadius: BorderRadius.circular(8),
@@ -689,8 +705,10 @@ class _FeaturedCard extends StatelessWidget {
                   top: 10,
                   right: 10,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: ad.seatsAvailable > 1
                           ? AppColors.emerald
@@ -729,8 +747,11 @@ class _FeaturedCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_rounded,
-                          size: 13, color: AppColors.accent),
+                      const Icon(
+                        Icons.location_on_rounded,
+                        size: 13,
+                        color: AppColors.accent,
+                      ),
                       const SizedBox(width: 3),
                       Expanded(
                         child: Text(
@@ -751,7 +772,9 @@ class _FeaturedCard extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.brandSoft,
                           borderRadius: BorderRadius.circular(6),
@@ -825,14 +848,18 @@ class _ListAdCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           errorBuilder: (_, _, _) => Container(
                             color: AppColors.brandSoft,
-                            child: const Icon(Icons.home_rounded,
-                                color: AppColors.inkFaded),
+                            child: const Icon(
+                              Icons.home_rounded,
+                              color: AppColors.inkFaded,
+                            ),
                           ),
                         )
                       : Container(
                           color: AppColors.brandSoft,
-                          child: const Icon(Icons.home_rounded,
-                              color: AppColors.inkFaded),
+                          child: const Icon(
+                            Icons.home_rounded,
+                            color: AppColors.inkFaded,
+                          ),
                         ),
                 ),
                 Positioned(
@@ -840,7 +867,9 @@ class _ListAdCard extends StatelessWidget {
                   left: 6,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.brandDark,
                       borderRadius: BorderRadius.circular(4),
@@ -878,8 +907,11 @@ class _ListAdCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_rounded,
-                            size: 13, color: AppColors.inkFaded),
+                        const Icon(
+                          Icons.location_on_rounded,
+                          size: 13,
+                          color: AppColors.inkFaded,
+                        ),
                         const SizedBox(width: 3),
                         Expanded(
                           child: Text(
@@ -909,7 +941,9 @@ class _ListAdCard extends StatelessWidget {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: ad.seatsAvailable > 1
                                 ? AppColors.emeraldSoft

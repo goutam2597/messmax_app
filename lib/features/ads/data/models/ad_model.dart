@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/config/app_config.dart';
 
 class AdModel extends Equatable {
   final int id;
@@ -86,14 +87,14 @@ class AdModel extends Equatable {
       contactWhatsapp: json['contact_whatsapp'] as String?,
       isFeatured: json['is_featured'] as bool? ?? false,
       publishedAt: json['published_at'] as String?,
-      coverImageUrl: json['cover_image_url'] as String?,
+      coverImageUrl: AppConfig.sanitizeImageUrl(json['cover_image_url'] as String?),
       imageUrls: (json['image_urls'] as List<dynamic>?)
-              ?.map((e) => e.toString())
+              ?.map((e) => AppConfig.sanitizeImageUrl(e.toString())!)
               .toList() ??
           const [],
       messName: mess?['name'] as String?,
       posterName: poster?['name'] as String?,
-      posterAvatarUrl: poster?['avatar_url'] as String?,
+      posterAvatarUrl: AppConfig.sanitizeImageUrl(poster?['avatar_url'] as String?),
     );
   }
 

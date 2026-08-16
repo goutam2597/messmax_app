@@ -17,6 +17,15 @@ class AppConfig {
     return 'http://$hostIp/messmax/backend/public/api';
   }
 
+  /// Ensure image URLs pointing to localhost or 10.0.2.2 map to the host IP.
+  static String? sanitizeImageUrl(String? url) {
+    if (url == null || url.isEmpty) return null;
+    return url
+        .replaceAll('http://localhost', 'http://$hostIp')
+        .replaceAll('http://127.0.0.1', 'http://$hostIp')
+        .replaceAll('http://10.0.2.2', 'http://$hostIp');
+  }
+
   /// API request timeout.
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 15);
