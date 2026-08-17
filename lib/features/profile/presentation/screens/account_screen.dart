@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -22,9 +24,29 @@ class _AccountScreenState extends State<AccountScreen> {
   bool _isLoading = true;
   bool _isSavingProfile = false;
   bool _isUpdatingPassword = false;
+  String? _selectedAvatarPath;
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+
+  Future<void> _pickAvatarImage() async {
+    try {
+      final XFile? picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 1024,
+        maxHeight: 1024,
+      );
+      if (picked != null) {
+        setState(() => _selectedAvatarPath = picked.path);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick avatar image: $e')),
+      );
+    }
+  }
 
   final _currentPassController = TextEditingController();
   final _newPassController = TextEditingController();
@@ -86,14 +108,16 @@ class _AccountScreenState extends State<AccountScreen> {
       await _repository.updateProfile(
         name: name,
         email: email,
+        avatarFilePath: _selectedAvatarPath,
       );
       if (!mounted) return;
 
+      _selectedAvatarPath = null;
       // Re-hydrate AuthCubit to refresh user profile app-wide
       context.read<AuthCubit>().checkAuth();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile saved successfully!')),
+        const SnackBar(content: Text('Profile & avatar updated successfully!')),
       );
       _loadAccountDetails(forceRefresh: true);
     } catch (e) {
@@ -243,43 +267,72 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.15),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 2,
-              ),
-            ),
-            child: ClipOval(
-              child: avatarUrl != null
-                  ? Image.network(
-                      avatarUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Center(
-                        child: Text(
-                          initials,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        initials,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+          GestureDetector(
+            onTap: _pickAvatarImage,
+            child: Stack(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35),
+                      width: 2,
                     ),
+                  ),
+                  child: ClipOval(
+                    child: _selectedAvatarPath != null
+                        ? Image.file(
+                            File(_selectedAvatarPath!),
+                            fit: BoxFit.cover,
+                          )
+                        : (avatarUrl != null
+                            ? Image.network(
+                                avatarUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Center(
+                                  child: Text(
+                                    initials,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Text(
+                                  initials,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              )),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: const BoxDecoration(
+                      color: AppColors.brandDark,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt_rounded,
+                      color: Colors.white,
+                      size: 13,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 16),
@@ -406,6 +459,77 @@ class _AccountScreenState extends State<AccountScreen> {
                 Icons.email_outlined,
                 size: 20,
                 color: AppColors.inkFaded,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'AVATAR / PROFILE PHOTO',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: AppColors.inkSoft,
+            ),
+          ),
+          const SizedBox(height: 6),
+          InkWell(
+            onTap: _pickAvatarImage,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.paper,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _selectedAvatarPath != null
+                      ? AppColors.brandDark
+                      : AppColors.paperLine,
+                  width: _selectedAvatarPath != null ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.brandSoft,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_outlined,
+                      size: 18,
+                      color: AppColors.brandDark,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _selectedAvatarPath != null
+                          ? 'New photo selected (${_selectedAvatarPath!.split('/').last})'
+                          : 'Tap to select new profile photo',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: _selectedAvatarPath != null
+                            ? FontWeight.w800
+                            : FontWeight.w600,
+                        color: _selectedAvatarPath != null
+                            ? AppColors.brandDark
+                            : AppColors.inkSoft,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (_selectedAvatarPath != null)
+                    GestureDetector(
+                      onTap: () => setState(() => _selectedAvatarPath = null),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: AppColors.inkFaded,
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
