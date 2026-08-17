@@ -261,7 +261,7 @@ class MessDrawer extends StatelessWidget {
           letterSpacing: 1.0,
         ),
       ),
-    );
+    ); 
   }
 
   Widget _drawerTile({

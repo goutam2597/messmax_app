@@ -1,6 +1,23 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/config/app_config.dart';
 
+class AdImageItem extends Equatable {
+  final int id;
+  final String url;
+
+  const AdImageItem({required this.id, required this.url});
+
+  factory AdImageItem.fromJson(Map<String, dynamic> json) {
+    return AdImageItem(
+      id: json['id'] as int? ?? 0,
+      url: AppConfig.sanitizeImageUrl(json['url'] as String?) ?? '',
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, url];
+}
+
 class AdModel extends Equatable {
   final int id;
   final String title;
@@ -25,6 +42,7 @@ class AdModel extends Equatable {
   final String? publishedAt;
   final String? coverImageUrl;
   final List<String> imageUrls;
+  final List<AdImageItem> rawImages;
   final String? messName;
   final String? posterName;
   final String? posterAvatarUrl;
@@ -53,6 +71,7 @@ class AdModel extends Equatable {
     this.publishedAt,
     this.coverImageUrl,
     required this.imageUrls,
+    this.rawImages = const [],
     this.messName,
     this.posterName,
     this.posterAvatarUrl,
@@ -90,6 +109,10 @@ class AdModel extends Equatable {
       coverImageUrl: AppConfig.sanitizeImageUrl(json['cover_image_url'] as String?),
       imageUrls: (json['image_urls'] as List<dynamic>?)
               ?.map((e) => AppConfig.sanitizeImageUrl(e.toString())!)
+              .toList() ??
+          const [],
+      rawImages: (json['raw_images'] as List<dynamic>?)
+              ?.map((e) => AdImageItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
       messName: mess?['name'] as String?,
