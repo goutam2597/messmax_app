@@ -1,0 +1,76 @@
+import 'package:dio/dio.dart';
+import '../../../../core/network/api_endpoints.dart';
+import '../../../../core/network/dio_client.dart';
+import '../models/member_model.dart';
+
+class MemberRepository {
+  final Dio _dio;
+
+  MemberRepository({Dio? dio}) : _dio = dio ?? DioClient.instance;
+
+  Future<MemberResponseModel> fetchMembers({int? messId}) async {
+    try {
+      final response = await _dio.get(
+        ApiEndpoints.members,
+        queryParameters: messId != null ? {'mess_id': messId} : null,
+      );
+
+      if (response.data is Map && response.data['success'] == true) {
+        final data = response.data['data'] as Map<String, dynamic>;
+        return MemberResponseModel.fromJson(data);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to load members');
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? e.message ?? 'Network error';
+      throw Exception(msg);
+    }
+  }
+
+  Future<MemberModel> saveMember({
+    int? id,
+    required Map<String, dynamic> data,
+    String? avatarPath,
+  }) async {
+    try {
+      final map = Map<String, dynamic>.from(data);
+      if (avatarPath != null && avatarPath.isNotEmpty) {
+        map['avatar'] = await MultipartFile.fromFile(
+          avatarPath,
+          filename: avatarPath.split('/').last,
+        );
+      }
+
+      final formData = FormData.fromMap(map);
+      final url = id != null
+          ? '${ApiEndpoints.members}/$id'
+          : ApiEndpoints.members;
+
+      final response = await _dio.post(url, data: formData);
+
+      if (response.data is Map && response.data['success'] == true) {
+        final memberJson = response.data['data'] as Map<String, dynamic>;
+        return MemberModel.fromJson(memberJson);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to save member');
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? e.message ?? 'Network error';
+      throw Exception(msg);
+    }
+  }
+
+  Future<void> deleteMember(int id) async {
+    try {
+      final response = await _dio.delete('${ApiEndpoints.members}/$id');
+      if (response.data is Map && response.data['success'] == true) {
+        return;
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to delete member');
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? e.message ?? 'Network error';
+      throw Exception(msg);
+    }
+  }
+}

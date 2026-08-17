@@ -249,7 +249,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => const MainShellScreen(initialTab: 1),
+        builder: (_) => const MainShellScreen(initialTab: 0),
       ),
     );
   }

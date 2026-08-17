@@ -141,6 +141,13 @@ class ActiveMessModel extends Equatable {
     required this.role,
   });
 
+  /// Display role: individuals never see "owner" — normalize that orphan owner to manager/member
+  String get displayRole {
+    final r = role.toLowerCase();
+    if (r == 'owner') return 'manager';
+    return r;
+  }
+
   factory ActiveMessModel.fromJson(Map<String, dynamic> json) {
     return ActiveMessModel(
       id: json['id'] as int? ?? 0,
@@ -348,6 +355,20 @@ class MyMessModel extends Equatable {
   });
 
   bool get isManager => role.toLowerCase() == 'manager' || role.toLowerCase() == 'owner';
+
+  /// Display role: individuals never show "owner"
+  String get displayRole {
+    final r = role.toLowerCase();
+    if (r == 'owner') return 'manager';
+    return r;
+  }
+
+  /// Normalize "Owner" label to Manager/Member for display
+  String get displayRoleLabel {
+    final r = roleLabel.toLowerCase();
+    if (r == 'owner') return 'Manager';
+    return roleLabel;
+  }
 
   factory MyMessModel.fromJson(Map<String, dynamic> json) {
     final active = json['active_month'] as Map<String, dynamic>?;

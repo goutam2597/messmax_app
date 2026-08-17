@@ -28,6 +28,17 @@ class _BazarScheduleView extends StatefulWidget {
 }
 
 class _BazarScheduleViewState extends State<_BazarScheduleView> {
+  bool _isSendingAnnouncement = false;
+  final _announcementSubjectController = TextEditingController();
+  final _announcementMessageController = TextEditingController();
+
+  @override
+  void dispose() {
+    _announcementSubjectController.dispose();
+    _announcementMessageController.dispose();
+    super.dispose();
+  }
+
   // --- ADD / EDIT ASSIGNMENT MODAL WITH CALENDAR DATE PICKERS ---
   void _showAddEditModal(
     BuildContext context,
@@ -60,8 +71,18 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             String formatDateLabel(DateTime? dt) {
               if (dt == null) return 'Select date';
               const months = [
-                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'May',
+                'Jun',
+                'Jul',
+                'Aug',
+                'Sep',
+                'Oct',
+                'Nov',
+                'Dec',
               ];
               return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
             }
@@ -221,12 +242,16 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                   final picked = await showDatePicker(
                                     context: context,
                                     initialDate:
-                                        selectedToDate ?? selectedFromDate ?? firstDate,
+                                        selectedToDate ??
+                                        selectedFromDate ??
+                                        firstDate,
                                     firstDate: selectedFromDate ?? firstDate,
                                     lastDate: lastDate,
                                   );
                                   if (picked != null) {
-                                    setSheetState(() => selectedToDate = picked);
+                                    setSheetState(
+                                      () => selectedToDate = picked,
+                                    );
                                   }
                                 },
                                 borderRadius: BorderRadius.circular(14),
@@ -309,8 +334,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                           child: Text('— pick member —'),
                         ),
                         ...data.members.map((m) {
-                          final dayBadge =
-                              m.bazarDay != null ? ' (${m.bazarDay})' : '';
+                          final dayBadge = m.bazarDay != null
+                              ? ' (${m.bazarDay})'
+                              : '';
                           return DropdownMenuItem<int>(
                             value: m.id,
                             child: Text('${m.name} — ${m.role}$dayBadge'),
@@ -389,7 +415,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                           if (selectedMemberId == null && staff.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Select a member or enter staff name'),
+                                content: Text(
+                                  'Select a member or enter staff name',
+                                ),
                               ),
                             );
                             return;
@@ -397,12 +425,12 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
 
                           Navigator.pop(ctx);
                           context.read<BazarScheduleCubit>().assignSchedule(
-                                fromDay: fromDay,
-                                toDay: toDay,
-                                messMemberId: selectedMemberId,
-                                staffName: staff,
-                                note: noteController.text.trim(),
-                              );
+                            fromDay: fromDay,
+                            toDay: toDay,
+                            messMemberId: selectedMemberId,
+                            staffName: staff,
+                            note: noteController.text.trim(),
+                          );
                         },
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.brandDark,
@@ -412,7 +440,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                           ),
                         ),
                         child: Text(
-                          prefilledSchedule != null ? 'Save Changes' : 'Add Assignment',
+                          prefilledSchedule != null
+                              ? 'Save Changes'
+                              : 'Add Assignment',
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w900,
@@ -445,147 +475,181 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
         : null;
     final defaultEmail = member?.email ?? '';
     final emailController = TextEditingController(text: defaultEmail);
+    bool isSendingNotify = false;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
-        return Container(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            16,
-            20,
-            MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          decoration: const BoxDecoration(
-            color: AppColors.paperRaised,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.paperLine,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                16,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              decoration: const BoxDecoration(
+                color: AppColors.paperRaised,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.brandSoft,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.mark_email_read_rounded,
-                        color: AppColors.brandDark,
-                        size: 20,
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.paperLine,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandSoft,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.mark_email_read_rounded,
+                            color: AppColors.brandDark,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'Notify Assignee via Email',
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Send SMTP duty notification for ${item.dateLabel} (${item.displayName})',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.inkSoft,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
                     const Text(
-                      'Notify Assignee via Email',
+                      'RECIPIENT EMAIL *',
                       style: TextStyle(
-                        fontSize: 17.5,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.ink,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.inkSoft,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        hintText: 'member@example.com',
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          size: 20,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    const Text(
+                      'ADDITIONAL NOTES / INSTRUCTIONS',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.inkSoft,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: notesController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        hintText:
+                            'e.g. Please bring 5kg Ruhi fish, onions, and oil',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: isSendingNotify
+                            ? null
+                            : () async {
+                                final email = emailController.text.trim();
+                                if (email.isEmpty || !email.contains('@')) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Please enter a valid email address',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                setSheetState(() => isSendingNotify = true);
+                                try {
+                                  await context
+                                      .read<BazarScheduleCubit>()
+                                      .notifyAssignee(
+                                        day: item.day,
+                                        notes: notesController.text.trim(),
+                                        emailOverride: email,
+                                      );
+                                  if (context.mounted) Navigator.pop(ctx);
+                                } finally {}
+                              },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.brandDark,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: isSendingNotify
+                            ? const Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.send_rounded, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Send SMTP Notification'),
+                                ],
+                              ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Send SMTP duty notification for ${item.dateLabel} (${item.displayName})',
-                  style: const TextStyle(fontSize: 12, color: AppColors.inkSoft),
-                ),
-                const SizedBox(height: 16),
-
-                const Text(
-                  'RECIPIENT EMAIL *',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.inkSoft,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    hintText: 'member@example.com',
-                    prefixIcon: Icon(
-                      Icons.email_outlined,
-                      size: 20,
-                      color: AppColors.inkFaded,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                const Text(
-                  'ADDITIONAL NOTES / INSTRUCTIONS',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.inkSoft,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: notesController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    hintText:
-                        'e.g. Please bring 5kg Ruhi fish, onions, and oil',
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      final email = emailController.text.trim();
-                      if (email.isEmpty || !email.contains('@')) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please enter a valid email address'),
-                          ),
-                        );
-                        return;
-                      }
-                      Navigator.pop(ctx);
-                      context.read<BazarScheduleCubit>().notifyAssignee(
-                            day: item.day,
-                            notes: notesController.text.trim(),
-                            emailOverride: email,
-                          );
-                    },
-                    icon: const Icon(Icons.send_rounded, size: 18),
-                    label: const Text('Send SMTP Notification'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.brandDark,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -635,8 +699,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: AppColors.ink),
-            onPressed: () =>
-                context.read<BazarScheduleCubit>().loadSchedule(),
+            onPressed: () => context.read<BazarScheduleCubit>().loadSchedule(),
           ),
           const SizedBox(width: 8),
         ],
@@ -703,8 +766,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
 
             if (state is BazarScheduleLoaded) {
               final data = state.schedule;
-              final assignedRows =
-                  data.schedules.where((s) => s.isAssigned).toList();
+              final assignedRows = data.schedules
+                  .where((s) => s.isAssigned)
+                  .toList();
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
@@ -721,7 +785,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                       'SHOPPING ROTA (${data.assignedCount}/${data.daysInMonth} DAYS ASSIGNED)',
                     ),
                     const SizedBox(height: 10),
-                    if (data.canManage) _buildManagerToolbar(context, data, assignedRows),
+                    if (data.canManage)
+                      _buildManagerToolbar(context, data, assignedRows),
                     const SizedBox(height: 14),
 
                     // --- 3. ASSIGNED ROTA DAY CARDS OR ELEGANT EMPTY STATE ---
@@ -1215,7 +1280,6 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                         ),
                         onPressed: () => _showNotifyModal(context, data, item),
                       ),
-                      const SizedBox(width: 10),
                     ],
                     IconButton(
                       padding: EdgeInsets.zero,
@@ -1231,7 +1295,6 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                         prefilledSchedule: item,
                       ),
                     ),
-                    const SizedBox(width: 10),
                     IconButton(
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -1243,8 +1306,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                       onPressed: () {
                         if (item.id != null) {
                           context.read<BazarScheduleCubit>().deleteAssignment(
-                                item.id!,
-                              );
+                            item.id!,
+                          );
                         }
                       },
                     ),
@@ -1256,27 +1319,17 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
 
           Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: item.isToday
-                      ? const Color(0xFF0F9F59)
-                      : AppColors.brandDark,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    item.displayName != null && item.displayName!.isNotEmpty
-                        ? item.displayName![0].toUpperCase()
-                        : 'S',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
+              ClipOval(
+                child: member != null && member.avatarUrl != null
+                    ? Image.network(
+                        member.avatarUrl!,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => _memberCircleAvatarFallback(
+                            item, member),
+                      )
+                    : _memberCircleAvatarFallback(item, member),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1400,144 +1453,178 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
       text: 'Announcement — ${data.mess.name} · ${data.monthLabel} — MessMax',
     );
     final messageController = TextEditingController();
+    bool isSendingBroadcast = false;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
-        return Container(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            16,
-            20,
-            MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          decoration: const BoxDecoration(
-            color: AppColors.paperRaised,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.paperLine,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                16,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              decoration: const BoxDecoration(
+                color: AppColors.paperRaised,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.brandSoft,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.campaign_rounded,
-                        color: AppColors.brandDark,
-                        size: 22,
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.paperLine,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandSoft,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.campaign_rounded,
+                            color: AppColors.brandDark,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'Broadcast Announcement',
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Sends an SMTP broadcast email to all ${data.members.length} members',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.inkSoft,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
                     const Text(
-                      'Broadcast Announcement',
+                      'EMAIL SUBJECT',
                       style: TextStyle(
-                        fontSize: 17.5,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.ink,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.inkSoft,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: subjectController,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.title_rounded,
+                          size: 20,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    const Text(
+                      'ANNOUNCEMENT MESSAGE *',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.inkSoft,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: messageController,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        hintText:
+                            'Write important mess announcement for all members...',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: isSendingBroadcast
+                            ? null
+                            : () async {
+                                final msg = messageController.text.trim();
+                                if (msg.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Please write an announcement message',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                setSheetState(() => isSendingBroadcast = true);
+                                try {
+                                  await context
+                                      .read<BazarScheduleCubit>()
+                                      .broadcastAnnouncement(
+                                        subject: subjectController.text.trim(),
+                                        message: msg,
+                                      );
+                                  if (context.mounted) Navigator.pop(ctx);
+                                } finally {}
+                              },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.brandDark,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: isSendingBroadcast
+                            ? const Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.send_rounded, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Send Broadcast to All Members'),
+                                ],
+                              ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Sends an SMTP broadcast email to all ${data.members.length} members',
-                  style: const TextStyle(fontSize: 12, color: AppColors.inkSoft),
-                ),
-                const SizedBox(height: 16),
-
-                const Text(
-                  'EMAIL SUBJECT',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.inkSoft,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: subjectController,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.title_rounded,
-                      size: 20,
-                      color: AppColors.inkFaded,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                const Text(
-                  'ANNOUNCEMENT MESSAGE *',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.inkSoft,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: messageController,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    hintText:
-                        'Write important mess announcement for all members...',
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      final msg = messageController.text.trim();
-                      if (msg.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please write an announcement message'),
-                          ),
-                        );
-                        return;
-                      }
-                      Navigator.pop(ctx);
-                      context.read<BazarScheduleCubit>().broadcastAnnouncement(
-                            subject: subjectController.text.trim(),
-                            message: msg,
-                          );
-                    },
-                    icon: const Icon(Icons.send_rounded, size: 18),
-                    label: const Text('Send Broadcast to All Members'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.brandDark,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -1548,10 +1635,10 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
     BuildContext context,
     BazarScheduleResponseModel data,
   ) {
-    final subjectController = TextEditingController(
-      text: 'Announcement — ${data.mess.name} · ${data.monthLabel} — MessMax',
-    );
-    final messageController = TextEditingController();
+    if (_announcementSubjectController.text.isEmpty) {
+      _announcementSubjectController.text =
+          'Announcement — ${data.mess.name} · ${data.monthLabel} — MessMax';
+    }
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1575,11 +1662,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
         children: [
           const Row(
             children: [
-              Icon(
-                Icons.campaign_outlined,
-                color: Color(0xFFFFD1A3),
-                size: 22,
-              ),
+              Icon(Icons.campaign_outlined, color: Color(0xFFFFD1A3), size: 22),
               SizedBox(width: 8),
               Text(
                 'ANNOUNCEMENT TO ALL MEMBERS',
@@ -1619,7 +1702,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           ),
           const SizedBox(height: 4),
           TextField(
-            controller: subjectController,
+            controller: _announcementSubjectController,
             style: const TextStyle(color: Colors.white, fontSize: 13),
             decoration: InputDecoration(
               filled: true,
@@ -1653,7 +1736,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           ),
           const SizedBox(height: 4),
           TextField(
-            controller: messageController,
+            controller: _announcementMessageController,
             maxLines: 3,
             style: const TextStyle(color: Colors.white, fontSize: 13),
             decoration: InputDecoration(
@@ -1680,24 +1763,37 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
 
           SizedBox(
             width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () {
-                final msg = messageController.text.trim();
-                if (msg.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter an announcement message'),
-                    ),
-                  );
-                  return;
-                }
-                context.read<BazarScheduleCubit>().broadcastAnnouncement(
-                      subject: subjectController.text.trim(),
-                      message: msg,
-                    );
-              },
-              icon: const Icon(Icons.send_rounded, size: 16),
-              label: const Text('Send announcement to all members'),
+            child: FilledButton(
+              onPressed: _isSendingAnnouncement
+                  ? null
+                  : () async {
+                      final msg = _announcementMessageController.text.trim();
+                      if (msg.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please enter an announcement message',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() => _isSendingAnnouncement = true);
+                      try {
+                        await context
+                            .read<BazarScheduleCubit>()
+                            .broadcastAnnouncement(
+                              subject: _announcementSubjectController.text
+                                  .trim(),
+                              message: msg,
+                            );
+                        _announcementMessageController.clear();
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isSendingAnnouncement = false);
+                        }
+                      }
+                    },
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.brandDark,
                 foregroundColor: Colors.white,
@@ -1706,9 +1802,51 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
+              child: _isSendingAnnouncement
+                  ? const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.send_rounded, size: 16),
+                        SizedBox(width: 8),
+                        Text('Send announcement to all members'),
+                      ],
+                    ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _memberCircleAvatarFallback(
+      BazarDayItemModel item, BazarMemberModel? member) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: item.isToday ? const Color(0xFF0F9F59) : AppColors.brandDark,
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        item.displayName != null && item.displayName!.isNotEmpty
+            ? item.displayName![0].toUpperCase()
+            : 'S',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 14,
+        ),
       ),
     );
   }

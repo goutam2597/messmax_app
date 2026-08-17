@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/config/app_config.dart';
 
 class BazarScheduleResponseModel extends Equatable {
   final MessInfoModel mess;
@@ -84,6 +85,8 @@ class BazarMemberModel extends Equatable {
   final String? email;
   final String? bazarDay;
   final String role;
+  final String color;
+  final String? avatarUrl;
 
   const BazarMemberModel({
     required this.id,
@@ -91,20 +94,25 @@ class BazarMemberModel extends Equatable {
     this.email,
     this.bazarDay,
     required this.role,
+    this.color = '#3b82f6',
+    this.avatarUrl,
   });
 
   factory BazarMemberModel.fromJson(Map<String, dynamic> json) {
+    final rawAvatar = json['avatar_url'] as String?;
     return BazarMemberModel(
       id: json['id'] as int? ?? 0,
       name: json['name'] as String? ?? '',
       email: json['email'] as String?,
       bazarDay: json['bazar_day'] as String?,
       role: json['role'] as String? ?? 'member',
+      color: json['color'] as String? ?? '#3b82f6',
+      avatarUrl: rawAvatar != null ? AppConfig.sanitizeImageUrl(rawAvatar) : null,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, email, bazarDay, role];
+  List<Object?> get props => [id, name, email, bazarDay, role, color, avatarUrl];
 }
 
 class BazarDayItemModel extends Equatable {

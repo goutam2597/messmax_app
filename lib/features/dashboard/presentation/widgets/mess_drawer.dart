@@ -4,12 +4,19 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../ads/presentation/screens/my_ads_screen.dart';
 import '../../../bazar_schedule/presentation/screens/bazar_schedule_screen.dart';
+import '../../../members/presentation/screens/members_screen.dart';
+import '../../../mess/presentation/screens/messes_screen.dart';
+import '../../../mess/presentation/screens/mess_detail_screen.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
 import '../../../profile/presentation/screens/account_screen.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
+import '../../../members/presentation/cubit/member_cubit.dart';
+import '../../../members/presentation/cubit/member_state.dart';
+import '../../../mess/presentation/cubit/mess_cubit.dart';
+import '../../../mess/presentation/cubit/mess_state.dart';
 
 class MessDrawer extends StatelessWidget {
   final String activeSection;
@@ -24,14 +31,46 @@ class MessDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
-    final dashboardState = context.watch<DashboardCubit>().state;
+
+    // Dashboard is only available inside MainShell's MultiBlocProvider.
+    // On standalone routes (MembersScreen, MessDetailScreen, etc.) there is no DashboardCubit above us,
+    // so we degrade gracefully: header falls back to Members/Mess cubit and body tiles still render.
+    DashboardState? dashboardState;
+    try {
+      dashboardState = context.watch<DashboardCubit>().state;
+    } catch (_) {
+      dashboardState = null;
+    }
 
     final user = authState is AuthAuthenticated ? authState.user : null;
     final dashboard = dashboardState is DashboardLoaded
         ? dashboardState.dashboard
         : null;
-    final activeMess = dashboard?.activeMess;
+    var activeMess = dashboard?.activeMess;
     final myMesses = dashboard?.myMesses ?? [];
+
+    // Fallback for standalone routes: synthesize activeMess from whatever cubit is available
+    // so the "Green View" card / header doesn't disappear (the bug you reported with screenshot).
+    String? fallbackMessName;
+    if (activeMess == null) {
+      try {
+        final ms = context.watch<MemberCubit>().state;
+        if (ms is MemberLoaded) {
+          fallbackMessName = ms.response.messName;
+        }
+      } catch (_) {}
+      if (fallbackMessName == null || fallbackMessName.isEmpty) {
+        try {
+          final ms = context.watch<MessCubit>().state;
+          if (ms is MessDetailLoaded) {
+            fallbackMessName = ms.detail.mess.name;
+          } else if (ms is MessSheetLoaded) {
+            final m = ms.sheet['mess'] as Map<String, dynamic>?;
+            fallbackMessName = m?['name'] as String?;
+          }
+        } catch (_) {}
+      }
+    }
 
     final isIndividual = user?.isIndividual ?? true;
     final managesAny =
@@ -66,11 +105,21 @@ class MessDrawer extends StatelessWidget {
                     subtitle: 'Dashboard & stats',
                     context: context,
                   ),
+                  // Show active mess even when we only have a fallback (Members/Mess route)
                   if (activeMess != null)
                     _drawerTile(
                       id: 'current_mess',
                       icon: Icons.grid_view_rounded,
                       title: activeMess.name,
+                      subtitle: 'Monthly sheet & daily meals',
+                      context: context,
+                    )
+                  else if (fallbackMessName != null &&
+                      fallbackMessName.isNotEmpty)
+                    _drawerTile(
+                      id: 'current_mess',
+                      icon: Icons.grid_view_rounded,
+                      title: fallbackMessName,
                       subtitle: 'Monthly sheet & daily meals',
                       context: context,
                     ),
@@ -258,13 +307,60 @@ class MessDrawer extends StatelessWidget {
     required bool isMemberOnly,
     required String userRoleLabel,
   }) {
-    final dashboardState = context.watch<DashboardCubit>().state;
+    // This header is built inside Drawer.build's context, so it sees whatever cubits
+    // are above the Scaffold that owns the drawer — not necessarily DashboardCubit.
+    // On routes like Members/MessDetail the drawer is hosted above a different BlocProvider,
+    // so we watch whatever is available and fall back to a static label instead of hiding.
+    DashboardState? dashboardState;
+    try {
+      dashboardState = context.watch<DashboardCubit>().state;
+    } catch (_) {
+      dashboardState = null;
+    }
     final activeMess = dashboardState is DashboardLoaded
-        ? dashboardState.dashboard.activeMess
+        ? (dashboardState).dashboard.activeMess
         : null;
 
-    final messName = activeMess?.name ?? '';
-    final messCode = activeMess?.code ?? '';
+    String headerMessName = activeMess?.name ?? '';
+    String headerMessCode = activeMess?.code ?? '';
+    if (headerMessName.isEmpty) {
+      try {
+        final memberCubitState = context.watch<MemberCubit>().state;
+        if (memberCubitState is MemberLoaded) {
+          headerMessName = memberCubitState.response.messName;
+          headerMessCode = memberCubitState.response.messCode;
+          if (headerMessName.isEmpty) headerMessName = 'Mess Members';
+        }
+      } catch (_) {}
+      if (headerMessName.isEmpty) {
+        try {
+          final messCubitState = context.watch<MessCubit>().state;
+          if (messCubitState is MessDetailLoaded) {
+            headerMessName = messCubitState.detail.mess.name;
+            headerMessCode =
+                '#MX-${messCubitState.detail.mess.id.toString().padLeft(4, '0')}';
+          } else if (messCubitState is MessSheetLoaded) {
+            final m = messCubitState.sheet['mess'] as Map<String, dynamic>?;
+            headerMessName = m?['name'] as String? ?? '';
+            final mid = (m?['id'] is int)
+                ? m!['id'] as int
+                : int.tryParse('${m?['id'] ?? ''}') ?? 0;
+            headerMessCode = mid != 0
+                ? '#MX-${mid.toString().padLeft(4, '0')}'
+                : '';
+            if (headerMessName.isEmpty &&
+                messCubitState.sheet['month'] != null) {
+              headerMessName = 'Monthly Sheet';
+            }
+          }
+        } catch (_) {}
+      }
+    }
+    // Final fallback — never hide the header completely (that's the bug you reported)
+    if (headerMessName.isEmpty) headerMessName = 'MessMax';
+    if (headerMessCode.isEmpty) headerMessCode = '—';
+    final messName = headerMessName;
+    final messCode = headerMessCode;
     final consoleSub = isIndividual
         ? 'MY MESS'
         : (isMemberOnly ? 'MEMBER' : 'CONSOLE');
@@ -418,6 +514,46 @@ class MessDrawer extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () {
+          // For current mess drill-down: open detail with real mess id.
+          // Works from any route — falls back to Members/Mess cubit when DashboardCubit isn't above us.
+          if (id == 'current_mess') {
+            int? messId;
+            try {
+              final st = context.read<DashboardCubit>().state;
+              final a = st is DashboardLoaded
+                  ? (st).dashboard.activeMess
+                  : null;
+              messId = a?.id;
+            } catch (_) {}
+            if (messId == null) {
+              try {
+                final ms = context.read<MemberCubit>().state;
+                if (ms is MemberLoaded) messId = ms.response.messId;
+              } catch (_) {}
+            }
+            if (messId == null) {
+              try {
+                final ms = context.read<MessCubit>().state;
+                if (ms is MessDetailLoaded) {
+                  messId = ms.detail.mess.id;
+                } else if (ms is MessSheetLoaded) {
+                  final m = ms.sheet['mess'] as Map<String, dynamic>?;
+                  messId = (m?['id'] is int)
+                      ? m!['id'] as int
+                      : int.tryParse('${m?['id'] ?? ''}');
+                }
+              } catch (_) {}
+            }
+            Navigator.pop(context);
+            if (messId != null && messId != 0) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MessDetailScreen(messId: messId!),
+                ),
+              );
+            }
+            return;
+          }
           Navigator.pop(context); // Close drawer
           if (id == 'account') {
             Navigator.of(
@@ -428,15 +564,33 @@ class MessDrawer extends StatelessWidget {
               context,
             ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
           } else if (id == 'bazar_schedule' || id == 'mess_bazar') {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const BazarScheduleScreen()),
+            );
+          } else if (id == 'members') {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => const BazarScheduleScreen()));
+            ).push(MaterialPageRoute(builder: (_) => const MembersScreen()));
+          } else if (id == 'messes') {
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const MessesScreen()));
           } else if (id == 'find_mess') {
+            // "Find Seats" / "Search mess" always goes to Home (bottom nav tab 0)
+            Navigator.of(context).pop();
             Navigator.of(context).popUntil((route) => route.isFirst);
             MainShellScope.of(context)?.selectTab(0);
           } else if (id == 'dashboard') {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-            MainShellScope.of(context)?.selectTab(0);
+            // Overview should always land on the Dashboard, never on Profile (tab 3).
+            Navigator.of(context).pop();
+            // From standalone routes (Members/MessDetail) pop back to whatever is underneath
+            // which is the Dashboard/MainShell — then ensure drawer is closed.
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              final scope = MainShellScope.of(context);
+              scope?.selectTab(0);
+            }
+            // If already inside MainShell (no pop needed), just closing drawer is enough.
           } else if (onSectionSelected != null) {
             onSectionSelected!(id);
           }
@@ -601,7 +755,15 @@ class MessDrawer extends StatelessWidget {
           ),
           IconButton(
             onPressed: () async {
+              final rootNav = Navigator.of(context, rootNavigator: true);
+              Navigator.of(context).pop();
               await context.read<AuthCubit>().logout();
+              rootNav.pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => const MainShellScreen(initialTab: 0),
+                ),
+                (_) => false,
+              );
             },
             icon: const Icon(
               Icons.logout_rounded,

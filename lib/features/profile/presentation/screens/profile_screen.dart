@@ -16,129 +16,242 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   void _goLogin(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.paper,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const MessMaxAppBar(title: 'My Profile & Mess'),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, authState) {
+        if (authState is AuthLoading) {
+          return Scaffold(
+            backgroundColor: AppColors.paper,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  const MessMaxAppBar(title: 'My Profile & Mess'),
+                  Expanded(child: Center(child: _loadingHeader())),
+                ],
+              ),
+            ),
+          );
+        }
+        if (authState is! AuthAuthenticated) {
+          return Scaffold(
+            backgroundColor: AppColors.paper,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    BlocBuilder<AuthCubit, AuthState>(
-                      builder: (context, state) {
-                        if (state is AuthAuthenticated) {
-                          return _authedHeader(context, state);
-                        }
-                        if (state is AuthLoading) {
-                          return _loadingHeader();
-                        }
-                        return _guestHeader(context);
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildDashboardButton(context),
-                    const SizedBox(height: 16),
-                    _quickActions(context),
-                    const SizedBox(height: 24),
-                    _sectionTitle('ACCOUNT & SETTINGS'),
-                    _menuGroup(context, [
-                      (
-                        icon: Icons.person_outline_rounded,
-                        title: 'Personal Information',
-                        subtitle: 'Manage name and email',
+                    const MessMaxAppBar(title: 'My Profile & Mess'),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(28),
+                      decoration: BoxDecoration(
+                        color: AppColors.paperRaised,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.paperLine),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
-                      (
-                        icon: Icons.notifications_none_rounded,
-                        title: 'Notification Preferences',
-                        subtitle: 'Meal off, bazar and seat alerts',
-                      ),
-                    ]),
-                    const SizedBox(height: 20),
-                    _sectionTitle('MESS MANAGEMENT'),
-                    _menuGroup(context, [
-                      (
-                        icon: Icons.storefront_rounded,
-                        title: 'My Posted Seat Listings',
-                        subtitle: 'View and edit seat ads',
-                      ),
-                      (
-                        icon: Icons.event_note_rounded,
-                        title: 'Bazar Roster & Meal Schedule',
-                        subtitle: 'Assign shopping days',
-                      ),
-                    ]),
-                    const SizedBox(height: 20),
-                    _sectionTitle('HELP & LEGAL'),
-                    _menuGroup(context, [
-                      (
-                        icon: Icons.help_outline_rounded,
-                        title: 'Help Center & Support',
-                        subtitle: 'FAQs and support team',
-                      ),
-                      (
-                        icon: Icons.shield_outlined,
-                        title: 'Privacy Policy & Terms',
-                        subtitle: 'Data usage and safety rules',
-                      ),
-                    ]),
-                    const SizedBox(height: 24),
-                    BlocBuilder<AuthCubit, AuthState>(
-                      builder: (context, state) {
-                        if (state is AuthAuthenticated) {
-                          return SizedBox(
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.brandDark.withValues(
+                                  alpha: 0.12,
+                                ),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.lock_rounded,
+                              color: AppColors.brandDark,
+                              size: 36,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Sign in required',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Sign in to continue.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.inkFaded,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
                             width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () async {
-                                await context.read<AuthCubit>().logout();
-                                if (!context.mounted) return;
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                    builder: (_) => const MainShellScreen(initialTab: 0),
-                                  ),
-                                  (_) => false,
-                                );
-                              },
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.danger,
-                                side: const BorderSide(color: AppColors.danger, width: 1.2),
+                            child: FilledButton.icon(
+                              onPressed: () => _goLogin(context),
+                              icon: const Icon(Icons.login_rounded, size: 18),
+                              label: const Text(
+                                'Go to Login',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.brandDark,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              icon: const Icon(Icons.logout_rounded, size: 18),
-                              label: const Text(
-                                'Sign Out',
-                                style: TextStyle(fontWeight: FontWeight.w700),
                               ),
                             ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 30),
-                    BlocBuilder<AuthCubit, AuthState>(
-                      builder: (context, state) {
-                        final sub = state is AuthAuthenticated
-                            ? state.user.email
-                            : 'Guest • Sign in to sync your mess';
-                        return Center(
+                    const SizedBox(height: 20),
+                    Center(
+                      child: TextButton(
+                        onPressed: () =>
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const MainShellScreen(initialTab: 0),
+                              ),
+                              (_) => false,
+                            ),
+                        child: const Text(
+                          'Back to Home',
+                          style: TextStyle(
+                            color: AppColors.brandDark,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        return Scaffold(
+          backgroundColor: AppColors.paper,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const MessMaxAppBar(title: 'My Profile & Mess'),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _authedHeader(context, authState),
+                        const SizedBox(height: 16),
+                        _buildDashboardButton(context),
+                        const SizedBox(height: 16),
+                        _quickActionsAuthed(context),
+                        const SizedBox(height: 24),
+                        _sectionTitle('ACCOUNT & SETTINGS'),
+                        _menuGroup(context, [
+                          (
+                            icon: Icons.person_outline_rounded,
+                            title: 'Personal Information',
+                            subtitle: 'Manage name and email',
+                          ),
+                          (
+                            icon: Icons.notifications_none_rounded,
+                            title: 'Notification Preferences',
+                            subtitle: 'Meal off, bazar and seat alerts',
+                          ),
+                        ]),
+                        const SizedBox(height: 20),
+                        _sectionTitle('MESS MANAGEMENT'),
+                        _menuGroup(context, [
+                          (
+                            icon: Icons.storefront_rounded,
+                            title: 'My Posted Seat Listings',
+                            subtitle: 'View and edit seat ads',
+                          ),
+                          (
+                            icon: Icons.event_note_rounded,
+                            title: 'Bazar Roster & Meal Schedule',
+                            subtitle: 'Assign shopping days',
+                          ),
+                        ]),
+                        const SizedBox(height: 20),
+                        _sectionTitle('HELP & LEGAL'),
+                        _menuGroup(context, [
+                          (
+                            icon: Icons.help_outline_rounded,
+                            title: 'Help Center & Support',
+                            subtitle: 'FAQs and support team',
+                          ),
+                          (
+                            icon: Icons.shield_outlined,
+                            title: 'Privacy Policy & Terms',
+                            subtitle: 'Data usage and safety rules',
+                          ),
+                        ]),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              final rootNav = Navigator.of(context, rootNavigator: true);
+                              await context.read<AuthCubit>().logout();
+                              rootNav.pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const MainShellScreen(initialTab: 0),
+                                ),
+                                (_) => false,
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.danger,
+                              side: const BorderSide(
+                                color: AppColors.danger,
+                                width: 1.2,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            icon: const Icon(Icons.logout_rounded, size: 18),
+                            label: const Text(
+                              'Sign Out',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        Center(
                           child: Column(
                             children: [
                               const Text(
-                                'MessMax v1.0.0 • Universal Mess Network',
+                                'MessMax v1.0.0 \u2022 Universal Mess Network',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -147,21 +260,24 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                sub,
-                                style: const TextStyle(fontSize: 11, color: AppColors.inkFaded),
+                                authState.user.email,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.inkFaded,
+                                ),
                               ),
                             ],
                           ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -187,9 +303,9 @@ class ProfileScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const DashboardScreen()),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const DashboardScreen()));
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -209,10 +325,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 14),
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Open Manager Dashboard',
                         style: TextStyle(
@@ -224,10 +340,7 @@ class ProfileScreen extends StatelessWidget {
                       SizedBox(height: 2),
                       Text(
                         'Access meal ledger, bazar roster & mess drawer',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          color: Colors.white70,
-                        ),
+                        style: TextStyle(fontSize: 11.5, color: Colors.white70),
                       ),
                     ],
                   ),
@@ -258,77 +371,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _guestHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.brandDark, AppColors.brandDeep],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0x40202C36),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.15),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 2,
-              ),
-            ),
-            child: const Center(
-              child: Icon(Icons.person_rounded, color: Colors.white, size: 34),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  'Mess Member Account',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Sign in to manage meals & seat ads',
-                  style: TextStyle(fontSize: 12, color: Color(0xCCFFFFFF)),
-                ),
-                SizedBox(height: 6),
-                _GuestBadge(),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          const _AccountTierBadge(isPremium: false),
-        ],
-      ),
-    );
-  }
-
   Widget _authedHeader(BuildContext context, AuthAuthenticated state) {
     final user = state.user;
     final avatarUrl = AppConfig.sanitizeImageUrl(user.avatarUrl);
-    // Hardcoded user plan tier: toggle to true for premium icon preview
     final isPremiumUser = user.isHostelOwner;
 
     return Container(
@@ -367,7 +412,8 @@ class ProfileScreen extends StatelessWidget {
                   ? Image.network(
                       avatarUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (ctx, obj, stk) => _initialAvatar(user.initials),
+                      errorBuilder: (ctx, obj, stk) =>
+                          _initialAvatar(user.initials),
                     )
                   : _initialAvatar(user.initials),
             ),
@@ -396,9 +442,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: user.isIndividual ? const Color(0xFFE85D04) : const Color(0xFF0F9F59),
+                    color: user.isIndividual
+                        ? const Color(0xFFE85D04)
+                        : const Color(0xFF0F9F59),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -422,17 +473,17 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _initialAvatar(String ch) => Center(
-        child: Text(
-          ch,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      );
+    child: Text(
+      ch,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 24,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  );
 
-  Widget _quickActions(BuildContext context) {
+  Widget _quickActionsAuthed(BuildContext context) {
     return Row(
       children: [
         Expanded(
@@ -443,16 +494,10 @@ class ProfileScreen extends StatelessWidget {
             subtitle: 'Manager listing',
             isAccent: true,
             onTap: () {
-              final st = context.read<AuthCubit>().state;
-              if (st is! AuthAuthenticated) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Sign in to post a seat ad')),
-                );
-                _goLogin(context);
-                return;
-              }
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Post Seat Ad — coming soon')),
+                const SnackBar(
+                  content: Text('Post Seat Ad \u2014 coming soon'),
+                ),
               );
             },
           ),
@@ -467,7 +512,9 @@ class ProfileScreen extends StatelessWidget {
             isAccent: false,
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Connect your mess account to track meals')),
+                const SnackBar(
+                  content: Text('Connect your mess account to track meals'),
+                ),
               );
             },
           ),
@@ -491,7 +538,9 @@ class ProfileScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: isAccent ? AppColors.brandDark : AppColors.paperRaised,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isAccent ? AppColors.brandDark : AppColors.paperLine),
+          border: Border.all(
+            color: isAccent ? AppColors.brandDark : AppColors.paperLine,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -508,9 +557,15 @@ class ProfileScreen extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isAccent ? Colors.white.withValues(alpha: 0.15) : AppColors.brandSoft,
+                color: isAccent
+                    ? Colors.white.withValues(alpha: 0.15)
+                    : AppColors.brandSoft,
               ),
-              child: Icon(icon, color: isAccent ? Colors.white : AppColors.brandDark, size: 20),
+              child: Icon(
+                icon,
+                color: isAccent ? Colors.white : AppColors.brandDark,
+                size: 20,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -526,7 +581,9 @@ class ProfileScreen extends StatelessWidget {
               subtitle,
               style: TextStyle(
                 fontSize: 11.5,
-                color: isAccent ? Colors.white.withValues(alpha: 0.7) : AppColors.inkFaded,
+                color: isAccent
+                    ? Colors.white.withValues(alpha: 0.7)
+                    : AppColors.inkFaded,
               ),
             ),
           ],
@@ -536,94 +593,85 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _sectionTitle(String t) => Padding(
-        padding: const EdgeInsets.only(left: 4, bottom: 8),
-        child: Text(
-          t,
-          style: const TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w900,
-            color: AppColors.inkFaded,
-            letterSpacing: 0.6,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(left: 4, bottom: 8),
+    child: Text(
+      t,
+      style: const TextStyle(
+        fontSize: 11.5,
+        fontWeight: FontWeight.w900,
+        color: AppColors.inkFaded,
+        letterSpacing: 0.6,
+      ),
+    ),
+  );
 
-  Widget _menuGroup(BuildContext context, List<({IconData icon, String title, String subtitle})> items) => Material(
-        color: AppColors.paperRaised,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.paperLine),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          children: [
-            for (var i = 0; i < items.length; i++) ...[
-              if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
-              _menuRow(context, items[i]),
-            ],
-          ],
-        ),
-      );
+  Widget _menuGroup(
+    BuildContext context,
+    List<({IconData icon, String title, String subtitle})> items,
+  ) => Material(
+    color: AppColors.paperRaised,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: const BorderSide(color: AppColors.paperLine),
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: Column(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
+          _menuRow(context, items[i]),
+        ],
+      ],
+    ),
+  );
 
-  Widget _menuRow(BuildContext context, ({IconData icon, String title, String subtitle}) item) => ListTile(
-        onTap: () {
-          if (item.title == 'Personal Information') {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AccountScreen()),
-            );
-          } else if (item.title == 'My Posted Seat Listings') {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MyAdsScreen()),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${item.title} — coming soon')),
-            );
-          }
-        },
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        tileColor: AppColors.paperRaised,
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.brandSoft,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(item.icon, color: AppColors.brandDark, size: 20),
-        ),
-        title: Text(
-          item.title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.ink),
-        ),
-        subtitle: Text(
-          item.subtitle,
-          style: const TextStyle(fontSize: 11.5, color: AppColors.inkFaded),
-        ),
-        trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.inkFaded, size: 20),
-      );
-}
-
-class _GuestBadge extends StatelessWidget {
-  const _GuestBadge();
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+  Widget _menuRow(
+    BuildContext context,
+    ({IconData icon, String title, String subtitle}) item,
+  ) => ListTile(
+    onTap: () {
+      if (item.title == 'Personal Information') {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
+      } else if (item.title == 'My Posted Seat Listings') {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${item.title} \u2014 coming soon')),
+        );
+      }
+    },
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    tileColor: AppColors.paperRaised,
+    leading: Container(
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppColors.accent,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.brandSoft,
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: const Text(
-        'GUEST ACCESS',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.5,
-        ),
+      child: Icon(item.icon, color: AppColors.brandDark, size: 20),
+    ),
+    title: Text(
+      item.title,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w800,
+        color: AppColors.ink,
       ),
-    );
-  }
+    ),
+    subtitle: Text(
+      item.subtitle,
+      style: const TextStyle(fontSize: 11.5, color: AppColors.inkFaded),
+    ),
+    trailing: const Icon(
+      Icons.chevron_right_rounded,
+      color: AppColors.inkFaded,
+      size: 20,
+    ),
+  );
 }
 
 class _AccountTierBadge extends StatelessWidget {
