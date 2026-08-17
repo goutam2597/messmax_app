@@ -32,31 +32,24 @@ class DashboardModel extends Equatable {
       ledgerStats: stats != null
           ? LedgerStatsModel.fromJson(stats)
           : const LedgerStatsModel(
-              totalMeals: 269.5,
-              todayMeals: 29.5,
-              totalBazar: 14098.0,
-              mealRate: 52.41,
-              totalDeposits: 28500.0,
-              restMoney: 4280.0,
+              totalMeals: 0,
+              todayMeals: 0,
+              totalBazar: 0,
+              mealRate: 0,
+              totalDeposits: 0,
+              restMoney: 0,
             ),
       pendingRequests: pending != null
           ? PendingRequestsModel.fromJson(pending)
-          : const PendingRequestsModel(total: 2, mealOffCount: 1, guestCount: 1),
+          : const PendingRequestsModel(total: 0, mealOffCount: 0, guestCount: 0),
       dailySheetTeaser: dailyTeaser != null
           ? dailyTeaser.map((e) => DailyMemberMealModel.fromJson(e as Map<String, dynamic>)).toList()
-          : _fallbackTeaser(),
+          : const [],
       myMesses: messes != null
           ? messes.map((e) => MyMessModel.fromJson(e as Map<String, dynamic>)).toList()
           : const [],
     );
   }
-
-  static List<DailyMemberMealModel> _fallbackTeaser() => const [
-        DailyMemberMealModel(id: 1, name: 'Goutam Sharma', room: 'Room 101', b: 1, l: 1, d: 1, total: 3.0),
-        DailyMemberMealModel(id: 2, name: 'Cartpa User', room: 'Room 102', b: 1, l: 0, d: 1, total: 2.0, isLunchOff: true),
-        DailyMemberMealModel(id: 3, name: 'Tanvir Ahmed', room: 'Room 103', b: 0, l: 0, d: 0, total: 0.0, isAllOff: true),
-        DailyMemberMealModel(id: 4, name: 'Rafiqul Islam', room: 'Room 104', b: 1, l: 1, d: 1, total: 3.0),
-      ];
 
   @override
   List<Object?> get props => [hasMess, activeMess, ledgerStats, pendingRequests];
@@ -88,14 +81,14 @@ class ActiveMessModel extends Equatable {
   factory ActiveMessModel.fromJson(Map<String, dynamic> json) {
     return ActiveMessModel(
       id: json['id'] as int? ?? 0,
-      name: json['name'] as String? ?? 'Green View Hostel Mess',
+      name: json['name'] as String? ?? 'My Mess',
       slug: json['slug'] as String? ?? '',
-      code: json['code'] as String? ?? '#MX-8921',
-      location: json['location'] as String? ?? 'Dhaka',
-      membersCount: json['members_count'] as int? ?? 12,
-      seatsAvailable: json['seats_available'] as int? ?? 3,
-      isManager: json['is_manager'] as bool? ?? true,
-      role: json['role'] as String? ?? 'manager',
+      code: json['code'] as String? ?? '#MX-0000',
+      location: json['location'] as String? ?? '',
+      membersCount: json['members_count'] as int? ?? 1,
+      seatsAvailable: json['seats_available'] as int? ?? 0,
+      isManager: json['is_manager'] as bool? ?? false,
+      role: json['role'] as String? ?? 'member',
     );
   }
 
@@ -182,14 +175,14 @@ class DailyMemberMealModel extends Equatable {
   });
 
   factory DailyMemberMealModel.fromJson(Map<String, dynamic> json) {
-    final b = json['breakfast'] as int? ?? 1;
-    final l = json['lunch'] as int? ?? 1;
-    final d = json['dinner'] as int? ?? 1;
+    final b = json['breakfast'] as int? ?? 0;
+    final l = json['lunch'] as int? ?? 0;
+    final d = json['dinner'] as int? ?? 0;
     final total = (json['total'] as num?)?.toDouble() ?? (b + l + d).toDouble();
     return DailyMemberMealModel(
       id: json['id'] as int? ?? 0,
-      name: json['name'] as String? ?? '',
-      room: json['room'] as String? ?? 'Room 101',
+      name: json['name'] as String? ?? 'Member',
+      room: json['room'] as String? ?? 'Member',
       b: b,
       l: l,
       d: d,

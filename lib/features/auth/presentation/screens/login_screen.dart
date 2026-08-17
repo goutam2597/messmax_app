@@ -128,13 +128,13 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Row(
         children: [
-          _miniStat('Bazar', '14,098 ৳'),
+          _miniStat('Bazar', 'Ledger'),
           _divider(),
-          _miniStat('Meals', '269'),
+          _miniStat('Meals', 'Count'),
           _divider(),
-          _miniStat('Rate', '52.41 ৳', highlight: true),
+          _miniStat('Rate', 'Auto', highlight: true),
           _divider(),
-          _miniStat('Rest', '+416', highlight: true),
+          _miniStat('Rest', 'Sync', highlight: true),
         ],
       ),
     );

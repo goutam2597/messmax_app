@@ -39,9 +39,6 @@ class _DashboardViewState extends State<_DashboardView> {
         activeSection: _activeSection,
         onSectionSelected: (section) {
           setState(() => _activeSection = section);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Navigated to ${section.replaceAll('_', ' ').toUpperCase()}')),
-          );
         },
       ),
       appBar: AppBar(
@@ -59,7 +56,7 @@ class _DashboardViewState extends State<_DashboardView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activeMess?.name ?? 'Green View Hostel',
+                  activeMess?.name ?? 'Mess Dashboard',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
@@ -67,9 +64,9 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                const Text(
-                  'Manager Dashboard • Aug 2026',
-                  style: TextStyle(
+                Text(
+                  activeMess != null ? 'Active Ledger • ${activeMess.code}' : 'Live Mess Management',
+                  style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.inkFaded,
                     fontWeight: FontWeight.w600,
@@ -81,29 +78,8 @@ class _DashboardViewState extends State<_DashboardView> {
         ),
         actions: [
           IconButton(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.notifications_outlined, color: AppColors.ink, size: 22),
-                Positioned(
-                  top: -2,
-                  right: -2,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.accent,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications — pending meal off requests')),
-              );
-            },
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.ink, size: 22),
+            onPressed: () => context.read<DashboardCubit>().loadDashboard(),
           ),
           const SizedBox(width: 8),
         ],
@@ -117,57 +93,132 @@ class _DashboardViewState extends State<_DashboardView> {
               );
             }
 
-            final dashboard = state is DashboardLoaded
-                ? state.dashboard
-                : const DashboardModel(
-                    hasMess: true,
-                    ledgerStats: LedgerStatsModel(
-                      totalMeals: 269.5,
-                      todayMeals: 29.5,
-                      totalBazar: 14098.0,
-                      mealRate: 52.41,
-                      totalDeposits: 28500.0,
-                      restMoney: 4280.0,
-                    ),
-                    pendingRequests: PendingRequestsModel(total: 2, mealOffCount: 1, guestCount: 1),
-                    dailySheetTeaser: [],
-                    myMesses: [],
-                  );
-
-            final activeMess = dashboard.activeMess;
-            final stats = dashboard.ledgerStats;
-            final pending = dashboard.pendingRequests;
-
-            return RefreshIndicator(
-              color: AppColors.brandDark,
-              onRefresh: () => context.read<DashboardCubit>().loadDashboard(),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildMessBannerCard(activeMess),
-                    const SizedBox(height: 18),
-                    _buildSectionTitle('MONTHLY LEDGER STATS'),
-                    const SizedBox(height: 10),
-                    _buildLedgerGrid(stats),
-                    const SizedBox(height: 18),
-                    if (pending.total > 0) ...[
-                      _buildPendingApprovalCard(context, pending),
+            if (state is DashboardError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentSoft,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.wifi_off_rounded, color: AppColors.accentDark, size: 36),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Unable to load dashboard',
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 13, color: AppColors.inkFaded),
+                      ),
                       const SizedBox(height: 20),
+                      FilledButton.icon(
+                        onPressed: () => context.read<DashboardCubit>().loadDashboard(),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Try Again'),
+                      ),
                     ],
-                    _buildSectionTitle('QUICK ACTIONS'),
-                    const SizedBox(height: 10),
-                    _buildQuickActionsRow(context),
-                    const SizedBox(height: 22),
-                    _buildSectionTitle('TODAY\'S MEAL SHEET TEASER'),
-                    const SizedBox(height: 10),
-                    _buildDailyMealSheetCard(dashboard.dailySheetTeaser),
-                  ],
+                  ),
                 ),
-              ),
-            );
+              );
+            }
+
+            if (state is DashboardLoaded) {
+              final dashboard = state.dashboard;
+
+              if (!dashboard.hasMess) {
+                return RefreshIndicator(
+                  color: AppColors.brandDark,
+                  onRefresh: () => context.read<DashboardCubit>().loadDashboard(),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: const Icon(Icons.apartment_rounded, color: AppColors.brandDark, size: 48),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'No Mess Joined Yet',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.ink),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Create your first mess or ask your manager for an invite link to start tracking daily meals and expenses.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 13, color: AppColors.inkFaded, height: 1.4),
+                          ),
+                          const SizedBox(height: 24),
+                          FilledButton.icon(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Create Mess coming soon')),
+                              );
+                            },
+                            icon: const Icon(Icons.add_rounded, size: 20),
+                            label: const Text('Create New Mess'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              final activeMess = dashboard.activeMess;
+              final stats = dashboard.ledgerStats;
+              final pending = dashboard.pendingRequests;
+
+              return RefreshIndicator(
+                color: AppColors.brandDark,
+                onRefresh: () => context.read<DashboardCubit>().loadDashboard(),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildMessBannerCard(activeMess),
+                      const SizedBox(height: 18),
+                      _buildSectionTitle('MONTHLY LEDGER STATS'),
+                      const SizedBox(height: 10),
+                      _buildLedgerGrid(stats),
+                      const SizedBox(height: 18),
+                      if (pending.total > 0) ...[
+                        _buildPendingApprovalCard(context, pending),
+                        const SizedBox(height: 20),
+                      ],
+                      _buildSectionTitle('QUICK ACTIONS'),
+                      const SizedBox(height: 10),
+                      _buildQuickActionsRow(context),
+                      const SizedBox(height: 22),
+                      if (dashboard.dailySheetTeaser.isNotEmpty) ...[
+                        _buildSectionTitle('TODAY\'S MEAL SHEET TEASER'),
+                        const SizedBox(height: 10),
+                        _buildDailyMealSheetCard(dashboard.dailySheetTeaser),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return const SizedBox.shrink();
           },
         ),
       ),
@@ -187,11 +238,11 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   Widget _buildMessBannerCard(ActiveMessModel? activeMess) {
-    final messName = activeMess?.name ?? 'Green View Hostel Mess';
-    final messCode = activeMess?.code ?? '#MX-8921';
-    final location = activeMess?.location ?? 'Dhaka';
-    final membersCount = activeMess?.membersCount ?? 12;
-    final seatsAvailable = activeMess?.seatsAvailable ?? 3;
+    final messName = activeMess?.name ?? 'My Mess';
+    final messCode = activeMess?.code ?? '#MX-0000';
+    final location = activeMess?.location.isNotEmpty == true ? activeMess!.location : 'Dhaka';
+    final membersCount = activeMess?.membersCount ?? 1;
+    final seatsAvailable = activeMess?.seatsAvailable ?? 0;
 
     return Container(
       padding: const EdgeInsets.all(18),
