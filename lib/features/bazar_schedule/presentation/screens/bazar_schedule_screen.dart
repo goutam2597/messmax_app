@@ -767,6 +767,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                     horizontal: 12,
                                     vertical: 10,
                                   ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -1352,7 +1355,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           const SizedBox(height: 16),
 
           SizedBox(
-            width: double.infinity,
+            width: double.infinity, 
             child: FilledButton.icon(
               onPressed: () {
                 final msg = messageController.text.trim();
