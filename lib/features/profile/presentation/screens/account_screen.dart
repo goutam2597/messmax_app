@@ -50,9 +50,9 @@ class _AccountScreenState extends State<AccountScreen> {
     super.dispose();
   }
 
-  Future<void> _loadAccountDetails() async {
+  Future<void> _loadAccountDetails({bool forceRefresh = false}) async {
     try {
-      final res = await _repository.fetchAccountDetails();
+      final res = await _repository.fetchAccountDetails(forceRefresh: forceRefresh);
       if (!mounted) return;
       setState(() {
         _accountData = res;
@@ -98,7 +98,7 @@ class _AccountScreenState extends State<AccountScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile saved successfully!')),
       );
-      _loadAccountDetails();
+      _loadAccountDetails(forceRefresh: true);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -185,24 +185,29 @@ class _AccountScreenState extends State<AccountScreen> {
             ? const Center(
                 child: CircularProgressIndicator(color: AppColors.brandDark),
               )
-            : SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildUserHeaderCard(context),
-                    const SizedBox(height: 20),
-                    _buildProfileEditCard(),
-                    const SizedBox(height: 20),
-                    _buildPasswordEditCard(),
-                    const SizedBox(height: 20),
-                    if (_accountData != null &&
-                        _accountData!.messes.isNotEmpty) ...[
-                      _buildMyMessesCard(_accountData!.messes),
+            : RefreshIndicator(
+                color: AppColors.brandDark,
+                onRefresh: () => _loadAccountDetails(forceRefresh: true),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildUserHeaderCard(context),
                       const SizedBox(height: 20),
+                      _buildProfileEditCard(),
+                      const SizedBox(height: 20),
+                      _buildPasswordEditCard(),
+                      const SizedBox(height: 20),
+                      if (_accountData != null &&
+                          _accountData!.messes.isNotEmpty) ...[
+                        _buildMyMessesCard(_accountData!.messes),
+                        const SizedBox(height: 20),
+                      ],
+                      _buildDeleteAccountCard(context),
                     ],
-                    _buildDeleteAccountCard(context),
-                  ],
+                  ),
                 ),
               ),
       ),

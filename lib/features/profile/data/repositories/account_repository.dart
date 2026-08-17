@@ -7,18 +7,28 @@ import '../../../auth/data/models/user_model.dart';
 
 class AccountRepository {
   final Dio _dio;
+  static AccountResponseModel? _cachedAccount;
 
   AccountRepository({Dio? dio}) : _dio = dio ?? DioClient.instance;
 
-  Future<AccountResponseModel> fetchAccountDetails() async {
+  static void clearCache() {
+    _cachedAccount = null;
+  }
+
+  Future<AccountResponseModel> fetchAccountDetails({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedAccount != null) {
+      return _cachedAccount!;
+    }
     try {
       final response = await _dio.get(ApiEndpoints.account);
       if (response.data != null && response.data is Map<String, dynamic>) {
-        return AccountResponseModel.fromJson(response.data as Map<String, dynamic>);
+        _cachedAccount = AccountResponseModel.fromJson(response.data as Map<String, dynamic>);
+        return _cachedAccount!;
       }
       throw Exception('Invalid account API payload');
     } catch (e) {
       AppLogger.w('AccountRepository.fetchAccountDetails failed: $e');
+      if (_cachedAccount != null) return _cachedAccount!;
       rethrow;
     }
   }
@@ -50,6 +60,7 @@ class AccountRepository {
         final data = response.data['data'] as Map<String, dynamic>?;
         final userJson = data?['user'] as Map<String, dynamic>?;
         if (userJson != null) {
+          clearCache(); // Force fresh fetch on next load
           return UserModel.fromJson(userJson);
         }
       }
