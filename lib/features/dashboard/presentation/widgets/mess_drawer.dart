@@ -22,86 +22,210 @@ class MessDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
     final dashboardState = context.watch<DashboardCubit>().state;
 
-    final activeMess = dashboardState is DashboardLoaded
-        ? dashboardState.dashboard.activeMess
-        : null;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    final dashboard = dashboardState is DashboardLoaded ? dashboardState.dashboard : null;
+    final activeMess = dashboard?.activeMess;
+    final myMesses = dashboard?.myMesses ?? [];
+
+    final isIndividual = user?.isIndividual ?? true;
+    final managesAny = (user?.isHostelOwner ?? false) ||
+        (activeMess?.isManager ?? false) ||
+        myMesses.any((m) => m.isManager);
+    final isMemberOnly = !isIndividual && !managesAny;
 
     return Drawer(
       backgroundColor: AppColors.paper,
       width: 290,
       child: Column(
         children: [
-          _buildDrawerHeader(context),
+          _buildDrawerHeader(
+            context: context,
+            isIndividual: isIndividual,
+            isMemberOnly: isMemberOnly,
+            userRoleLabel: isIndividual
+                ? 'INDIVIDUAL'
+                : (isMemberOnly ? 'MEMBER' : 'HOSTEL OWNER'),
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               children: [
-                _drawerTile(
-                  id: 'dashboard',
-                  icon: Icons.dashboard_rounded,
-                  title: 'Overview',
-                  subtitle: 'Dashboard & stats',
-                  context: context,
-                ),
-                _drawerTile(
-                  id: 'messes',
-                  icon: Icons.archive_rounded,
-                  title: 'Messes',
-                  subtitle: 'All managed & member messes',
-                  context: context,
-                ),
-                _drawerTile(
-                  id: 'members',
-                  icon: Icons.people_alt_rounded,
-                  title: 'Members',
-                  subtitle: 'Member list & roster',
-                  context: context,
-                ),
-                _drawerTile(
-                  id: 'bazar_schedule',
-                  icon: Icons.calendar_month_rounded,
-                  title: 'Bazar Schedule',
-                  subtitle: 'Shopping duty roster',
-                  context: context,
-                ),
-
-                if (activeMess != null) ...[
-                  const SizedBox(height: 14),
-                  _buildSectionLabel('CURRENT MESS'),
+                // --- CASE 1: INDIVIDUAL ---
+                if (isIndividual) ...[
                   _drawerTile(
-                    id: 'current_mess',
-                    icon: Icons.grid_view_rounded,
-                    title: activeMess.name,
-                    subtitle: 'Monthly sheet & daily meals',
+                    id: 'dashboard',
+                    icon: Icons.dashboard_rounded,
+                    title: 'Overview',
+                    subtitle: 'Dashboard & stats',
+                    context: context,
+                  ),
+                  if (activeMess != null)
+                    _drawerTile(
+                      id: 'current_mess',
+                      icon: Icons.grid_view_rounded,
+                      title: activeMess.name,
+                      subtitle: 'Monthly sheet & daily meals',
+                      context: context,
+                    ),
+                  _drawerTile(
+                    id: 'members',
+                    icon: Icons.people_alt_rounded,
+                    title: 'Members',
+                    subtitle: 'Member list & roster',
                     context: context,
                   ),
                   _drawerTile(
-                    id: 'mess_bazar',
-                    icon: Icons.shopping_basket_rounded,
+                    id: 'bazar_schedule',
+                    icon: Icons.calendar_month_rounded,
                     title: 'Bazar Schedule',
-                    subtitle: '${activeMess.name} duty',
+                    subtitle: 'Shopping duty roster',
+                    context: context,
+                  ),
+
+                  const SizedBox(height: 14),
+                  _buildSectionLabel('SEATS'),
+                  _drawerTile(
+                    id: 'my_ads',
+                    icon: Icons.home_work_rounded,
+                    title: 'My Seat Ads',
+                    subtitle: 'Manage posted seat listings',
+                    context: context,
+                  ),
+                  _drawerTile(
+                    id: 'find_mess',
+                    icon: Icons.search_rounded,
+                    title: 'Find Seats',
+                    subtitle: 'Browse live seat ads',
+                    context: context,
+                  ),
+                ]
+
+                // --- CASE 2: HOSTEL OWNER / MANAGER ---
+                else if (managesAny) ...[
+                  _drawerTile(
+                    id: 'dashboard',
+                    icon: Icons.dashboard_rounded,
+                    title: 'Overview',
+                    subtitle: 'Dashboard & stats',
+                    context: context,
+                  ),
+                  _drawerTile(
+                    id: 'messes',
+                    icon: Icons.archive_rounded,
+                    title: 'Messes',
+                    subtitle: 'All managed messes',
+                    context: context,
+                  ),
+                  _drawerTile(
+                    id: 'members',
+                    icon: Icons.people_alt_rounded,
+                    title: 'Members',
+                    subtitle: 'Member list & roster',
+                    context: context,
+                  ),
+                  if (activeMess == null)
+                    _drawerTile(
+                      id: 'bazar_schedule',
+                      icon: Icons.calendar_month_rounded,
+                      title: 'Bazar Schedule',
+                      subtitle: 'Shopping duty roster',
+                      context: context,
+                    ),
+
+                  if (activeMess != null) ...[
+                    const SizedBox(height: 14),
+                    _buildSectionLabel('CURRENT MESS'),
+                    _drawerTile(
+                      id: 'current_mess',
+                      icon: Icons.grid_view_rounded,
+                      title: activeMess.name,
+                      subtitle: 'Monthly sheet & daily meals',
+                      context: context,
+                    ),
+                    _drawerTile(
+                      id: 'mess_bazar',
+                      icon: Icons.shopping_basket_rounded,
+                      title: 'Bazar Schedule',
+                      subtitle: '${activeMess.name} duty',
+                      context: context,
+                    ),
+                  ],
+
+                  const SizedBox(height: 14),
+                  _buildSectionLabel('SEATS'),
+                  _drawerTile(
+                    id: 'my_ads',
+                    icon: Icons.home_work_rounded,
+                    title: 'My Seat Ads',
+                    subtitle: 'Manage posted seat listings',
+                    context: context,
+                  ),
+                  _drawerTile(
+                    id: 'find_mess',
+                    icon: Icons.search_rounded,
+                    title: 'Find Seats',
+                    subtitle: 'Browse live seat ads',
+                    context: context,
+                  ),
+                ]
+
+                // --- CASE 3: MEMBER-ONLY ---
+                else ...[
+                  _drawerTile(
+                    id: 'dashboard',
+                    icon: Icons.dashboard_rounded,
+                    title: 'Overview',
+                    subtitle: 'Dashboard & stats',
+                    context: context,
+                  ),
+                  _drawerTile(
+                    id: 'messes',
+                    icon: Icons.archive_rounded,
+                    title: 'My Messes',
+                    subtitle: 'Joined messes',
+                    context: context,
+                  ),
+                  if (activeMess == null)
+                    _drawerTile(
+                      id: 'bazar_schedule',
+                      icon: Icons.calendar_month_rounded,
+                      title: 'Bazar Schedule',
+                      subtitle: 'Shopping duty roster',
+                      context: context,
+                    ),
+
+                  if (activeMess != null) ...[
+                    const SizedBox(height: 14),
+                    _buildSectionLabel('CURRENT MESS'),
+                    _drawerTile(
+                      id: 'current_mess',
+                      icon: Icons.grid_view_rounded,
+                      title: activeMess.name,
+                      subtitle: 'Monthly sheet & daily meals',
+                      context: context,
+                    ),
+                    _drawerTile(
+                      id: 'mess_bazar',
+                      icon: Icons.shopping_basket_rounded,
+                      title: 'Bazar Schedule',
+                      subtitle: '${activeMess.name} duty',
+                      context: context,
+                    ),
+                  ],
+
+                  const SizedBox(height: 14),
+                  _buildSectionLabel('SEATS'),
+                  _drawerTile(
+                    id: 'find_mess',
+                    icon: Icons.search_rounded,
+                    title: 'Find Seats',
+                    subtitle: 'Browse live seat ads',
                     context: context,
                   ),
                 ],
-
-                const SizedBox(height: 14),
-                _buildSectionLabel('SEATS'),
-                _drawerTile(
-                  id: 'my_ads',
-                  icon: Icons.home_work_rounded,
-                  title: 'My Seat Ads',
-                  subtitle: 'Manage posted seat listings',
-                  context: context,
-                ),
-                _drawerTile(
-                  id: 'find_mess',
-                  icon: Icons.search_rounded,
-                  title: 'Find Seats',
-                  subtitle: 'Browse live seat ads',
-                  context: context,
-                ),
 
                 const SizedBox(height: 14),
                 _buildSectionLabel('ACCOUNT'),
@@ -115,24 +239,33 @@ class MessDrawer extends StatelessWidget {
               ],
             ),
           ),
-          _buildDrawerFooter(context),
+          _buildDrawerFooter(
+            context: context,
+            roleSubtitle: isIndividual
+                ? 'Individual'
+                : (isMemberOnly ? 'Member' : 'Hostel owner'),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerHeader(BuildContext context) {
-    final authState = context.watch<AuthCubit>().state;
+  Widget _buildDrawerHeader({
+    required BuildContext context,
+    required bool isIndividual,
+    required bool isMemberOnly,
+    required String userRoleLabel,
+  }) {
     final dashboardState = context.watch<DashboardCubit>().state;
-
-    final user = authState is AuthAuthenticated ? authState.user : null;
     final activeMess = dashboardState is DashboardLoaded
         ? dashboardState.dashboard.activeMess
         : null;
 
     final messName = activeMess?.name ?? 'Green View Hostel';
     final messCode = activeMess?.code ?? '#MX-8921';
-    final roleLabel = user?.roleLabel ?? 'MANAGER';
+    final consoleSub = isIndividual
+        ? 'MY MESS'
+        : (isMemberOnly ? 'MEMBER' : 'CONSOLE');
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -215,10 +348,10 @@ class MessDrawer extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Active Month • Ledger',
-                    style: TextStyle(
+                    'MessMax • $consoleSub',
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -232,7 +365,7 @@ class MessDrawer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    roleLabel,
+                    userRoleLabel,
                     style: const TextStyle(
                       fontSize: 8.5,
                       fontWeight: FontWeight.w900,
@@ -261,7 +394,7 @@ class MessDrawer extends StatelessWidget {
           letterSpacing: 1.0,
         ),
       ),
-    ); 
+    );
   }
 
   Widget _drawerTile({
@@ -274,29 +407,31 @@ class MessDrawer extends StatelessWidget {
     final isSelected = activeSection == id;
 
     return Material(
-      color: isSelected ? AppColors.brandDark.withValues(alpha: 0.08) : Colors.transparent,
+      color: isSelected
+          ? AppColors.brandDark.withValues(alpha: 0.08)
+          : Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-      onTap: () {
-        Navigator.pop(context); // Close drawer
-        if (id == 'account') {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const AccountScreen()),
-          );
-        } else if (id == 'my_ads') {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const MyAdsScreen()),
-          );
-        } else if (id == 'find_mess') {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          MainShellScope.of(context)?.selectTab(0);
-        } else if (id == 'dashboard') {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          MainShellScope.of(context)?.selectTab(0);
-        } else if (onSectionSelected != null) {
-          onSectionSelected!(id);
-        }
-      },
+        onTap: () {
+          Navigator.pop(context); // Close drawer
+          if (id == 'account') {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AccountScreen()),
+            );
+          } else if (id == 'my_ads') {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MyAdsScreen()),
+            );
+          } else if (id == 'find_mess') {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            MainShellScope.of(context)?.selectTab(0);
+          } else if (id == 'dashboard') {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            MainShellScope.of(context)?.selectTab(0);
+          } else if (onSectionSelected != null) {
+            onSectionSelected!(id);
+          }
+        },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
@@ -305,9 +440,13 @@ class MessDrawer extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.brandDark : AppColors.paperRaised,
+                  color: isSelected
+                      ? AppColors.brandDark
+                      : AppColors.paperRaised,
                   borderRadius: BorderRadius.circular(9),
-                  border: isSelected ? null : Border.all(color: AppColors.paperLine),
+                  border: isSelected
+                      ? null
+                      : Border.all(color: AppColors.paperLine),
                 ),
                 child: Icon(
                   icon,
@@ -324,7 +463,9 @@ class MessDrawer extends StatelessWidget {
                       title,
                       style: TextStyle(
                         fontSize: 13.5,
-                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                        fontWeight: isSelected
+                            ? FontWeight.w900
+                            : FontWeight.w700,
                         color: isSelected ? AppColors.brandDark : AppColors.ink,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -348,10 +489,15 @@ class MessDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerFooter(BuildContext context) {
+  Widget _buildDrawerFooter({
+    required BuildContext context,
+    required String roleSubtitle,
+  }) {
     final authState = context.watch<AuthCubit>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
-    final avatarUrl = user?.avatarUrl != null ? AppConfig.sanitizeImageUrl(user!.avatarUrl) : null;
+    final avatarUrl = user?.avatarUrl != null
+        ? AppConfig.sanitizeImageUrl(user!.avatarUrl)
+        : null;
     final userName = user?.name ?? 'Mess User';
     final userEmail = user?.email ?? 'user@messmax.com';
     final userInitials = user?.initials ?? 'M';
@@ -379,14 +525,22 @@ class MessDrawer extends StatelessWidget {
                       errorBuilder: (_, _, _) => Center(
                         child: Text(
                           userInitials,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     )
                   : Center(
                       child: Text(
                         userInitials,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
             ),
@@ -396,6 +550,19 @@ class MessDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    Text(
+                      roleSubtitle,
+                      style: const TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.brandDark,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
                 Text(
                   userName,
                   style: const TextStyle(

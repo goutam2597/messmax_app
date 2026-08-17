@@ -211,6 +211,8 @@ class MyMessModel extends Equatable {
     required this.role,
   });
 
+  bool get isManager => role.toLowerCase() == 'manager' || role.toLowerCase() == 'owner';
+
   factory MyMessModel.fromJson(Map<String, dynamic> json) {
     return MyMessModel(
       id: json['id'] as int? ?? 0,
