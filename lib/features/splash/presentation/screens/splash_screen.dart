@@ -14,7 +14,7 @@ import '../cubit/splash_state.dart';
 /// a filling progress ring around the logo, wordmark fade-up and a
 /// gentle bottom wave — then hands off to welcome.
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key}); 
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();

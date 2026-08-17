@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../ads/presentation/screens/my_ads_screen.dart';
+import '../../../bazar_schedule/presentation/screens/bazar_schedule_screen.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
@@ -426,6 +427,10 @@ class MessDrawer extends StatelessWidget {
             Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
+          } else if (id == 'bazar_schedule' || id == 'mess_bazar') {
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const BazarScheduleScreen()));
           } else if (id == 'find_mess') {
             Navigator.of(context).popUntil((route) => route.isFirst);
             MainShellScope.of(context)?.selectTab(0);
