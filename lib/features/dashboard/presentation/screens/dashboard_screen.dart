@@ -64,7 +64,11 @@ class _DashboardViewState extends State<_DashboardView> {
                     color: AppColors.brandSoft,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.apartment_rounded, color: AppColors.brandDark, size: 28),
+                  child: const Icon(
+                    Icons.apartment_rounded,
+                    color: AppColors.brandDark,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -92,7 +96,10 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.brandDark,
                     borderRadius: BorderRadius.circular(12),
@@ -112,22 +119,39 @@ class _DashboardViewState extends State<_DashboardView> {
             const SizedBox(height: 20),
             const Divider(color: AppColors.paperLine),
             const SizedBox(height: 14),
-            _modalDetailRow(Icons.map_rounded, 'Location', activeMess.location.isNotEmpty ? activeMess.location : 'Dhaka'),
+            _modalDetailRow(
+              Icons.map_rounded,
+              'Location',
+              activeMess.location.isNotEmpty ? activeMess.location : 'Dhaka',
+            ),
             const SizedBox(height: 12),
-            _modalDetailRow(Icons.group_rounded, 'Total Members', '${activeMess.membersCount} Active Members'),
+            _modalDetailRow(
+              Icons.group_rounded,
+              'Total Members',
+              '${activeMess.membersCount} Active Members',
+            ),
             const SizedBox(height: 12),
-            _modalDetailRow(Icons.event_seat_rounded, 'Open Seat Ads', '${activeMess.seatsAvailable} Seats Available'),
+            _modalDetailRow(
+              Icons.event_seat_rounded,
+              'Open Seat Ads',
+              '${activeMess.seatsAvailable} Seats Available',
+            ),
             const SizedBox(height: 12),
             _modalDetailRow(
               Icons.verified_user_rounded,
               'Manager Permissions',
-              activeMess.isManager ? 'Full Manager & Ledger Access' : 'Member View-Only Access',
+              activeMess.isManager
+                  ? 'Full Manager & Ledger Access'
+                  : 'Member View-Only Access',
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.pop(ctx),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.brandDark,
+                ),
                 child: const Text('Close'),
               ),
             ),
@@ -154,11 +178,19 @@ class _DashboardViewState extends State<_DashboardView> {
           children: [
             Text(
               label,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.inkFaded),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.inkFaded,
+              ),
             ),
             Text(
               value,
-              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+              style: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: AppColors.ink,
+              ),
             ),
           ],
         ),
@@ -188,7 +220,9 @@ class _DashboardViewState extends State<_DashboardView> {
         ),
         title: BlocBuilder<DashboardCubit, DashboardState>(
           builder: (context, state) {
-            final activeMess = state is DashboardLoaded ? state.dashboard.activeMess : null;
+            final activeMess = state is DashboardLoaded
+                ? state.dashboard.activeMess
+                : null;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -215,7 +249,11 @@ class _DashboardViewState extends State<_DashboardView> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.ink, size: 22),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppColors.ink,
+              size: 22,
+            ),
             onPressed: () => context.read<DashboardCubit>().loadDashboard(),
           ),
           const SizedBox(width: 8),
@@ -243,22 +281,34 @@ class _DashboardViewState extends State<_DashboardView> {
                           color: AppColors.accentSoft,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.wifi_off_rounded, color: AppColors.accentDark, size: 36),
+                        child: const Icon(
+                          Icons.wifi_off_rounded,
+                          color: AppColors.accentDark,
+                          size: 36,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       const Text(
                         'Unable to load dashboard',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink),
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         state.message,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 13, color: AppColors.inkFaded),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.inkFaded,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       FilledButton.icon(
-                        onPressed: () => context.read<DashboardCubit>().loadDashboard(),
+                        onPressed: () =>
+                            context.read<DashboardCubit>().loadDashboard(),
                         icon: const Icon(Icons.refresh_rounded, size: 18),
                         label: const Text('Try Again'),
                       ),
@@ -274,7 +324,8 @@ class _DashboardViewState extends State<_DashboardView> {
               if (!dashboard.hasMess) {
                 return RefreshIndicator(
                   color: AppColors.brandDark,
-                  onRefresh: () => context.read<DashboardCubit>().loadDashboard(),
+                  onRefresh: () =>
+                      context.read<DashboardCubit>().loadDashboard(),
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
@@ -287,24 +338,38 @@ class _DashboardViewState extends State<_DashboardView> {
                               color: AppColors.brandSoft,
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            child: const Icon(Icons.apartment_rounded, color: AppColors.brandDark, size: 48),
+                            child: const Icon(
+                              Icons.apartment_rounded,
+                              color: AppColors.brandDark,
+                              size: 48,
+                            ),
                           ),
                           const SizedBox(height: 20),
                           const Text(
                             'No Mess Joined Yet',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.ink),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.ink,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           const Text(
                             'Create your first mess or ask your manager for an invite link to start tracking daily meals and expenses.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 13, color: AppColors.inkFaded, height: 1.4),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.inkFaded,
+                              height: 1.4,
+                            ),
                           ),
                           const SizedBox(height: 24),
                           FilledButton.icon(
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Create Mess coming soon')),
+                                const SnackBar(
+                                  content: Text('Create Mess coming soon'),
+                                ),
                               );
                             },
                             icon: const Icon(Icons.add_rounded, size: 20),
@@ -324,57 +389,79 @@ class _DashboardViewState extends State<_DashboardView> {
 
               return RefreshIndicator(
                 color: AppColors.brandDark,
-                onRefresh: () => context.read<DashboardCubit>().loadDashboard(),
+                onRefresh: () =>
+                    context.read<DashboardCubit>().loadDashboard(),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // --- 1. HEADER OVERVIEW BANNER CARD (Clean White) ---
+                      // --- 1. OVERVIEW BANNER CARD ---
                       _buildOverviewBannerCard(context, summary, activeMess),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 20),
 
                       // --- 2. MAIN LEDGER 4-GRID STATS ---
-                      _buildSectionTitle('MONTHLY LEDGER STATS'),
+                      _buildSectionHeader(
+                        Icons.insights_rounded,
+                        'MONTHLY LEDGER STATS',
+                      ),
                       const SizedBox(height: 10),
                       _buildLedgerGrid(stats),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 22),
 
                       // --- 3. PENDING REQUESTS ALERT & DETAILED LIST ---
                       if (pending.total > 0) ...[
                         _buildPendingApprovalBanner(pending),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                       ],
 
                       if (dashboard.pendingItems.isNotEmpty) ...[
-                        _buildSectionTitle('PENDING MEAL & GUEST REQUESTS'),
+                        _buildSectionHeader(
+                          Icons.pending_actions_rounded,
+                          'PENDING MEAL & GUEST REQUESTS',
+                          iconColor: AppColors.accentDark,
+                        ),
                         const SizedBox(height: 10),
                         _buildPendingItemsCard(dashboard.pendingItems),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 22),
                       ],
 
-                      // --- 4. BAZAR DUTY SCHEDULE LIST ---
+                      // --- 4. BAZAR SHOPPING DUTY SCHEDULE LIST ---
                       if (dashboard.bazarDuties.isNotEmpty) ...[
-                        _buildSectionTitle('BAZAR SHOPPING DUTY SCHEDULE'),
+                        _buildSectionHeader(
+                          Icons.shopping_basket_outlined,
+                          'BAZAR SHOPPING DUTY SCHEDULE',
+                          iconColor: const Color(0xFF0F9F59),
+                        ),
                         const SizedBox(height: 10),
                         _buildBazarDutyCard(dashboard.bazarDuties),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 22),
                       ],
 
                       // --- 5. TODAY'S MEAL SHEET TEASER ---
                       if (dashboard.dailySheetTeaser.isNotEmpty) ...[
-                        _buildSectionTitle('TODAY\'S MEAL SHEET TEASER'),
+                        _buildSectionHeader(
+                          Icons.calendar_view_day_rounded,
+                          'TODAY\'S MEAL SHEET TEASER',
+                        ),
                         const SizedBox(height: 10),
                         _buildDailyMealSheetCard(dashboard.dailySheetTeaser),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 22),
                       ],
 
                       // --- 6. YOUR MANAGED & MEMBER MESSES GRID ---
                       if (dashboard.myMesses.isNotEmpty) ...[
-                        _buildSectionTitle('YOUR MANAGED & MEMBER MESSES (${dashboard.myMesses.length})'),
+                        _buildSectionHeader(
+                          Icons.apartment_rounded,
+                          'YOUR MANAGED & MEMBER MESSES (${dashboard.myMesses.length})',
+                        ),
                         const SizedBox(height: 10),
-                        _buildMyMessesGrid(context, dashboard.myMesses, activeMess),
+                        _buildMyMessesGrid(
+                          context,
+                          dashboard.myMesses,
+                          activeMess,
+                        ),
                       ],
                     ],
                   ),
@@ -389,15 +476,32 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 11.5,
-        fontWeight: FontWeight.w900,
-        color: AppColors.inkFaded,
-        letterSpacing: 0.8,
-      ),
+  Widget _buildSectionHeader(
+    IconData icon,
+    String title, {
+    Color iconColor = AppColors.brandDark,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 15, color: iconColor),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w900,
+            color: AppColors.inkFaded,
+            letterSpacing: 0.8,
+          ),
+        ),
+      ],
     );
   }
 
@@ -408,7 +512,9 @@ class _DashboardViewState extends State<_DashboardView> {
     ActiveMessModel? activeMess,
   ) {
     return InkWell(
-      onTap: activeMess != null ? () => _showMessDetailsModal(context, activeMess) : null,
+      onTap: activeMess != null
+          ? () => _showMessDetailsModal(context, activeMess)
+          : null,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.all(18),
@@ -424,117 +530,122 @@ class _DashboardViewState extends State<_DashboardView> {
             ),
           ],
         ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.dashboard_outlined,
+                    color: AppColors.brandDark,
+                    size: 24,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.dashboard_outlined,
-                  color: AppColors.brandDark,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'Mess Console',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.ink,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.brandSoft,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: AppColors.brandDark.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: const Text(
-                            'ACTIVE LEDGER',
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'Mess Console',
                             style: TextStyle(
-                              fontSize: 9.5,
+                              fontSize: 17,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.brandDark,
+                              color: AppColors.ink,
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: AppColors.brandDark.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              'ACTIVE LEDGER',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.brandDark,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Daily meals, bazar roster & instant settlements',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.inkFaded,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Daily meals, bazar roster & instant settlements',
-                      style: TextStyle(fontSize: 11.5, color: AppColors.inkFaded),
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Divider(height: 1, color: AppColors.paperLine),
-          const SizedBox(height: 14),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(height: 1, color: AppColors.paperLine),
+            const SizedBox(height: 14),
 
-          // 4-Grid Mini Summary Stats
-          Row(
-            children: [
-              Expanded(
-                child: _miniSummaryChip(
-                  label: 'MESSES',
-                  val: '${summary.totalMesses}',
-                  sub: '(${summary.ownedMesses} owned)',
+            // 4-Grid Mini Summary Stats
+            Row(
+              children: [
+                Expanded(
+                  child: _miniSummaryChip(
+                    label: 'MESSES',
+                    val: '${summary.totalMesses}',
+                    sub: '(${summary.ownedMesses} owned)',
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _miniSummaryChip(
-                  label: 'MEMBERS',
-                  val: '${summary.totalMembers}',
-                  sub: 'Active',
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _miniSummaryChip(
+                    label: 'MEMBERS',
+                    val: '${summary.totalMembers}',
+                    sub: 'Active',
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _miniSummaryChip(
-                  label: 'CURRENT BAZAR',
-                  val: '৳${summary.currentBazar.toInt()}',
-                  sub: 'Spent',
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _miniSummaryChip(
+                    label: 'CURRENT BAZAR',
+                    val: '৳${summary.currentBazar.toInt()}',
+                    sub: 'Spent',
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _miniSummaryChip(
-                  label: 'MEALS',
-                  val: '${summary.currentMeals.toInt()}',
-                  sub: 'Total',
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _miniSummaryChip(
+                    label: 'MEALS',
+                    val: '${summary.currentMeals.toInt()}',
+                    sub: 'Total',
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _miniSummaryChip({
     required String label,
@@ -744,7 +855,7 @@ class _DashboardViewState extends State<_DashboardView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${pending.total} Pending Requests',
+                  '${pending.total} Pending Requests Awaiting Review',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
@@ -753,7 +864,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${pending.mealOffCount} Meal Off & ${pending.guestCount} Guest requests awaiting review',
+                  '${pending.mealOffCount} Meal Off & ${pending.guestCount} Guest requests awaiting manager approval',
                   style: const TextStyle(
                     fontSize: 11.5,
                     color: AppColors.inkFaded,
@@ -831,7 +942,9 @@ class _DashboardViewState extends State<_DashboardView> {
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.accentDark,
+                      color: items[i].type == 'guest_meal'
+                          ? AppColors.brandDark
+                          : const Color(0xFFA02626),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -1024,7 +1137,10 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
                 Text(
                   item.room,
-                  style: const TextStyle(fontSize: 11, color: AppColors.inkFaded),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.inkFaded,
+                  ),
                 ),
               ],
             ),

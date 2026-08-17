@@ -14,7 +14,7 @@ import '../cubit/splash_state.dart';
 /// a filling progress ring around the logo, wordmark fade-up and a
 /// gentle bottom wave — then hands off to welcome.
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({super.key}); 
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -85,15 +85,13 @@ class _SplashScreenState extends State<SplashScreen>
         curve: const Interval(0.4, 0.75, curve: Curves.easeOut),
       ),
     );
-    _wordSlide = Tween<Offset>(
-      begin: const Offset(0, 0.35),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 0.75, curve: Curves.easeOutCubic),
-      ),
-    );
+    _wordSlide = Tween<Offset>(begin: const Offset(0, 0.35), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.4, 0.75, curve: Curves.easeOutCubic),
+          ),
+        );
 
     context.read<SplashCubit>().start();
   }
@@ -183,11 +181,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 return Stack(
                                   alignment: Alignment.center,
                                   children: [
-                                    for (
-                                      var i = 0;
-                                      i < _orbitIcons.length;
-                                      i++
-                                    )
+                                    for (var i = 0; i < _orbitIcons.length; i++)
                                       _buildOrbitIcon(i),
                                   ],
                                 );
@@ -246,8 +240,9 @@ class _SplashScreenState extends State<SplashScreen>
                                   borderRadius: BorderRadius.circular(26),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.brand
-                                          .withValues(alpha: 0.5),
+                                      color: AppColors.brand.withValues(
+                                        alpha: 0.5,
+                                      ),
                                       blurRadius: 44,
                                       spreadRadius: 2,
                                     ),
@@ -407,23 +402,25 @@ class _MeshGlowPainter extends CustomPainter {
     );
 
     final paint1 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          AppColors.brand.withValues(alpha: 0.14),
-          AppColors.brand.withValues(alpha: 0),
-        ],
-      ).createShader(
-        Rect.fromCircle(center: center1, radius: size.width * 0.55),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              AppColors.brand.withValues(alpha: 0.14),
+              AppColors.brand.withValues(alpha: 0),
+            ],
+          ).createShader(
+            Rect.fromCircle(center: center1, radius: size.width * 0.55),
+          );
     final paint2 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          AppColors.brandDeep.withValues(alpha: 0.22),
-          AppColors.brandDeep.withValues(alpha: 0),
-        ],
-      ).createShader(
-        Rect.fromCircle(center: center2, radius: size.width * 0.5),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              AppColors.brandDeep.withValues(alpha: 0.22),
+              AppColors.brandDeep.withValues(alpha: 0),
+            ],
+          ).createShader(
+            Rect.fromCircle(center: center2, radius: size.width * 0.5),
+          );
 
     canvas.drawCircle(center1, size.width * 0.55, paint1);
     canvas.drawCircle(center2, size.width * 0.5, paint2);
@@ -511,7 +508,8 @@ class _WavePainter extends CustomPainter {
     const step = 12.0;
     for (var x = 0.0; x <= size.width; x += step) {
       final y =
-          baseHeight + math.sin((x / size.width * 2 * math.pi) + phase) * amplitude;
+          baseHeight +
+          math.sin((x / size.width * 2 * math.pi) + phase) * amplitude;
       path.lineTo(x, y);
     }
     path
@@ -523,8 +521,7 @@ class _WavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _WavePainter oldDelegate) =>
-      oldDelegate.t != t;
+  bool shouldRepaint(covariant _WavePainter oldDelegate) => oldDelegate.t != t;
 }
 
 /// Three dots that breathe in sequence while boot work runs.
