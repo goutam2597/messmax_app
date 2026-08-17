@@ -4,6 +4,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../profile/presentation/screens/account_screen.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
 
@@ -274,12 +275,16 @@ class MessDrawer extends StatelessWidget {
       color: isSelected ? AppColors.brandDark.withValues(alpha: 0.08) : Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: () {
-          Navigator.pop(context); // Close drawer
-          if (onSectionSelected != null) {
-            onSectionSelected!(id);
-          }
-        },
+      onTap: () {
+        Navigator.pop(context); // Close drawer
+        if (id == 'account') {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const AccountScreen()),
+          );
+        } else if (onSectionSelected != null) {
+          onSectionSelected!(id);
+        }
+      },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),

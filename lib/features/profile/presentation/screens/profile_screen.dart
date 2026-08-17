@@ -8,6 +8,7 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
+import 'account_screen.dart';
 import 'package:messmax_app/features/main/presentation/screens/main_shell_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -50,7 +51,7 @@ class ProfileScreen extends StatelessWidget {
                     _quickActions(context),
                     const SizedBox(height: 24),
                     _sectionTitle('ACCOUNT & SETTINGS'),
-                    _menuGroup([
+                    _menuGroup(context, [
                       (
                         icon: Icons.person_outline_rounded,
                         title: 'Personal Information',
@@ -64,7 +65,7 @@ class ProfileScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 20),
                     _sectionTitle('MESS MANAGEMENT'),
-                    _menuGroup([
+                    _menuGroup(context, [
                       (
                         icon: Icons.storefront_rounded,
                         title: 'My Posted Seat Listings',
@@ -78,7 +79,7 @@ class ProfileScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 20),
                     _sectionTitle('HELP & LEGAL'),
-                    _menuGroup([
+                    _menuGroup(context, [
                       (
                         icon: Icons.help_outline_rounded,
                         title: 'Help Center & Support',
@@ -546,7 +547,7 @@ class ProfileScreen extends StatelessWidget {
         ),
       );
 
-  Widget _menuGroup(List<({IconData icon, String title, String subtitle})> items) => Material(
+  Widget _menuGroup(BuildContext context, List<({IconData icon, String title, String subtitle})> items) => Material(
         color: AppColors.paperRaised,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -557,14 +558,24 @@ class ProfileScreen extends StatelessWidget {
           children: [
             for (var i = 0; i < items.length; i++) ...[
               if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
-              _menuRow(items[i]),
+              _menuRow(context, items[i]),
             ],
           ],
         ),
       );
 
-  Widget _menuRow(({IconData icon, String title, String subtitle}) item) => ListTile(
-        onTap: () {},
+  Widget _menuRow(BuildContext context, ({IconData icon, String title, String subtitle}) item) => ListTile(
+        onTap: () {
+          if (item.title == 'Personal Information') {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AccountScreen()),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${item.title} — coming soon')),
+            );
+          }
+        },
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         tileColor: AppColors.paperRaised,
         leading: Container(

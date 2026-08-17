@@ -16,4 +16,6 @@ class ApiEndpoints {
   static const String authLogout = '/v1/auth/logout';
   static const String me = '/v1/me';
   static const String dashboard = '/v1/dashboard';
+  static const String account = '/v1/account';
+  static const String accountPassword = '/v1/account/password';
 }
