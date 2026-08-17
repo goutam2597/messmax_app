@@ -375,16 +375,11 @@ class BlogDetailScreen extends StatelessWidget {
   Widget _buildSummaryQuoteCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
         borderRadius: BorderRadius.circular(16),
-        border: const Border(
-          left: BorderSide(color: AppColors.brandDark, width: 4),
-          top: BorderSide(color: AppColors.paperLine),
-          right: BorderSide(color: AppColors.paperLine),
-          bottom: BorderSide(color: AppColors.paperLine),
-        ),
+        border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -393,36 +388,49 @@ class BlogDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            children: const [
-              Icon(
-                Icons.format_quote_rounded,
-                color: AppColors.brandDark,
-                size: 22,
-              ),
-              SizedBox(width: 6),
-              Text(
-                'ARTICLE SUMMARY',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.brandDark,
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ],
+          Positioned(
+            top: 0,
+            bottom: 0,
+            left: 0,
+            child: Container(width: 4, color: AppColors.brandDark),
           ),
-          const SizedBox(height: 8),
-          Text(
-            blog.summary,
-            style: const TextStyle(
-              fontSize: 14.5,
-              fontWeight: FontWeight.w700,
-              color: AppColors.ink,
-              height: 1.5,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.format_quote_rounded,
+                      color: AppColors.brandDark,
+                      size: 22,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      'ARTICLE SUMMARY',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.brandDark,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  blog.summary,
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

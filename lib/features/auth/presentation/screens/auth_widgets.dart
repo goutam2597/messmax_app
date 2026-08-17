@@ -83,34 +83,39 @@ class AuthErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: const Color(0xFFFDF2F2),
-        border: const Border(
-          left: BorderSide(color: Color(0xFFA02626), width: 4),
-          top: BorderSide(color: Color(0xFFF8D7D7)),
-          right: BorderSide(color: Color(0xFFF8D7D7)),
-          bottom: BorderSide(color: Color(0xFFF8D7D7)),
-        ),
-        borderRadius: const BorderRadius.only(
-          topRight: Radius.circular(12),
-          bottomRight: Radius.circular(12),
-        ),
+        border: Border.all(color: const Color(0xFFF8D7D7)),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          const Icon(Icons.error_outline_rounded, size: 18, color: Color(0xFFA02626)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF852222),
-                height: 1.35,
-              ),
+          Positioned(
+            top: 0,
+            bottom: 0,
+            left: 0,
+            child: Container(width: 4, color: const Color(0xFFA02626)),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 11, 14, 11),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.error_outline_rounded, size: 18, color: Color(0xFFA02626)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF852222),
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
