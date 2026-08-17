@@ -25,6 +25,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
   final _areaController = TextEditingController();
   final _locationController = TextEditingController();
   final _rentController = TextEditingController();
+  final _totalRentController = TextEditingController();
   final _seatsController = TextEditingController();
   final _capacityController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -90,6 +91,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
       _areaController.text = ad.area ?? '';
       _locationController.text = ad.location ?? '';
       _rentController.text = ad.rentPerSeat.toInt().toString();
+      _totalRentController.text = ad.rentTotal != null ? ad.rentTotal!.toInt().toString() : '';
       _seatsController.text = ad.seatsAvailable.toString();
       _capacityController.text = ad.roomCapacity?.toString() ?? '3';
       _descriptionController.text = ad.description ?? '';
@@ -118,6 +120,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
     _areaController.dispose();
     _locationController.dispose();
     _rentController.dispose();
+    _totalRentController.dispose();
     _seatsController.dispose();
     _capacityController.dispose();
     _descriptionController.dispose();
@@ -199,13 +202,19 @@ class _AdFormScreenState extends State<AdFormScreen> {
       return;
     }
 
+    final totalRentStr = _totalRentController.text.trim();
+    final totalRent = double.tryParse(totalRentStr);
+    final capacity = int.tryParse(_capacityController.text.trim());
+
     setState(() => _isSubmitting = true);
     try {
       await _repository.saveAd(
         id: widget.ad?.id,
         title: title,
         rentPerSeat: rent,
+        rentTotal: totalRent,
         seatsAvailable: seats,
+        roomCapacity: capacity,
         roomType: _roomType,
         city: _cityController.text.trim(),
         area: _areaController.text.trim(),
@@ -662,6 +671,32 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  _fieldLabel('TOTAL ROOM RENT (৳)'),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: _totalRentController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      hintText: 'e.g. 10500',
+                                      prefixIcon: Icon(
+                                        Icons.price_change_outlined,
+                                        size: 20,
+                                        color: AppColors.inkFaded,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   _fieldLabel('OPEN SEATS *'),
                                   const SizedBox(height: 6),
                                   TextField(
@@ -671,6 +706,28 @@ class _AdFormScreenState extends State<AdFormScreen> {
                                       hintText: 'e.g. 2',
                                       prefixIcon: Icon(
                                         Icons.event_seat_outlined,
+                                        size: 20,
+                                        color: AppColors.inkFaded,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _fieldLabel('ROOM CAPACITY'),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: _capacityController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      hintText: 'e.g. 3 persons',
+                                      prefixIcon: Icon(
+                                        Icons.groups_outlined,
                                         size: 20,
                                         color: AppColors.inkFaded,
                                       ),
