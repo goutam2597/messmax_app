@@ -178,8 +178,9 @@ class _DashboardViewState extends State<_DashboardView> {
         },
       ),
       appBar: AppBar(
-        backgroundColor: AppColors.paper,
+        backgroundColor: AppColors.paperRaised,
         elevation: 0,
+        scrolledUnderElevation: 0.5,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: IconButton(
           icon: const Icon(Icons.menu_rounded, color: AppColors.ink, size: 24),
@@ -192,7 +193,7 @@ class _DashboardViewState extends State<_DashboardView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activeMess?.name ?? 'Green View Hostel',
+                  activeMess?.name ?? 'MessMax Console',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
@@ -201,7 +202,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  'Manager Dashboard • ${activeMess?.code ?? "#MX-8921"}',
+                  'Manager Console • ${activeMess?.code ?? "#MX-8921"}',
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.inkFaded,
@@ -238,7 +239,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.accentSoft,
                           shape: BoxShape.circle,
                         ),
@@ -317,6 +318,7 @@ class _DashboardViewState extends State<_DashboardView> {
               }
 
               final activeMess = dashboard.activeMess;
+              final summary = dashboard.summaryStats;
               final stats = dashboard.ledgerStats;
               final pending = dashboard.pendingRequests;
 
@@ -325,24 +327,54 @@ class _DashboardViewState extends State<_DashboardView> {
                 onRefresh: () => context.read<DashboardCubit>().loadDashboard(),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildMessBannerCard(context, activeMess),
+                      // --- 1. HEADER OVERVIEW BANNER CARD (Clean White) ---
+                      _buildOverviewBannerCard(context, summary, activeMess),
                       const SizedBox(height: 18),
+
+                      // --- 2. MAIN LEDGER 4-GRID STATS ---
                       _buildSectionTitle('MONTHLY LEDGER STATS'),
                       const SizedBox(height: 10),
                       _buildLedgerGrid(stats),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 20),
+
+                      // --- 3. PENDING REQUESTS ALERT & DETAILED LIST ---
                       if (pending.total > 0) ...[
-                        _buildPendingApprovalCard(context, pending),
+                        _buildPendingApprovalBanner(pending),
+                        const SizedBox(height: 12),
+                      ],
+
+                      if (dashboard.pendingItems.isNotEmpty) ...[
+                        _buildSectionTitle('PENDING MEAL & GUEST REQUESTS'),
+                        const SizedBox(height: 10),
+                        _buildPendingItemsCard(dashboard.pendingItems),
                         const SizedBox(height: 20),
                       ],
+
+                      // --- 4. BAZAR DUTY SCHEDULE LIST ---
+                      if (dashboard.bazarDuties.isNotEmpty) ...[
+                        _buildSectionTitle('BAZAR SHOPPING DUTY SCHEDULE'),
+                        const SizedBox(height: 10),
+                        _buildBazarDutyCard(dashboard.bazarDuties),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // --- 5. TODAY'S MEAL SHEET TEASER ---
                       if (dashboard.dailySheetTeaser.isNotEmpty) ...[
                         _buildSectionTitle('TODAY\'S MEAL SHEET TEASER'),
                         const SizedBox(height: 10),
                         _buildDailyMealSheetCard(dashboard.dailySheetTeaser),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // --- 6. YOUR MANAGED & MEMBER MESSES GRID ---
+                      if (dashboard.myMesses.isNotEmpty) ...[
+                        _buildSectionTitle('YOUR MANAGED & MEMBER MESSES (${dashboard.myMesses.length})'),
+                        const SizedBox(height: 10),
+                        _buildMyMessesGrid(context, dashboard.myMesses, activeMess),
                       ],
                     ],
                   ),
@@ -369,100 +401,193 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildMessBannerCard(BuildContext context, ActiveMessModel? activeMess) {
-    final messName = activeMess?.name ?? 'My Mess';
-    final messCode = activeMess?.code ?? '#MX-0000';
-    final location = activeMess?.location.isNotEmpty == true ? activeMess!.location : 'Dhaka';
-    final membersCount = activeMess?.membersCount ?? 1;
-    final seatsAvailable = activeMess?.seatsAvailable ?? 0;
-
+  // --- 1. OVERVIEW BANNER CARD ---
+  Widget _buildOverviewBannerCard(
+    BuildContext context,
+    SummaryStatsModel summary,
+    ActiveMessModel? activeMess,
+  ) {
     return InkWell(
       onTap: activeMess != null ? () => _showMessDetailsModal(context, activeMess) : null,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.brandDark, AppColors.brandDeep],
-          ),
+          color: AppColors.paperRaised,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.paperLine),
           boxShadow: [
             BoxShadow(
-              color: AppColors.brandDark.withValues(alpha: 0.25),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                  ),
-                  child: const Icon(Icons.apartment_rounded, color: Colors.white, size: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.brandSoft,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        messName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
+                child: const Icon(
+                  Icons.dashboard_outlined,
+                  color: AppColors.brandDark,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          'Mess Console',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.ink,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '$location • Code: $messCode',
-                        style: const TextStyle(fontSize: 12, color: Colors.white70),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandSoft,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: AppColors.brandDark.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: const Text(
+                            'ACTIVE LEDGER',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.brandDark,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Daily meals, bazar roster & instant settlements',
+                      style: TextStyle(fontSize: 11.5, color: AppColors.inkFaded),
+                    ),
+                  ],
                 ),
-                const Icon(
-                  Icons.info_outline_rounded,
-                  color: Colors.white70,
-                  size: 20,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(height: 1, color: AppColors.paperLine),
+          const SizedBox(height: 14),
+
+          // 4-Grid Mini Summary Stats
+          Row(
+            children: [
+              Expanded(
+                child: _miniSummaryChip(
+                  label: 'MESSES',
+                  val: '${summary.totalMesses}',
+                  sub: '(${summary.ownedMesses} owned)',
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _BannerMiniStat(label: 'MEMBERS', value: '$membersCount Active'),
-                  const _BannerDivider(),
-                  _BannerMiniStat(label: 'OPEN SEATS', value: '$seatsAvailable Seats'),
-                  const _BannerDivider(),
-                  const _BannerMiniStat(label: 'STATUS', value: 'Active Month', isHighlight: true),
-                ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: _miniSummaryChip(
+                  label: 'MEMBERS',
+                  val: '${summary.totalMembers}',
+                  sub: 'Active',
+                ),
               ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _miniSummaryChip(
+                  label: 'CURRENT BAZAR',
+                  val: '৳${summary.currentBazar.toInt()}',
+                  sub: 'Spent',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _miniSummaryChip(
+                  label: 'MEALS',
+                  val: '${summary.currentMeals.toInt()}',
+                  sub: 'Total',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+  Widget _miniSummaryChip({
+    required String label,
+    required String val,
+    required String sub,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.paper,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.paperLine),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w900,
+              color: AppColors.inkFaded,
             ),
-          ],
-        ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            val,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            sub,
+            style: const TextStyle(
+              fontSize: 9.5,
+              color: AppColors.inkFaded,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
 
+  // --- 2. LEDGER GRID STATS ---
   Widget _buildLedgerGrid(LedgerStatsModel stats) {
     final totalMeals = stats.totalMeals.toInt();
     final totalBazar = stats.totalBazar.toInt();
@@ -590,7 +715,8 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildPendingApprovalCard(BuildContext context, PendingRequestsModel pending) {
+  // --- 3. PENDING REQUESTS ALERT BANNER ---
+  Widget _buildPendingApprovalBanner(PendingRequestsModel pending) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -636,27 +762,188 @@ class _DashboardViewState extends State<_DashboardView> {
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          FilledButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Opening Meal Off Requests review')),
-              );
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.accentDark,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Review', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
-          ),
         ],
       ),
     );
   }
 
+  Widget _buildPendingItemsCard(List<PendingItemModel> items) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.paperRaised,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.paperLine),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < items.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: items[i].type == 'guest_meal'
+                          ? AppColors.brandSoft
+                          : const Color(0xFFFDF2F2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      items[i].type == 'guest_meal'
+                          ? Icons.person_add_outlined
+                          : Icons.event_busy_outlined,
+                      size: 20,
+                      color: items[i].type == 'guest_meal'
+                          ? AppColors.brandDark
+                          : const Color(0xFFA02626),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          items[i].title,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          items[i].subtitle,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentDark,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      items[i].status.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // --- 4. BAZAR DUTY SCHEDULE LIST CARD ---
+  Widget _buildBazarDutyCard(List<BazarDutyItemModel> duties) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.paperRaised,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.paperLine),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < duties.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: duties[i].isToday
+                          ? const Color(0xFFE6F4EA)
+                          : AppColors.paper,
+                      borderRadius: BorderRadius.circular(10),
+                      border: duties[i].isToday
+                          ? null
+                          : Border.all(color: AppColors.paperLine),
+                    ),
+                    child: Icon(
+                      Icons.shopping_basket_outlined,
+                      size: 20,
+                      color: duties[i].isToday
+                          ? const Color(0xFF0F9F59)
+                          : AppColors.inkSoft,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          duties[i].memberName,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${duties[i].messName} • Day ${duties[i].day}',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: duties[i].isToday
+                          ? const Color(0xFF0F9F59)
+                          : AppColors.paperLine,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      duties[i].dateLabel,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: duties[i].isToday
+                            ? Colors.white
+                            : AppColors.inkSoft,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // --- 5. TODAY'S MEAL SHEET TEASER CARD ---
   Widget _buildDailyMealSheetCard(List<DailyMemberMealModel> teaser) {
     return Container(
       decoration: BoxDecoration(
@@ -678,20 +965,33 @@ class _DashboardViewState extends State<_DashboardView> {
             decoration: const BoxDecoration(
               border: Border(bottom: BorderSide(color: AppColors.paperLine)),
             ),
-            child: Row(
+            child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Text(
                   'MEMBER NAME',
-                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: AppColors.inkFaded),
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.inkFaded,
+                  ),
                 ),
                 Text(
                   'B  /  L  /  D',
-                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: AppColors.inkFaded, letterSpacing: 1),
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.inkFaded,
+                    letterSpacing: 1,
+                  ),
                 ),
                 Text(
                   'TOTAL',
-                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: AppColors.inkFaded),
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.inkFaded,
+                  ),
                 ),
               ],
             ),
@@ -716,7 +1016,11 @@ class _DashboardViewState extends State<_DashboardView> {
               children: [
                 Text(
                   item.name,
-                  style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
                 ),
                 Text(
                   item.room,
@@ -727,30 +1031,23 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
           Row(
             children: [
-              _mealPill('B', item.b == 1),
-              const SizedBox(width: 4),
-              _mealPill('L', item.l == 1, isOff: item.isLunchOff),
-              const SizedBox(width: 4),
-              _mealPill('D', item.d == 1),
+              _mealPill(item.b),
+              const SizedBox(width: 6),
+              _mealPill(item.l),
+              const SizedBox(width: 6),
+              _mealPill(item.d),
             ],
           ),
-          const SizedBox(width: 24),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: item.isAllOff
-                  ? AppColors.paper
-                  : (item.total >= 3 ? const Color(0xFFE6F4EA) : AppColors.brandSoft),
-              borderRadius: BorderRadius.circular(10),
-            ),
+          const SizedBox(width: 20),
+          SizedBox(
+            width: 32,
             child: Text(
-              item.isAllOff ? 'OFF' : '${item.total.toInt()} Meals',
-              style: TextStyle(
-                fontSize: 11.5,
+              item.total.toStringAsFixed(1),
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
-                color: item.isAllOff
-                    ? AppColors.inkFaded
-                    : (item.total >= 3 ? const Color(0xFF137333) : AppColors.brandDark),
+                color: AppColors.brandDark,
               ),
             ),
           ),
@@ -759,83 +1056,220 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _mealPill(String label, bool isOn, {bool isOff = false}) {
+  Widget _mealPill(int val) {
     return Container(
       width: 22,
       height: 22,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isOn
-            ? const Color(0xFF137333)
-            : (isOff ? AppColors.accent.withValues(alpha: 0.15) : AppColors.paper),
+        color: val > 0 ? AppColors.brandSoft : AppColors.paper,
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isOn
-              ? const Color(0xFF137333)
-              : (isOff ? AppColors.accent : AppColors.paperLine),
+          color: val > 0 ? AppColors.brandDark : AppColors.paperLine,
         ),
       ),
-      child: Center(
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w900,
-            color: isOn ? Colors.white : (isOff ? AppColors.accentDark : AppColors.inkFaded),
-          ),
+      child: Text(
+        '$val',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: val > 0 ? AppColors.brandDark : AppColors.inkFaded,
         ),
       ),
     );
   }
-}
 
-class _BannerMiniStat extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool isHighlight;
-
-  const _BannerMiniStat({
-    required this.label,
-    required this.value,
-    this.isHighlight = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  // --- 6. YOUR MANAGED & MEMBER MESSES GRID ---
+  Widget _buildMyMessesGrid(
+    BuildContext context,
+    List<MyMessModel> messes,
+    ActiveMessModel? activeMess,
+  ) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 8.5,
-            fontWeight: FontWeight.w800,
-            color: Colors.white.withValues(alpha: 0.6),
-            letterSpacing: 0.8,
+        for (int i = 0; i < messes.length; i++) ...[
+          if (i > 0) const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.paperRaised,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: messes[i].id == activeMess?.id
+                    ? AppColors.brandDark
+                    : AppColors.paperLine,
+                width: messes[i].id == activeMess?.id ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'NO. ${strPad(i + 1)}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.inkFaded,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.paper,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.paperLine),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.people_outline_rounded,
+                            size: 13,
+                            color: AppColors.inkSoft,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${messes[i].membersCount} Members',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.inkSoft,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        messes[i].name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: messes[i].isManager
+                            ? AppColors.brandDark
+                            : AppColors.paperLine,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        messes[i].roleLabel.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                          color: messes[i].isManager
+                              ? Colors.white
+                              : AppColors.inkSoft,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (messes[i].location.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: AppColors.brandDark,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        messes[i].location,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (messes[i].activeMonthLabel != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.paper,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.paperLine),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Active Month',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.inkFaded,
+                              ),
+                            ),
+                            Text(
+                              messes[i].activeMonthLabel!,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.ink,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              'Bazar / Meals',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.inkFaded,
+                              ),
+                            ),
+                            Text(
+                              '৳${messes[i].activeMonthBazar.toInt()} • ${messes[i].activeMonthMeals.toInt()} meals',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.brandDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            color: isHighlight ? const Color(0xFFFFD700) : Colors.white,
-          ),
-        ),
+        ],
       ],
     );
   }
-}
 
-class _BannerDivider extends StatelessWidget {
-  const _BannerDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 24,
-      color: Colors.white.withValues(alpha: 0.15),
-    );
+  String strPad(int val) {
+    return val < 10 ? '0$val' : '$val';
   }
 }

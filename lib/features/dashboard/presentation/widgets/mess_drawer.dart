@@ -26,12 +26,15 @@ class MessDrawer extends StatelessWidget {
     final dashboardState = context.watch<DashboardCubit>().state;
 
     final user = authState is AuthAuthenticated ? authState.user : null;
-    final dashboard = dashboardState is DashboardLoaded ? dashboardState.dashboard : null;
+    final dashboard = dashboardState is DashboardLoaded
+        ? dashboardState.dashboard
+        : null;
     final activeMess = dashboard?.activeMess;
     final myMesses = dashboard?.myMesses ?? [];
 
     final isIndividual = user?.isIndividual ?? true;
-    final managesAny = (user?.isHostelOwner ?? false) ||
+    final managesAny =
+        (user?.isHostelOwner ?? false) ||
         (activeMess?.isManager ?? false) ||
         myMesses.any((m) => m.isManager);
     final isMemberOnly = !isIndividual && !managesAny;
@@ -102,7 +105,6 @@ class MessDrawer extends StatelessWidget {
                     context: context,
                   ),
                 ]
-
                 // --- CASE 2: HOSTEL OWNER / MANAGER ---
                 else if (managesAny) ...[
                   _drawerTile(
@@ -171,7 +173,6 @@ class MessDrawer extends StatelessWidget {
                     context: context,
                   ),
                 ]
-
                 // --- CASE 3: MEMBER-ONLY ---
                 else ...[
                   _drawerTile(
@@ -359,7 +360,10 @@ class MessDrawer extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.brand,
                     borderRadius: BorderRadius.circular(6),
@@ -415,13 +419,13 @@ class MessDrawer extends StatelessWidget {
         onTap: () {
           Navigator.pop(context); // Close drawer
           if (id == 'account') {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AccountScreen()),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
           } else if (id == 'my_ads') {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MyAdsScreen()),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
           } else if (id == 'find_mess') {
             Navigator.of(context).popUntil((route) => route.isFirst);
             MainShellScope.of(context)?.selectTab(0);
