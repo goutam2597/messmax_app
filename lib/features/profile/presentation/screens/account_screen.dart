@@ -25,7 +25,6 @@ class _AccountScreenState extends State<AccountScreen> {
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  String _accountType = 'individual';
 
   final _currentPassController = TextEditingController();
   final _newPassController = TextEditingController();
@@ -58,7 +57,6 @@ class _AccountScreenState extends State<AccountScreen> {
         _accountData = res;
         _nameController.text = res.user.name;
         _emailController.text = res.user.email;
-        _accountType = res.user.accountType;
         _isLoading = false;
       });
     } catch (_) {
@@ -88,7 +86,6 @@ class _AccountScreenState extends State<AccountScreen> {
       await _repository.updateProfile(
         name: name,
         email: email,
-        accountType: _accountType,
       );
       if (!mounted) return;
 
@@ -412,37 +409,6 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'ACCOUNT TYPE',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkSoft,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _typeTile(
-                  title: 'Individual',
-                  subtitle: 'Single mess',
-                  selected: _accountType == 'individual',
-                  onTap: () => setState(() => _accountType = 'individual'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _typeTile(
-                  title: 'Hostel Owner',
-                  subtitle: 'Multi mess',
-                  selected: _accountType == 'hostel_owner',
-                  onTap: () => setState(() => _accountType = 'hostel_owner'),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
@@ -461,47 +427,6 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _typeTile({
-    required String title,
-    required String subtitle,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFFFFF8F2) : AppColors.paper,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? AppColors.brandDark : AppColors.paperLine,
-            width: selected ? 1.8 : 1.0,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: selected ? AppColors.brandDark : AppColors.ink,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 11, color: AppColors.inkFaded),
-            ),
-          ],
-        ),
       ),
     );
   }

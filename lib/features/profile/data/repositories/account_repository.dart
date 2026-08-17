@@ -36,14 +36,12 @@ class AccountRepository {
   Future<UserModel> updateProfile({
     required String name,
     required String email,
-    String? accountType,
     String? avatarFilePath,
   }) async {
     try {
       final formDataMap = <String, dynamic>{
         'name': name,
         'email': email,
-        'account_type':? accountType,
       };
 
       if (avatarFilePath != null && avatarFilePath.isNotEmpty) {
