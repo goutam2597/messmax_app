@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
+import '../cubit/dashboard_cubit.dart';
+import '../cubit/dashboard_state.dart';
 
 class MessDrawer extends StatelessWidget {
   final String activeSection;
@@ -139,6 +145,18 @@ class MessDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerHeader(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
+    final dashboardState = context.watch<DashboardCubit>().state;
+
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    final activeMess = dashboardState is DashboardLoaded
+        ? dashboardState.dashboard.activeMess
+        : null;
+
+    final messName = activeMess?.name ?? 'Green View Hostel';
+    final messCode = activeMess?.code ?? '#MX-8921';
+    final roleLabel = user?.roleLabel ?? 'MANAGER';
+
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -179,9 +197,9 @@ class MessDrawer extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Green View Hostel',
-                      style: TextStyle(
+                    Text(
+                      messName,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
@@ -190,12 +208,12 @@ class MessDrawer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Row(
-                      children: const [
-                        Icon(Icons.key_rounded, size: 12, color: Colors.white70),
-                        SizedBox(width: 4),
+                      children: [
+                        const Icon(Icons.key_rounded, size: 12, color: Colors.white70),
+                        const SizedBox(width: 4),
                         Text(
-                          'Code: #MX-8921',
-                          style: TextStyle(
+                          'Code: $messCode',
+                          style: const TextStyle(
                             fontSize: 11.5,
                             color: Colors.white70,
                             fontWeight: FontWeight.w600,
@@ -247,9 +265,9 @@ class MessDrawer extends StatelessWidget {
                     color: AppColors.brand,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
-                    'MANAGER',
-                    style: TextStyle(
+                  child: Text(
+                    roleLabel,
+                    style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
@@ -377,6 +395,13 @@ class MessDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerFooter(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    final avatarUrl = user?.avatarUrl != null ? AppConfig.sanitizeImageUrl(user!.avatarUrl) : null;
+    final userName = user?.name ?? 'Goutam Sharma';
+    final userEmail = user?.email ?? 'goutam@example.com';
+    final userInitials = user?.initials ?? 'GS';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: const BoxDecoration(
@@ -386,36 +411,53 @@ class MessDrawer extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: AppColors.brandSoft,
               shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.shield_rounded,
-              size: 16,
               color: AppColors.brandDark,
+            ),
+            child: ClipOval(
+              child: avatarUrl != null
+                  ? Image.network(
+                      avatarUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Center(
+                        child: Text(
+                          userInitials,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        userInitials,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'MessMax Panel v1.0',
-                  style: TextStyle(
-                    fontSize: 12,
+                  userName,
+                  style: const TextStyle(
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
                     color: AppColors.ink,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  'Manager & Hostel Portal',
-                  style: TextStyle(
-                    fontSize: 10.5,
+                  userEmail,
+                  style: const TextStyle(
+                    fontSize: 11,
                     color: AppColors.inkFaded,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -423,12 +465,12 @@ class MessDrawer extends StatelessWidget {
           IconButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Switching active mess...')),
+                const SnackBar(content: Text('MessMax Manager Panel Active')),
               );
             },
             icon: const Icon(
-              Icons.swap_horiz_rounded,
-              color: AppColors.inkFaded,
+              Icons.verified_rounded,
+              color: AppColors.brandDark,
               size: 20,
             ),
           ),

@@ -15,4 +15,5 @@ class ApiEndpoints {
   static const String authFirebase = '/v1/auth/firebase';
   static const String authLogout = '/v1/auth/logout';
   static const String me = '/v1/me';
+  static const String dashboard = '/v1/dashboard';
 }

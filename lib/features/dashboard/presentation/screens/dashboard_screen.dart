@@ -1,16 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../cubit/dashboard_cubit.dart';
+import '../cubit/dashboard_state.dart';
+import '../../data/models/dashboard_model.dart';
 import '../widgets/mess_drawer.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => DashboardCubit()..loadDashboard(),
+      child: const _DashboardView(),
+    );
+  }
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardView extends StatefulWidget {
+  const _DashboardView();
+
+  @override
+  State<_DashboardView> createState() => _DashboardViewState();
+}
+
+class _DashboardViewState extends State<_DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _activeSection = 'dashboard';
 
@@ -36,26 +52,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
           icon: const Icon(Icons.menu_rounded, color: AppColors.ink, size: 24),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              'Green View Hostel',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
-                color: AppColors.ink,
-              ),
-            ),
-            Text(
-              'Manager Dashboard • Aug 2026',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppColors.inkFaded,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        title: BlocBuilder<DashboardCubit, DashboardState>(
+          builder: (context, state) {
+            final activeMess = state is DashboardLoaded ? state.dashboard.activeMess : null;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activeMess?.name ?? 'Green View Hostel',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Text(
+                  'Manager Dashboard • Aug 2026',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.inkFaded,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         actions: [
           IconButton(
@@ -79,7 +101,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications — 2 pending meal off requests')),
+                const SnackBar(content: Text('Notifications — pending meal off requests')),
               );
             },
           ),
@@ -87,28 +109,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildMessBannerCard(),
-              const SizedBox(height: 18),
-              _buildSectionTitle('MONTHLY LEDGER STATS'),
-              const SizedBox(height: 10),
-              _buildLedgerGrid(),
-              const SizedBox(height: 18),
-              _buildPendingApprovalCard(context),
-              const SizedBox(height: 20),
-              _buildSectionTitle('QUICK ACTIONS'),
-              const SizedBox(height: 10),
-              _buildQuickActionsRow(context),
-              const SizedBox(height: 22),
-              _buildSectionTitle('TODAY\'S MEAL SHEET (DAY 17)'),
-              const SizedBox(height: 10),
-              _buildDailyMealSheetCard(),
-            ],
-          ),
+        child: BlocBuilder<DashboardCubit, DashboardState>(
+          builder: (context, state) {
+            if (state is DashboardLoading) {
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.brandDark),
+              );
+            }
+
+            final dashboard = state is DashboardLoaded
+                ? state.dashboard
+                : const DashboardModel(
+                    hasMess: true,
+                    ledgerStats: LedgerStatsModel(
+                      totalMeals: 269.5,
+                      todayMeals: 29.5,
+                      totalBazar: 14098.0,
+                      mealRate: 52.41,
+                      totalDeposits: 28500.0,
+                      restMoney: 4280.0,
+                    ),
+                    pendingRequests: PendingRequestsModel(total: 2, mealOffCount: 1, guestCount: 1),
+                    dailySheetTeaser: [],
+                    myMesses: [],
+                  );
+
+            final activeMess = dashboard.activeMess;
+            final stats = dashboard.ledgerStats;
+            final pending = dashboard.pendingRequests;
+
+            return RefreshIndicator(
+              color: AppColors.brandDark,
+              onRefresh: () => context.read<DashboardCubit>().loadDashboard(),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildMessBannerCard(activeMess),
+                    const SizedBox(height: 18),
+                    _buildSectionTitle('MONTHLY LEDGER STATS'),
+                    const SizedBox(height: 10),
+                    _buildLedgerGrid(stats),
+                    const SizedBox(height: 18),
+                    if (pending.total > 0) ...[
+                      _buildPendingApprovalCard(context, pending),
+                      const SizedBox(height: 20),
+                    ],
+                    _buildSectionTitle('QUICK ACTIONS'),
+                    const SizedBox(height: 10),
+                    _buildQuickActionsRow(context),
+                    const SizedBox(height: 22),
+                    _buildSectionTitle('TODAY\'S MEAL SHEET TEASER'),
+                    const SizedBox(height: 10),
+                    _buildDailyMealSheetCard(dashboard.dailySheetTeaser),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -126,7 +186,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildMessBannerCard() {
+  Widget _buildMessBannerCard(ActiveMessModel? activeMess) {
+    final messName = activeMess?.name ?? 'Green View Hostel Mess';
+    final messCode = activeMess?.code ?? '#MX-8921';
+    final location = activeMess?.location ?? 'Dhaka';
+    final membersCount = activeMess?.membersCount ?? 12;
+    final seatsAvailable = activeMess?.seatsAvailable ?? 3;
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -162,19 +228,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      'Green View Hostel Mess',
-                      style: TextStyle(
+                      messName,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
-                      'Manager: Goutam Sharma • Code: #MX-8921',
-                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                      '$location • Code: $messCode',
+                      style: const TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -190,12 +257,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                _BannerMiniStat(label: 'MEMBERS', value: '12 Active'),
-                _BannerDivider(),
-                _BannerMiniStat(label: 'OPEN SEATS', value: '3 Seats'),
-                _BannerDivider(),
-                _BannerMiniStat(label: 'STATUS', value: 'Active Month', isHighlight: true),
+              children: [
+                _BannerMiniStat(label: 'MEMBERS', value: '$membersCount Active'),
+                const _BannerDivider(),
+                _BannerMiniStat(label: 'OPEN SEATS', value: '$seatsAvailable Seats'),
+                const _BannerDivider(),
+                const _BannerMiniStat(label: 'STATUS', value: 'Active Month', isHighlight: true),
               ],
             ),
           ),
@@ -204,7 +271,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildLedgerGrid() {
+  Widget _buildLedgerGrid(LedgerStatsModel stats) {
+    final totalMeals = stats.totalMeals.toInt();
+    final totalBazar = stats.totalBazar.toInt();
+    final mealRate = stats.mealRate;
+    final totalDeposits = stats.totalDeposits.toInt();
+    final restMoney = stats.restMoney.toInt();
+
     return GridView.count(
       padding: EdgeInsets.zero,
       crossAxisCount: 2,
@@ -219,23 +292,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           iconColor: AppColors.brandDark,
           bgColor: AppColors.brandSoft,
           title: 'Total Meals',
-          value: '269.5',
-          subtitle: 'Today: 29.5 meals',
+          value: '$totalMeals',
+          subtitle: 'Today: ${stats.todayMeals} meals',
         ),
         _statTile(
           icon: Icons.shopping_bag_rounded,
           iconColor: const Color(0xFF0F9F59),
           bgColor: const Color(0xFFE6F4EA),
           title: 'Total Bazar',
-          value: '14,098 ৳',
-          subtitle: '18 Market trips',
+          value: '$totalBazar ৳',
+          subtitle: 'Current month spend',
         ),
         _statTile(
           icon: Icons.analytics_rounded,
           iconColor: AppColors.accentDark,
           bgColor: AppColors.accentSoft,
           title: 'Current Rate',
-          value: '52.41 ৳',
+          value: '$mealRate ৳',
           subtitle: 'Calculated per meal',
         ),
         _statTile(
@@ -243,8 +316,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           iconColor: const Color(0xFF1A73E8),
           bgColor: const Color(0xFFE8F0FE),
           title: 'Cash Deposit',
-          value: '28,500 ৳',
-          subtitle: 'Rest: +4,280 ৳',
+          value: '$totalDeposits ৳',
+          subtitle: 'Rest: +$restMoney ৳',
         ),
       ],
     );
@@ -325,7 +398,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildPendingApprovalCard(BuildContext context) {
+  Widget _buildPendingApprovalCard(BuildContext context, PendingRequestsModel pending) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -351,19 +424,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  '2 Pending Meal-Off Requests',
-                  style: TextStyle(
+                  '${pending.total} Pending Requests',
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: AppColors.ink,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
-                  'Goutam (Day 18) & Cartpa (Day 19) awaiting manager review',
-                  style: TextStyle(
+                  '${pending.mealOffCount} Meal Off & ${pending.guestCount} Guest requests awaiting review',
+                  style: const TextStyle(
                     fontSize: 11.5,
                     color: AppColors.inkFaded,
                   ),
@@ -375,7 +448,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           FilledButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Opening Meal-Off Requests review')),
+                const SnackBar(content: Text('Opening Meal Off Requests review')),
               );
             },
             style: FilledButton.styleFrom(
@@ -480,7 +553,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDailyMealSheetCard() {
+  Widget _buildDailyMealSheetCard(List<DailyMemberMealModel> teaser) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
@@ -519,28 +592,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-          _memberMealRow(name: 'Goutam Sharma', room: 'Room 101', b: 1, l: 1, d: 1, total: 3.0),
-          const Divider(height: 1, color: AppColors.paperLine),
-          _memberMealRow(name: 'Cartpa User', room: 'Room 102', b: 1, l: 0, d: 1, total: 2.0, isLunchOff: true),
-          const Divider(height: 1, color: AppColors.paperLine),
-          _memberMealRow(name: 'Tanvir Ahmed', room: 'Room 103', b: 0, l: 0, d: 0, total: 0.0, isAllOff: true),
-          const Divider(height: 1, color: AppColors.paperLine),
-          _memberMealRow(name: 'Rafiqul Islam', room: 'Room 104', b: 1, l: 1, d: 1, total: 3.0),
+          for (var i = 0; i < teaser.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
+            _memberMealRow(teaser[i]),
+          ],
         ],
       ),
     );
   }
 
-  Widget _memberMealRow({
-    required String name,
-    required String room,
-    required int b,
-    required int l,
-    required int d,
-    required double total,
-    bool isLunchOff = false,
-    bool isAllOff = false,
-  }) {
+  Widget _memberMealRow(DailyMemberMealModel item) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -550,11 +611,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  item.name,
                   style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.ink),
                 ),
                 Text(
-                  room,
+                  item.room,
                   style: const TextStyle(fontSize: 11, color: AppColors.inkFaded),
                 ),
               ],
@@ -562,30 +623,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           Row(
             children: [
-              _mealPill('B', b == 1),
+              _mealPill('B', item.b == 1),
               const SizedBox(width: 4),
-              _mealPill('L', l == 1, isOff: isLunchOff),
+              _mealPill('L', item.l == 1, isOff: item.isLunchOff),
               const SizedBox(width: 4),
-              _mealPill('D', d == 1),
+              _mealPill('D', item.d == 1),
             ],
           ),
           const SizedBox(width: 24),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: isAllOff
+              color: item.isAllOff
                   ? AppColors.paper
-                  : (total >= 3 ? const Color(0xFFE6F4EA) : AppColors.brandSoft),
+                  : (item.total >= 3 ? const Color(0xFFE6F4EA) : AppColors.brandSoft),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              isAllOff ? 'OFF' : '${total.toInt()} Meals',
+              item.isAllOff ? 'OFF' : '${item.total.toInt()} Meals',
               style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w900,
-                color: isAllOff
+                color: item.isAllOff
                     ? AppColors.inkFaded
-                    : (total >= 3 ? const Color(0xFF137333) : AppColors.brandDark),
+                    : (item.total >= 3 ? const Color(0xFF137333) : AppColors.brandDark),
               ),
             ),
           ),
