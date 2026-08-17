@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
           }
-        },
+        }, 
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {

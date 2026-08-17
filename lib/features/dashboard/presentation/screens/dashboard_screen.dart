@@ -30,6 +30,142 @@ class _DashboardViewState extends State<_DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _activeSection = 'dashboard';
 
+  void _showMessDetailsModal(BuildContext context, ActiveMessModel activeMess) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        decoration: const BoxDecoration(
+          color: AppColors.paperRaised,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.paperLine,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.apartment_rounded, color: AppColors.brandDark, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        activeMess.name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Join Code: ${activeMess.code}',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.brandDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandDark,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    activeMess.role.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Divider(color: AppColors.paperLine),
+            const SizedBox(height: 14),
+            _modalDetailRow(Icons.map_rounded, 'Location', activeMess.location.isNotEmpty ? activeMess.location : 'Dhaka'),
+            const SizedBox(height: 12),
+            _modalDetailRow(Icons.group_rounded, 'Total Members', '${activeMess.membersCount} Active Members'),
+            const SizedBox(height: 12),
+            _modalDetailRow(Icons.event_seat_rounded, 'Open Seat Ads', '${activeMess.seatsAvailable} Seats Available'),
+            const SizedBox(height: 12),
+            _modalDetailRow(
+              Icons.verified_user_rounded,
+              'Manager Permissions',
+              activeMess.isManager ? 'Full Manager & Ledger Access' : 'Member View-Only Access',
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Close'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _modalDetailRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.brandSoft,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.brandDark),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.inkFaded),
+            ),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -193,7 +329,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildMessBannerCard(activeMess),
+                      _buildMessBannerCard(context, activeMess),
                       const SizedBox(height: 18),
                       _buildSectionTitle('MONTHLY LEDGER STATS'),
                       const SizedBox(height: 10),
@@ -203,10 +339,6 @@ class _DashboardViewState extends State<_DashboardView> {
                         _buildPendingApprovalCard(context, pending),
                         const SizedBox(height: 20),
                       ],
-                      _buildSectionTitle('QUICK ACTIONS'),
-                      const SizedBox(height: 10),
-                      _buildQuickActionsRow(context),
-                      const SizedBox(height: 22),
                       if (dashboard.dailySheetTeaser.isNotEmpty) ...[
                         _buildSectionTitle('TODAY\'S MEAL SHEET TEASER'),
                         const SizedBox(height: 10),
@@ -237,87 +369,96 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildMessBannerCard(ActiveMessModel? activeMess) {
+  Widget _buildMessBannerCard(BuildContext context, ActiveMessModel? activeMess) {
     final messName = activeMess?.name ?? 'My Mess';
     final messCode = activeMess?.code ?? '#MX-0000';
     final location = activeMess?.location.isNotEmpty == true ? activeMess!.location : 'Dhaka';
     final membersCount = activeMess?.membersCount ?? 1;
     final seatsAvailable = activeMess?.seatsAvailable ?? 0;
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.brandDark, AppColors.brandDeep],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.brandDark.withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+    return InkWell(
+      onTap: activeMess != null ? () => _showMessDetailsModal(context, activeMess) : null,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.brandDark, AppColors.brandDeep],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                ),
-                child: const Icon(Icons.apartment_rounded, color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      messName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$location • Code: $messCode',
-                      style: const TextStyle(fontSize: 12, color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.brandDark.withValues(alpha: 0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                _BannerMiniStat(label: 'MEMBERS', value: '$membersCount Active'),
-                const _BannerDivider(),
-                _BannerMiniStat(label: 'OPEN SEATS', value: '$seatsAvailable Seats'),
-                const _BannerDivider(),
-                const _BannerMiniStat(label: 'STATUS', value: 'Active Month', isHighlight: true),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                  ),
+                  child: const Icon(Icons.apartment_rounded, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        messName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$location • Code: $messCode',
+                        style: const TextStyle(fontSize: 12, color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.info_outline_rounded,
+                  color: Colors.white70,
+                  size: 20,
+                ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _BannerMiniStat(label: 'MEMBERS', value: '$membersCount Active'),
+                  const _BannerDivider(),
+                  _BannerMiniStat(label: 'OPEN SEATS', value: '$seatsAvailable Seats'),
+                  const _BannerDivider(),
+                  const _BannerMiniStat(label: 'STATUS', value: 'Active Month', isHighlight: true),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -512,94 +653,6 @@ class _DashboardViewState extends State<_DashboardView> {
             child: const Text('Review', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionsRow(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      clipBehavior: Clip.none,
-      child: Row(
-        children: [
-          _actionPill(
-            icon: Icons.add_shopping_cart_rounded,
-            label: 'Record Bazar',
-            color: AppColors.brandDark,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Add Bazar Entry')),
-              );
-            },
-          ),
-          const SizedBox(width: 10),
-          _actionPill(
-            icon: Icons.edit_calendar_rounded,
-            label: 'Meal Off',
-            color: AppColors.accentDark,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Submit Meal Off Request')),
-              );
-            },
-          ),
-          const SizedBox(width: 10),
-          _actionPill(
-            icon: Icons.add_business_rounded,
-            label: 'Post Seat Ad',
-            color: const Color(0xFF0F9F59),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Post Seat Listing')),
-              );
-            },
-          ),
-          const SizedBox(width: 10),
-          _actionPill(
-            icon: Icons.person_add_alt_1_rounded,
-            label: 'Add Member',
-            color: const Color(0xFF1A73E8),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Invite Member to Mess')),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _actionPill({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w800,
-                color: color,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

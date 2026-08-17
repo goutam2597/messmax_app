@@ -11,6 +11,7 @@ import '../../../home/presentation/screens/home_screen.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../dashboard/presentation/cubit/dashboard_cubit.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 
 class MainShellScope extends InheritedWidget {
@@ -87,6 +88,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
         BlocProvider(create: (_) => HomeCubit()),
         BlocProvider(create: (_) => AdsCubit()),
         BlocProvider(create: (_) => BlogCubit()),
+        BlocProvider(create: (_) => DashboardCubit()..loadDashboard()),
       ],
       child: MainShellScope(
         selectTab: (index) {
