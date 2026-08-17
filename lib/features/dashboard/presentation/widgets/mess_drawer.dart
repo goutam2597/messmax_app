@@ -289,7 +289,7 @@ class MessDrawer extends StatelessWidget {
           );
         } else if (id == 'find_mess') {
           Navigator.of(context).popUntil((route) => route.isFirst);
-          MainShellScope.of(context)?.selectTab(1);
+          MainShellScope.of(context)?.selectTab(0);
         } else if (id == 'dashboard') {
           Navigator.of(context).popUntil((route) => route.isFirst);
           MainShellScope.of(context)?.selectTab(0);
