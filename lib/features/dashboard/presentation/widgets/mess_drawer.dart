@@ -262,8 +262,8 @@ class MessDrawer extends StatelessWidget {
         ? dashboardState.dashboard.activeMess
         : null;
 
-    final messName = activeMess?.name ?? 'Green View Hostel';
-    final messCode = activeMess?.code ?? '#MX-8921';
+    final messName = activeMess?.name ?? '';
+    final messCode = activeMess?.code ?? '';
     final consoleSub = isIndividual
         ? 'MY MESS'
         : (isMemberOnly ? 'MEMBER' : 'CONSOLE');

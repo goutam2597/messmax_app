@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 /// Where the splash flow should land once boot work finishes.
-enum SplashDestination { welcome, home }
+enum SplashDestination { welcome, dashboard }
 
 sealed class SplashState extends Equatable {
   const SplashState();

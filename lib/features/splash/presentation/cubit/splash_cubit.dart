@@ -26,7 +26,7 @@ class SplashCubit extends Cubit<SplashState> {
         DioClient.setAuthToken(token);
         try {
           await _authRepo.fetchMe();
-          dest = SplashDestination.home;
+          dest = SplashDestination.dashboard;
         } catch (_) {
           await AuthStorage.clear();
           DioClient.clearAuthToken();
