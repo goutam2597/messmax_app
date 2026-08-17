@@ -49,8 +49,6 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       final res = await _repository.getAdDetail(_ad.slug);
       if (!mounted) return;
       setState(() {
-        // Single rebuild only — keeps initial card visible until fresh data arrives,
-        // so "Listed By" / gallery don't flicker through an intermediate spinner frame.
         _ad = res.ad;
         _relatedAds = res.relatedAds;
         _isLoadingRelated = false;
@@ -64,7 +62,6 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
   AdModel get ad => _ad;
 
-  /// Opens a fullscreen zoomable photo viewer starting at the given index.
   void _openPhotoViewer(int initialIndex) {
     if (ad.imageUrls.isEmpty) return;
 
@@ -90,7 +87,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       body: Stack(
         children: [
           RefreshIndicator(
-            color: AppColors.accent,
+            color: AppColors.brandDark,
             backgroundColor: Colors.white,
             onRefresh: _fetchDetailAndRelated,
             child: SingleChildScrollView(
@@ -106,42 +103,45 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title & badges
-                        _buildTitleBlock(),
-
-                        const SizedBox(height: 14),
-
-                        // Gradient rent + status banner
+                        // Price Banner Card
                         _buildRentBanner(),
 
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 18),
 
-                        // Manager / poster card
+                        // Title & Date
+                        _buildTitleBlock(),
+
+                        const SizedBox(height: 18),
+
+                        // Highlights row pills
+                        _buildHighlightBadges(),
+
+                        const SizedBox(height: 20),
+
+                        // Manager / Poster Card
                         _buildManagerCard(),
 
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 16),
 
-                        // Location card
+                        // Location Card
                         _buildLocationCard(),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 20),
 
                         // Listing details (spec tiles)
                         _sectionHeader(
-                          icon: Icons.info_outline_rounded,
-                          title: 'Listing Details',
+                          icon: Icons.grid_view_rounded,
+                          title: 'Room & Rent Details',
                         ),
                         const SizedBox(height: 12),
-
                         _buildSpecsGrid(),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 20),
 
                         // Description
-                        if (ad.description != null &&
-                            ad.description!.isNotEmpty) ...[
+                        if (ad.description != null && ad.description!.isNotEmpty) ...[
                           _sectionHeader(
-                            icon: Icons.notes_rounded,
+                            icon: Icons.subject_rounded,
                             title: 'Description',
                           ),
                           const SizedBox(height: 10),
@@ -152,6 +152,13 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                               color: AppColors.paperRaised,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: AppColors.paperLine),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.02),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Text(
                               ad.description!,
@@ -162,7 +169,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 20),
                         ],
 
                         // Amenities
@@ -171,37 +178,38 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                             icon: Icons.checklist_rounded,
                             title: 'Amenities & Facilities',
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 12),
                           _buildAmenitiesWrap(),
-                          const SizedBox(height: 22),
+                          const SizedBox(height: 24),
                         ],
 
-                        // Related seats — own small loader so header/content never flickers
+                        // Related seats
                         if (_isLoadingRelated)
                           const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20),
+                            padding: EdgeInsets.symmetric(vertical: 24),
                             child: Center(
                               child: SizedBox(
-                                width: 22,
-                                height: 22,
+                                width: 24,
+                                height: 24,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: AppColors.brandDark),
+                                  strokeWidth: 2.5,
+                                  color: AppColors.brandDark,
+                                ),
                               ),
                             ),
                           )
                         else if (_relatedAds.isNotEmpty) ...[
                           _sectionHeader(
                             icon: Icons.explore_rounded,
-                            title: 'Related Seats',
+                            title: 'Nearby & Similar Seats',
                             subtitle:
-                                'More options in ${ad.areaLabel ?? ad.area ?? ad.city ?? 'the same area'}',
+                                'More seats available in ${ad.areaLabel ?? ad.area ?? ad.city ?? 'the same area'}',
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
                           MasonryGridView.count(
                             padding: EdgeInsets.zero,
                             clipBehavior: Clip.none,
-                            crossAxisCount: 2, 
+                            crossAxisCount: 2,
                             mainAxisSpacing: 12,
                             crossAxisSpacing: 12,
                             shrinkWrap: true,
@@ -221,7 +229,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                               );
                             },
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                         ],
                       ],
                     ),
@@ -231,27 +239,57 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
             ),
           ),
 
-          // Floating back button
+          // Floating Top App Bar (Back button + Share)
           Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
+            top: MediaQuery.of(context).padding.top + 8,
             left: 16,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.25),
+            right: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
-                child: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: Colors.white,
-                  size: 20,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Sharing seat listing details')),
+                      );
+                    },
+                    child: const Icon(
+                      Icons.share_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
 
@@ -275,36 +313,38 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: AppColors.brandSoft,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 16, color: AppColors.brandDark),
+          child: Icon(icon, size: 18, color: AppColors.brandDark),
         ),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w900,
-                color: AppColors.ink,
-                letterSpacing: -0.3,
-              ),
-            ),
-            if (subtitle != null)
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                subtitle,
+                title,
                 style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.inkFaded,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 17.5,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.ink,
+                  letterSpacing: -0.3,
                 ),
               ),
-          ],
+              if (subtitle != null)
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.inkFaded,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );
@@ -335,39 +375,55 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                 margin: const EdgeInsets.only(top: 4),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
-                  vertical: 4,
+                  vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.accentDark,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'FEATURED',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFE2701C), Color(0xFFC75911)],
                   ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE2701C).withValues(alpha: 0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.star_rounded, size: 12, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text(
+                      'FEATURED',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ],
         ),
         if (ad.publishedAt != null) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Row(
             children: [
               const Icon(
                 Icons.schedule_rounded,
-                size: 13,
+                size: 14,
                 color: AppColors.inkFaded,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 5),
               Text(
                 'Posted ${ad.publishedAt}',
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.5,
                   color: AppColors.inkFaded,
                   fontWeight: FontWeight.w600,
                 ),
@@ -379,12 +435,76 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
     );
   }
 
+  Widget _buildHighlightBadges() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
+      child: Row(
+        children: [
+          _badgeChip(
+            icon: Icons.meeting_room_rounded,
+            label: '${ad.roomType.toUpperCase()} ROOM',
+            bgColor: AppColors.brandSoft,
+            textColor: AppColors.brandDark,
+          ),
+          const SizedBox(width: 8),
+          _badgeChip(
+            icon: Icons.event_seat_rounded,
+            label: '${ad.seatsAvailable} Seat${ad.seatsAvailable == 1 ? '' : 's'} Open',
+            bgColor: const Color(0xFFE6F4EA),
+            textColor: const Color(0xFF137333),
+          ),
+          const SizedBox(width: 8),
+          if (ad.areaLabel != null || ad.city != null)
+            _badgeChip(
+              icon: Icons.location_on_rounded,
+              label: ad.areaLabel ?? ad.city!,
+              bgColor: AppColors.paperRaised,
+              textColor: AppColors.inkSoft,
+              borderColor: AppColors.paperLine,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _badgeChip({
+    required IconData icon,
+    required String label,
+    required Color bgColor,
+    required Color textColor,
+    Color? borderColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: borderColor != null ? Border.all(color: borderColor) : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: textColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeroGallery(BuildContext context) {
     if (ad.imageUrls.isNotEmpty) {
       final isLoop = ad.imageUrls.length > 1;
-      final itemCount = isLoop
-          ? ad.imageUrls.length * 1000
-          : ad.imageUrls.length;
+      final itemCount = isLoop ? ad.imageUrls.length * 1000 : ad.imageUrls.length;
 
       if (isLoop && !_galleryInitialized) {
         _galleryInitialized = true;
@@ -395,86 +515,116 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
         });
       }
 
-      final displayIndex = isLoop
-          ? _galleryIndex % ad.imageUrls.length
-          : _galleryIndex;
+      final displayIndex = isLoop ? _galleryIndex % ad.imageUrls.length : _galleryIndex;
 
-      return Stack(
-        children: [
-          SizedBox(
-            height: 300,
-            width: double.infinity,
-            child: PageView.builder(
-              controller: _galleryController,
-              itemCount: itemCount,
-              onPageChanged: (index) => setState(() => _galleryIndex = index),
-              itemBuilder: (context, index) {
-                final imageIndex = isLoop ? index % ad.imageUrls.length : index;
-                return GestureDetector(
-                  onTap: () => _openPhotoViewer(imageIndex),
-                  child: Image.network(
-                    ad.imageUrls[imageIndex],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
-                      color: AppColors.brandSoft,
-                      child: const Icon(
-                        Icons.home_rounded,
-                        color: AppColors.inkFaded,
-                        size: 48,
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+        child: Stack(
+          children: [
+            SizedBox(
+              height: 310,
+              width: double.infinity,
+              child: PageView.builder(
+                controller: _galleryController,
+                itemCount: itemCount,
+                onPageChanged: (index) => setState(() => _galleryIndex = index),
+                itemBuilder: (context, index) {
+                  final imageIndex = isLoop ? index % ad.imageUrls.length : index;
+                  return GestureDetector(
+                    onTap: () => _openPhotoViewer(imageIndex),
+                    child: Image.network(
+                      ad.imageUrls[imageIndex],
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        color: AppColors.brandSoft,
+                        child: const Icon(
+                          Icons.home_rounded,
+                          color: AppColors.inkFaded,
+                          size: 48,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-          if (ad.imageUrls.length > 1) ...[
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 12,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.55),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: Text(
-                  '${displayIndex + 1}/${ad.imageUrls.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                  );
+                },
               ),
             ),
+            // Gradient Overlay at top for back button visibility
             Positioned(
-              bottom: 18,
+              top: 0,
               left: 0,
               right: 0,
-              child: Center(
-                child: DotIndicatorRow(
-                  count: ad.imageUrls.length,
-                  activeIndex: displayIndex,
-                  light: true,
+              height: 90,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
+            if (ad.imageUrls.length > 1) ...[
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.photo_library_rounded, size: 12, color: Colors.white),
+                      const SizedBox(width: 5),
+                      Text(
+                        '${displayIndex + 1}/${ad.imageUrls.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 18,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: DotIndicatorRow(
+                    count: ad.imageUrls.length,
+                    activeIndex: displayIndex,
+                    light: true,
+                  ),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       );
     }
 
     return Container(
       height: 240,
       width: double.infinity,
-      color: AppColors.brandSoft,
+      decoration: const BoxDecoration(
+        color: AppColors.brandSoft,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+      ),
       child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -502,11 +652,11 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           end: Alignment.bottomRight,
           colors: [AppColors.brandDark, AppColors.brandDeep],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: AppColors.brandDark.withValues(alpha: 0.25),
-            blurRadius: 14,
+            color: AppColors.brandDark.withValues(alpha: 0.3),
+            blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
@@ -523,7 +673,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     fontSize: 10.5,
                     fontWeight: FontWeight.w800,
                     color: Colors.white.withValues(alpha: 0.65),
-                    letterSpacing: 0.6,
+                    letterSpacing: 0.8,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -545,7 +695,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Colors.white.withValues(alpha: 0.75),
                       ),
                     ),
                   ],
@@ -553,53 +703,62 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
               ],
             ),
           ),
-
           Container(
             width: 1,
-            height: 44,
-            color: Colors.white.withValues(alpha: 0.15),
+            height: 42,
+            color: Colors.white.withValues(alpha: 0.18),
           ),
-
           const SizedBox(width: 16),
-
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'STATUS',
+                'AVAILABILITY',
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w800,
                   color: Colors.white.withValues(alpha: 0.65),
-                  letterSpacing: 0.6,
+                  letterSpacing: 0.8,
                 ),
               ),
               const SizedBox(height: 6),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
+                  horizontal: 11,
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: ad.seatsAvailable > 1
-                      ? AppColors.emerald
-                      : AppColors.accent,
+                  color: ad.seatsAvailable > 0 ? AppColors.emerald : AppColors.accent,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: Text(
-                  '${ad.seatsAvailable} Seat${ad.seatsAvailable == 1 ? '' : 's'} Open',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${ad.seatsAvailable} Seat${ad.seatsAvailable == 1 ? '' : 's'} Open',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -614,35 +773,41 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.paperLine),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          // Avatar
           Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.brandSoft,
             ),
             clipBehavior: Clip.antiAlias,
             child: ad.posterAvatarUrl != null
-                ? NetworkImageCover(url: ad.posterAvatarUrl, iconSize: 20)
+                ? NetworkImageCover(url: ad.posterAvatarUrl, iconSize: 22)
                 : const Icon(
                     Icons.person_rounded,
                     color: AppColors.brandDark,
-                    size: 22,
+                    size: 24,
                   ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'LISTED BY',
+                  'HOST / MANAGER',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
@@ -654,8 +819,8 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                 Text(
                   ad.posterName ?? (ad.messName ?? 'Mess Manager'),
                   style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w900,
                     color: AppColors.ink,
                   ),
                 ),
@@ -696,11 +861,18 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
   Widget _buildLocationCard() {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.paperLine),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -708,18 +880,18 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
                   color: AppColors.accentSoft,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.location_on_rounded,
                   color: AppColors.accentDark,
-                  size: 18,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -727,8 +899,8 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     Text(
                       ad.areaLabel ?? ad.city ?? 'Dhaka',
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
                         color: AppColors.ink,
                       ),
                     ),
@@ -736,7 +908,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                       Text(
                         ad.city!,
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.5,
                           color: AppColors.inkFaded,
                           fontWeight: FontWeight.w600,
                         ),
@@ -746,32 +918,32 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           if (ad.hasVisibleAddress)
             Text(
               ad.location!,
               style: const TextStyle(
                 fontSize: 13.5,
                 color: AppColors.inkSoft,
-                height: 1.4,
+                height: 1.45,
               ),
             )
           else
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: AppColors.brandSoft,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Row(
                 children: [
                   Icon(
-                    Icons.shield_outlined,
-                    size: 16,
+                    Icons.security_rounded,
+                    size: 18,
                     color: AppColors.brandDark,
                   ),
-                  SizedBox(width: 8),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Street address hidden by manager for privacy. Contact manager to visit.',
@@ -779,6 +951,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                         fontSize: 12,
                         color: AppColors.brandDark,
                         fontWeight: FontWeight.w600,
+                        height: 1.35,
                       ),
                     ),
                   ),
@@ -796,11 +969,11 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       if (ad.messName != null)
         (Icons.apartment_rounded, 'Mess Name', ad.messName!),
       (
-        Icons.people_outline_rounded,
+        Icons.groups_rounded,
         'Room Capacity',
         ad.roomCapacity != null ? '${ad.roomCapacity} Persons' : 'Flexible',
       ),
-      (Icons.attach_money_rounded, 'Rent Type', 'Per Seat'),
+      (Icons.payments_rounded, 'Rent Period', 'Monthly'),
     ];
 
     return GridView.count(
@@ -808,29 +981,29 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       crossAxisCount: 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      childAspectRatio: 3,
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 10,
+      childAspectRatio: 2.8,
       children: specs.map((spec) {
         final (icon, label, value) = spec;
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: AppColors.paperRaised,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.paperLine),
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(7),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, size: 16, color: AppColors.brandDark),
+                child: Icon(icon, size: 18, color: AppColors.brandDark),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -844,14 +1017,14 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                         color: AppColors.inkFaded,
                       ),
                     ),
-                    const SizedBox(height: 1),
+                    const SizedBox(height: 2),
                     Text(
                       value,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
                         color: AppColors.ink,
                       ),
                     ),
@@ -865,32 +1038,46 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
     );
   }
 
+  IconData _getAmenityIcon(String text) {
+    final lower = text.toLowerCase();
+    if (lower.contains('wifi') || lower.contains('internet')) return Icons.wifi_rounded;
+    if (lower.contains('bath') || lower.contains('washroom')) return Icons.bathtub_rounded;
+    if (lower.contains('gas') || lower.contains('kitchen')) return Icons.soup_kitchen_rounded;
+    if (lower.contains('generator') || lower.contains('power')) return Icons.power_rounded;
+    if (lower.contains('lift') || lower.contains('elevator')) return Icons.elevator_rounded;
+    if (lower.contains('meal') || lower.contains('food')) return Icons.restaurant_rounded;
+    if (lower.contains('security') || lower.contains('cc')) return Icons.security_rounded;
+    if (lower.contains('balcony')) return Icons.balcony_rounded;
+    return Icons.check_circle_rounded;
+  }
+
   Widget _buildAmenitiesWrap() {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: ad.amenities.map((item) {
+        final icon = _getAmenityIcon(item);
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
           decoration: BoxDecoration(
             color: AppColors.emeraldSoft,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.emerald.withValues(alpha: 0.2)),
+            border: Border.all(color: AppColors.emerald.withValues(alpha: 0.25)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.check_circle_rounded,
+              Icon(
+                icon,
                 size: 15,
                 color: AppColors.emerald,
               ),
-              const SizedBox(width: 5),
+              const SizedBox(width: 6),
               Text(
                 item,
                 style: const TextStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.ink,
                 ),
               ),
@@ -903,13 +1090,13 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
   Widget _buildBottomContactBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 16,
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
             offset: const Offset(0, -4),
           ),
         ],
@@ -923,9 +1110,9 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.brandDark,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 0,
                 ),
@@ -935,25 +1122,25 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     SnackBar(content: Text('Calling Manager at $phone')),
                   );
                 },
-                icon: const Icon(Icons.phone_rounded, size: 18),
+                icon: const Icon(Icons.phone_rounded, size: 20),
                 label: const Text(
                   'Call Manager',
-                  style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
                 ),
               ),
             ),
 
             if (ad.contactWhatsapp != null) ...[
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF25D366),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF25D366).withValues(alpha: 0.35),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -971,7 +1158,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   icon: const Icon(
                     Icons.chat_rounded,
                     color: Colors.white,
-                    size: 20,
+                    size: 22,
                   ),
                 ),
               ),

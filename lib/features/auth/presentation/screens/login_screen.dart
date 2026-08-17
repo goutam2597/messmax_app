@@ -64,10 +64,10 @@ class _LoginScreenState extends State<LoginScreen> {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
             }
-          } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+          } else if (state is AuthError) { 
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: SafeArea(
@@ -76,7 +76,9 @@ class _LoginScreenState extends State<LoginScreen> {
               return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight - 40),
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight - 40,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -92,7 +94,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text(
                         'MessMax keeps your ledger: meals, bazar, and monthly settlement — just like the paper sheet, but always in sync.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 11.5, color: AppColors.inkFaded, height: 1.4),
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.inkFaded,
+                          height: 1.4,
+                        ),
                       ),
                     ],
                   ),
@@ -135,13 +141,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _divider() => Container(
-        width: 1,
-        height: 28,
-        color: AppColors.paperLine,
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-      );
+    width: 1,
+    height: 28,
+    color: AppColors.paperLine,
+    margin: const EdgeInsets.symmetric(horizontal: 6),
+  );
 
-  Widget _miniStat(String label, String value, {bool highlight = false}) => Expanded(
+  Widget _miniStat(String label, String value, {bool highlight = false}) =>
+      Expanded(
         child: Column(
           children: [
             Text(
@@ -170,8 +177,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final isAnyLoading = state is AuthLoading;
-        final isEmailLoading = state is AuthLoading && (state.type == AuthLoadingType.email || state.type == AuthLoadingType.general);
-        final isGoogleLoading = state is AuthLoading && state.type == AuthLoadingType.google;
+        final isEmailLoading =
+            state is AuthLoading &&
+            (state.type == AuthLoadingType.email ||
+                state.type == AuthLoadingType.general);
+        final isGoogleLoading =
+            state is AuthLoading && state.type == AuthLoadingType.google;
         final err = state is AuthError ? state.message : null;
 
         return Container(
@@ -202,7 +213,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   hintText: 'you@example.com',
-                  prefixIcon: Icon(Icons.email_outlined, size: 20, color: AppColors.inkFaded),
+                  prefixIcon: Icon(
+                    Icons.email_outlined,
+                    size: 20,
+                    color: AppColors.inkFaded,
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
@@ -214,10 +229,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 onSubmitted: (_) => _submit(),
                 decoration: InputDecoration(
                   hintText: '••••••••',
-                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.inkFaded),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline_rounded,
+                    size: 20,
+                    color: AppColors.inkFaded,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                      _obscure
+                          ? Icons.visibility_off_rounded
+                          : Icons.visibility_rounded,
                       size: 18,
                       color: AppColors.inkFaded,
                     ),
@@ -232,7 +253,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Text('Sign In'),
               ),
@@ -258,13 +282,18 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               GoogleSignInButton(
                 loading: isGoogleLoading,
-                onPressed: isAnyLoading ? null : () => context.read<AuthCubit>().loginWithGoogle(),
+                onPressed: isAnyLoading
+                    ? null
+                    : () => context.read<AuthCubit>().loginWithGoogle(),
               ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('New here? ', style: TextStyle(fontSize: 13, color: AppColors.inkFaded)),
+                  const Text(
+                    'New here? ',
+                    style: TextStyle(fontSize: 13, color: AppColors.inkFaded),
+                  ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const RegisterScreen()),
