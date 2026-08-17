@@ -1123,49 +1123,56 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               ),
 
               // Actions
-              if (data.canManage) ...[
-                if (member != null) ...[
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
-                      Icons.mail_outline_rounded,
-                      size: 18,
-                      color: AppColors.brandDark,
+              if (data.canManage)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (member != null) ...[
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(
+                          Icons.mail_outline_rounded,
+                          size: 18,
+                          color: AppColors.brandDark,
+                        ),
+                        onPressed: () => _showNotifyModal(context, data, item),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        size: 18,
+                        color: AppColors.inkSoft,
+                      ),
+                      onPressed: () => _showAddEditModal(
+                        context,
+                        data,
+                        prefilledSchedule: item,
+                      ),
                     ),
-                    onPressed: () => _showNotifyModal(context, data, item),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    size: 18,
-                    color: AppColors.inkSoft,
-                  ),
-                  onPressed: () =>
-                      _showAddEditModal(context, data, prefilledSchedule: item),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: AppColors.inkFaded,
+                      ),
+                      onPressed: () {
+                        if (item.id != null) {
+                          context.read<BazarScheduleCubit>().deleteAssignment(
+                            item.id!,
+                          );
+                        }
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    size: 18,
-                    color: AppColors.inkFaded,
-                  ),
-                  onPressed: () {
-                    if (item.id != null) {
-                      context.read<BazarScheduleCubit>().deleteAssignment(
-                        item.id!,
-                      );
-                    }
-                  },
-                ),
-              ],
             ],
           ),
 
