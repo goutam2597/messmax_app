@@ -502,8 +502,15 @@ class MessDrawer extends StatelessWidget {
     final userEmail = user?.email ?? 'user@messmax.com';
     final userInitials = user?.initials ?? 'M';
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.fromLTRB(
+        14,
+        12,
+        14,
+        12 + (bottomPadding > 0 ? bottomPadding : 4),
+      ),
       decoration: const BoxDecoration(
         color: AppColors.paperRaised,
         border: Border(top: BorderSide(color: AppColors.paperLine)),
