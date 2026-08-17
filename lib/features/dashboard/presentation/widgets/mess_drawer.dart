@@ -19,120 +19,94 @@ class MessDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dashboardState = context.watch<DashboardCubit>().state;
+
+    final activeMess = dashboardState is DashboardLoaded
+        ? dashboardState.dashboard.activeMess
+        : null;
+
     return Drawer(
       backgroundColor: AppColors.paper,
-      width: 310,
+      width: 290,
       child: Column(
         children: [
           _buildDrawerHeader(context),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               children: [
-                _buildSectionLabel('OVERVIEW'),
                 _drawerTile(
                   id: 'dashboard',
                   icon: Icons.dashboard_rounded,
-                  title: 'Dashboard & Ledger',
-                  subtitle: 'Daily meal & expense stats',
-                  badge: 'LIVE',
-                  badgeColor: AppColors.brandDark,
+                  title: 'Overview',
+                  subtitle: 'Dashboard & stats',
                   context: context,
                 ),
                 _drawerTile(
-                  id: 'daily_sheet',
-                  icon: Icons.table_chart_rounded,
-                  title: 'Daily Meal Sheet',
-                  subtitle: 'Member B/L/D breakdown',
-                  context: context,
-                ),
-
-                const SizedBox(height: 16),
-                _buildSectionLabel('MEAL SYSTEM'),
-                _drawerTile(
-                  id: 'meal_off',
-                  icon: Icons.do_not_disturb_on_rounded,
-                  title: 'Meal Off Requests',
-                  subtitle: 'Approve member off/on',
-                  badge: '2 PENDING',
-                  badgeColor: AppColors.accent,
+                  id: 'messes',
+                  icon: Icons.archive_rounded,
+                  title: 'Messes',
+                  subtitle: 'All managed & member messes',
                   context: context,
                 ),
                 _drawerTile(
-                  id: 'meal_settings',
-                  icon: Icons.rice_bowl_rounded,
-                  title: 'Default Meal Settings',
-                  subtitle: 'Configure member defaults',
-                  context: context,
-                ),
-
-                const SizedBox(height: 16),
-                _buildSectionLabel('BAZAR & FINANCE'),
-                _drawerTile(
-                  id: 'bazar_roster',
-                  icon: Icons.shopping_basket_rounded,
-                  title: 'Bazar Roster & Log',
-                  subtitle: 'Daily market receipts',
-                  context: context,
-                ),
-                _drawerTile(
-                  id: 'deposits',
-                  icon: Icons.account_balance_wallet_rounded,
-                  title: 'Member Deposits',
-                  subtitle: 'Track advances & balance',
-                  context: context,
-                ),
-
-                const SizedBox(height: 16),
-                _buildSectionLabel('SEATS & HOSTEL'),
-                _drawerTile(
-                  id: 'seat_ads',
-                  icon: Icons.storefront_rounded,
-                  title: 'My Seat Listings',
-                  subtitle: '3 Active ads on MessMax',
-                  badge: '3 LIVE',
-                  badgeColor: const Color(0xFF0F9F59),
-                  context: context,
-                ),
-                _drawerTile(
-                  id: 'room_allocation',
-                  icon: Icons.king_bed_rounded,
-                  title: 'Room & Bed Roster',
-                  subtitle: 'Manage capacity & rooms',
-                  context: context,
-                ),
-
-                const SizedBox(height: 16),
-                _buildSectionLabel('MEMBERS & MESS'),
-                _drawerTile(
-                  id: 'member_roster',
+                  id: 'members',
                   icon: Icons.people_alt_rounded,
-                  title: 'Member Roster',
-                  subtitle: '12 Active members',
+                  title: 'Members',
+                  subtitle: 'Member list & roster',
                   context: context,
                 ),
                 _drawerTile(
-                  id: 'invite_code',
-                  icon: Icons.qr_code_2_rounded,
-                  title: 'Mess Join Code',
-                  subtitle: 'Invite new members',
+                  id: 'bazar_schedule',
+                  icon: Icons.calendar_month_rounded,
+                  title: 'Bazar Schedule',
+                  subtitle: 'Shopping duty roster',
                   context: context,
                 ),
 
-                const SizedBox(height: 16),
-                _buildSectionLabel('SETTINGS'),
+                if (activeMess != null) ...[
+                  const SizedBox(height: 14),
+                  _buildSectionLabel('CURRENT MESS'),
+                  _drawerTile(
+                    id: 'current_mess',
+                    icon: Icons.grid_view_rounded,
+                    title: activeMess.name,
+                    subtitle: 'Monthly sheet & daily meals',
+                    context: context,
+                  ),
+                  _drawerTile(
+                    id: 'mess_bazar',
+                    icon: Icons.shopping_basket_rounded,
+                    title: 'Bazar Schedule',
+                    subtitle: '${activeMess.name} duty',
+                    context: context,
+                  ),
+                ],
+
+                const SizedBox(height: 14),
+                _buildSectionLabel('SEATS'),
                 _drawerTile(
-                  id: 'mess_rules',
-                  icon: Icons.gavel_rounded,
-                  title: 'Mess Rules & Policy',
-                  subtitle: 'Meal timing & notice period',
+                  id: 'my_ads',
+                  icon: Icons.home_work_rounded,
+                  title: 'My Seat Ads',
+                  subtitle: 'Manage posted seat listings',
                   context: context,
                 ),
                 _drawerTile(
-                  id: 'mess_settings',
-                  icon: Icons.settings_rounded,
-                  title: 'Mess Configuration',
-                  subtitle: 'Manager rights & details',
+                  id: 'find_mess',
+                  icon: Icons.search_rounded,
+                  title: 'Find Seats',
+                  subtitle: 'Browse live seat ads',
+                  context: context,
+                ),
+
+                const SizedBox(height: 14),
+                _buildSectionLabel('ACCOUNT'),
+                _drawerTile(
+                  id: 'account',
+                  icon: Icons.person_outline_rounded,
+                  title: 'My Account',
+                  subtitle: 'Profile & preferences',
                   context: context,
                 ),
               ],
@@ -153,16 +127,16 @@ class MessDrawer extends StatelessWidget {
         ? dashboardState.dashboard.activeMess
         : null;
 
-    final messName = activeMess?.name ?? 'No Mess Joined';
-    final messCode = activeMess != null ? activeMess.code : 'No Active Code';
+    final messName = activeMess?.name ?? 'MessMax Console';
+    final messCode = activeMess != null ? activeMess.code : 'No Mess Active';
     final roleLabel = user?.roleLabel ?? 'MEMBER';
 
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
-        MediaQuery.of(context).padding.top + 16,
+        MediaQuery.of(context).padding.top + 14,
         16,
-        18,
+        16,
       ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -177,11 +151,11 @@ class MessDrawer extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.25),
                   ),
@@ -189,7 +163,7 @@ class MessDrawer extends StatelessWidget {
                 child: const Icon(
                   Icons.apartment_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: 22,
                 ),
               ),
               const SizedBox(width: 12),
@@ -200,49 +174,38 @@ class MessDrawer extends StatelessWidget {
                     Text(
                       messName,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15.5,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        const Icon(Icons.key_rounded, size: 12, color: Colors.white70),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Code: $messCode',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Code: $messCode',
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
-                Icons.unfold_more_rounded,
-                color: Colors.white70,
-                size: 20,
-              ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 8,
-                  height: 8,
+                  width: 7,
+                  height: 7,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Color(0xFF0F9F59),
@@ -251,9 +214,9 @@ class MessDrawer extends StatelessWidget {
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
-                    'August 2026 • Active Month',
+                    'Active Month • Ledger',
                     style: TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -268,7 +231,7 @@ class MessDrawer extends StatelessWidget {
                   child: Text(
                     roleLabel,
                     style: const TextStyle(
-                      fontSize: 9,
+                      fontSize: 8.5,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
                       letterSpacing: 0.5,
@@ -289,7 +252,7 @@ class MessDrawer extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 10.5,
+          fontSize: 10,
           fontWeight: FontWeight.w900,
           color: AppColors.inkFaded,
           letterSpacing: 1.0,
@@ -303,17 +266,13 @@ class MessDrawer extends StatelessWidget {
     required IconData icon,
     required String title,
     required String subtitle,
-    String? badge,
-    Color? badgeColor,
     required BuildContext context,
   }) {
     final isSelected = activeSection == id;
 
     return Material(
-      color: isSelected
-          ? AppColors.brandDark.withValues(alpha: 0.08)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(14),
+      color: isSelected ? AppColors.brandDark.withValues(alpha: 0.08) : Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () {
           Navigator.pop(context); // Close drawer
@@ -321,25 +280,21 @@ class MessDrawer extends StatelessWidget {
             onSectionSelected!(id);
           }
         },
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.brandDark
-                      : AppColors.paperRaised,
-                  borderRadius: BorderRadius.circular(10),
-                  border: isSelected
-                      ? null
-                      : Border.all(color: AppColors.paperLine),
+                  color: isSelected ? AppColors.brandDark : AppColors.paperRaised,
+                  borderRadius: BorderRadius.circular(9),
+                  border: isSelected ? null : Border.all(color: AppColors.paperLine),
                 ),
                 child: Icon(
                   icon,
-                  size: 18,
+                  size: 17,
                   color: isSelected ? Colors.white : AppColors.inkSoft,
                 ),
               ),
@@ -355,6 +310,7 @@ class MessDrawer extends StatelessWidget {
                         fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
                         color: isSelected ? AppColors.brandDark : AppColors.ink,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       subtitle,
@@ -368,25 +324,6 @@ class MessDrawer extends StatelessWidget {
                   ],
                 ),
               ),
-              if (badge != null) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: badgeColor ?? AppColors.brandDark,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    badge,
-                    style: const TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 0.4,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -398,12 +335,12 @@ class MessDrawer extends StatelessWidget {
     final authState = context.watch<AuthCubit>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
     final avatarUrl = user?.avatarUrl != null ? AppConfig.sanitizeImageUrl(user!.avatarUrl) : null;
-    final userName = user?.name ?? 'Goutam Sharma';
-    final userEmail = user?.email ?? 'goutam@example.com';
-    final userInitials = user?.initials ?? 'GS';
+    final userName = user?.name ?? 'Mess User';
+    final userEmail = user?.email ?? 'user@messmax.com';
+    final userInitials = user?.initials ?? 'M';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: const BoxDecoration(
         color: AppColors.paperRaised,
         border: Border(top: BorderSide(color: AppColors.paperLine)),
@@ -411,9 +348,9 @@ class MessDrawer extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.brandDark,
             ),
@@ -425,14 +362,14 @@ class MessDrawer extends StatelessWidget {
                       errorBuilder: (_, _, _) => Center(
                         child: Text(
                           userInitials,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                       ),
                     )
                   : Center(
                       child: Text(
                         userInitials,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ),
             ),
@@ -463,14 +400,12 @@ class MessDrawer extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('MessMax Manager Panel Active')),
-              );
+            onPressed: () async {
+              await context.read<AuthCubit>().logout();
             },
             icon: const Icon(
-              Icons.verified_rounded,
-              color: AppColors.brandDark,
+              Icons.logout_rounded,
+              color: AppColors.inkFaded,
               size: 20,
             ),
           ),
