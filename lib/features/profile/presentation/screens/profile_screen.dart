@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/messmax_app_bar.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../ads/presentation/screens/my_ads_screen.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import 'account_screen.dart';
@@ -569,6 +570,10 @@ class ProfileScreen extends StatelessWidget {
           if (item.title == 'Personal Information') {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const AccountScreen()),
+            );
+          } else if (item.title == 'My Posted Seat Listings') {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MyAdsScreen()),
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
