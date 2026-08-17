@@ -192,7 +192,7 @@ class _DashboardViewState extends State<_DashboardView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activeMess?.name ?? 'Mess Dashboard',
+                  activeMess?.name ?? 'Green View Hostel',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
@@ -201,7 +201,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  activeMess != null ? 'Active Ledger • ${activeMess.code}' : 'Live Mess Management',
+                  'Manager Dashboard • ${activeMess?.code ?? "#MX-8921"}',
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.inkFaded,

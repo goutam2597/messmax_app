@@ -127,9 +127,9 @@ class MessDrawer extends StatelessWidget {
         ? dashboardState.dashboard.activeMess
         : null;
 
-    final messName = activeMess?.name ?? 'MessMax Console';
-    final messCode = activeMess != null ? activeMess.code : 'No Mess Active';
-    final roleLabel = user?.roleLabel ?? 'MEMBER';
+    final messName = activeMess?.name ?? 'Green View Hostel';
+    final messCode = activeMess?.code ?? '#MX-8921';
+    final roleLabel = user?.roleLabel ?? 'MANAGER';
 
     return Container(
       padding: EdgeInsets.fromLTRB(
