@@ -1,13 +1,11 @@
 import 'package:dio/dio.dart';
 
 import '../config/app_config.dart';
+import 'auth_storage.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/logging_interceptor.dart';
 
 /// Single configured [Dio] instance for the whole app.
-///
-/// Features receive this through their repositories; nobody constructs
-/// their own Dio. Add headers / retry logic here, once, for everyone.
 class DioClient {
   DioClient._();
 
@@ -15,7 +13,20 @@ class DioClient {
 
   static final AuthInterceptor _authInterceptor = AuthInterceptor();
 
+  static AuthInterceptor get authInterceptor => _authInterceptor;
+
   static Dio get instance => _instance ??= create();
+
+  static void setAuthToken(String? token) {
+    _authInterceptor.setToken(token);
+  }
+
+  static void clearAuthToken() {
+    _authInterceptor.clearToken();
+  }
+
+  /// Call once at startup so the interceptor has the persisted token.
+  static Future<void> hydrateAuth() => AuthStorage.hydrate();
 
   static Dio create() {
     final dio = Dio(

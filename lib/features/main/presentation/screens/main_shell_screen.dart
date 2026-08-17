@@ -8,6 +8,9 @@ import '../../../blog/presentation/cubit/blog_cubit.dart';
 import '../../../blog/presentation/screens/blog_screen.dart';
 import '../../../home/presentation/cubit/home_cubit.dart';
 import '../../../home/presentation/screens/home_screen.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 
 class MainShellScope extends InheritedWidget {
@@ -64,6 +67,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
   }
 
   void _onTabSelected(int index) {
+    if (index == 3) {
+      final auth = context.read<AuthCubit>().state;
+      if (auth is! AuthAuthenticated) {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+        return;
+      }
+    }
     if (_currentIndex == index) return;
     setState(() {
       _currentIndex = index;

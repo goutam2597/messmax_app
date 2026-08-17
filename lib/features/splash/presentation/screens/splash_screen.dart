@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_strings.dart';
+import '../../../main/presentation/screens/main_shell_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:messmax_app/features/welcome/presentation/screens/welcome_screen.dart';
 import '../cubit/splash_cubit.dart';
@@ -105,12 +106,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _onReady(BuildContext context, SplashDestination destination) {
-    // Post-frame so we navigate after build, never during.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      final target = destination == SplashDestination.home
+          ? const MainShellScreen()
+          : const WelcomeScreen();
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (_, _, _) => const WelcomeScreen(),
+          pageBuilder: (_, _, _) => target,
           transitionsBuilder: (_, animation, _, child) =>
               FadeTransition(opacity: animation, child: child),
           transitionDuration: const Duration(milliseconds: 450),

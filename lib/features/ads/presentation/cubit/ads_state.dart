@@ -23,6 +23,7 @@ final class AdsLoaded extends AdsState {
   final String? selectedArea;
   final String? selectedRoomType;
   final bool isLoadingMore;
+  final bool isFiltering;
 
   const AdsLoaded({
     required this.response,
@@ -31,6 +32,7 @@ final class AdsLoaded extends AdsState {
     this.selectedArea,
     this.selectedRoomType,
     this.isLoadingMore = false,
+    this.isFiltering = false,
   });
 
   AdsLoaded copyWith({
@@ -40,6 +42,7 @@ final class AdsLoaded extends AdsState {
     String? selectedArea,
     String? selectedRoomType,
     bool? isLoadingMore,
+    bool? isFiltering,
   }) {
     return AdsLoaded(
       response: response ?? this.response,
@@ -48,6 +51,7 @@ final class AdsLoaded extends AdsState {
       selectedArea: selectedArea ?? this.selectedArea,
       selectedRoomType: selectedRoomType ?? this.selectedRoomType,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isFiltering: isFiltering ?? this.isFiltering,
     );
   }
 
@@ -59,6 +63,7 @@ final class AdsLoaded extends AdsState {
         selectedArea,
         selectedRoomType,
         isLoadingMore,
+        isFiltering,
       ];
 }
 

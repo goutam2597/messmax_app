@@ -1,16 +1,26 @@
 import 'package:dio/dio.dart';
 
-/// Attaches the auth token to outgoing requests once login lands.
-///
-/// Kept wired in from day one so adding auth later is a one-line change.
+import '../auth_storage.dart';
+
+/// Attaches the Bearer token to outgoing requests.
 class AuthInterceptor extends Interceptor {
-  // TODO(mvp): read token from secure storage after login is implemented.
-  String? accessToken;
+  String? _overrideToken;
+
+  void setToken(String? token) {
+    _overrideToken = token;
+    AuthStorage.setTokenInMemory(token);
+  }
+
+  void clearToken() {
+    _overrideToken = null;
+    AuthStorage.setTokenInMemory(null);
+  }
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    if (accessToken != null) {
-      options.headers['Authorization'] = 'Bearer $accessToken';
+    final token = _overrideToken ?? AuthStorage.cachedToken;
+    if (token != null && token.isNotEmpty) {
+      options.headers['Authorization'] = 'Bearer $token';
     }
     handler.next(options);
   }

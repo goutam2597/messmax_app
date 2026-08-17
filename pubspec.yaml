@@ -23,6 +23,13 @@ dependencies:
   # Logging
   logger: ^2.7.0
 
+  # Secure storage
+  flutter_secure_storage: ^11.0.0
+
+  # Firebase — Google sign-in (same project pushtest-kd as web)
+  firebase_core: ^4.3.0
+  firebase_auth: ^6.1.2
+
   # SVG icons
   flutter_svg: ^2.3.0
 

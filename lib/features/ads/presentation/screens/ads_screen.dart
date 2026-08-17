@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/ad_cards.dart';
-import '../../../../core/widgets/filter_pill_bar.dart';
 import '../../../../core/widgets/messmax_app_bar.dart';
 import '../../../../core/widgets/search_filter_bar.dart';
+import '../../../home/data/models/home_data_model.dart';
 import '../../../home/presentation/widgets/home_filter_dialog.dart';
 import '../cubit/ads_cubit.dart';
 import '../cubit/ads_state.dart';
@@ -18,22 +18,6 @@ class AdsScreen extends StatefulWidget {
 }
 
 class _AdsScreenState extends State<AdsScreen> {
-  static const _roomTypeLabels = [
-    'All Room Types',
-    'Single',
-    'Shared',
-    'Bunk',
-    'Semi-Private',
-  ];
-
-  static const _roomTypeValues = <String?>[
-    null,
-    'single',
-    'shared',
-    'bunk',
-    'semi-private',
-  ];
-
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -60,19 +44,17 @@ class _AdsScreenState extends State<AdsScreen> {
   }
 
   void _openFilterDialog(BuildContext context, AdsLoaded? state) {
-    final cities = state?.response.availableCities ?? const [];
-    final areas = state?.response.availableAreas ?? const [];
-    final roomTypes = state?.response.availableRoomTypes ?? const [];
-
     HomeFilterDialog.show(
       context,
-      cities: cities,
-      areas: areas,
-      roomTypes: roomTypes,
+      roomTypes: state?.response.availableRoomTypes ?? const [],
       initialCity: state?.selectedCity,
       initialArea: state?.selectedArea,
       initialRoomType: state?.selectedRoomType,
       initialQuery: _searchController.text.trim(),
+      loadCities: (search, page) =>
+          context.read<AdsCubit>().fetchCities(search: search, page: page),
+      loadAreas: (city, search, page) => context.read<AdsCubit>().fetchAreas(
+          city: city, search: search, page: page),
       onApply: ({city, area, roomType, query}) {
         if (query != null && query.isNotEmpty) {
           _searchController.text = query;
@@ -91,6 +73,11 @@ class _AdsScreenState extends State<AdsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isFiltering = switch (context.watch<AdsCubit>().state) {
+      AdsLoaded(:final isFiltering) => isFiltering,
+      _ => false,
+    };
+
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: GestureDetector(
@@ -100,7 +87,12 @@ class _AdsScreenState extends State<AdsScreen> {
           child: Column(
             children: [
               _buildSearchHeader(context),
-
+              if (isFiltering)
+                const LinearProgressIndicator(
+                  minHeight: 2,
+                  color: AppColors.brandDark,
+                  backgroundColor: Colors.transparent,
+                ),
               Expanded(
                 child: BlocBuilder<AdsCubit, AdsState>(
                   builder: (context, state) {
@@ -269,15 +261,20 @@ class _AdsScreenState extends State<AdsScreen> {
                                         final ad = ads[index];
                                         return AdGridCard(
                                           ad: ad,
-                                          imageHeight: index % 3 == 0 ? 150 : 120,
-                                          onTap: () => openAdDetail(context, ad),
+                                          imageHeight: index % 3 == 0
+                                              ? 150
+                                              : 120,
+                                          onTap: () =>
+                                              openAdDetail(context, ad),
                                         );
                                       },
                                     ),
                                   ),
                                   if (state.isLoadingMore)
                                     const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
                                       child: Center(
                                         child: CircularProgressIndicator(
                                           color: AppColors.brandDark,
@@ -307,7 +304,17 @@ class _AdsScreenState extends State<AdsScreen> {
     final state = context.watch<AdsCubit>().state;
     final loadedState = state is AdsLoaded ? state : null;
     final selectedRoomType = loadedState?.selectedRoomType;
-    final selectedIndex = _roomTypeValues.indexOf(selectedRoomType);
+    final roomTypeOptions =
+        loadedState?.response.availableRoomTypes ?? const <RoomTypeOption>[];
+    final roomTypeLabels = [
+      'All Room Types',
+      ...roomTypeOptions.map((rt) => rt.label),
+    ];
+    final roomTypeValues = <String?>[
+      null,
+      ...roomTypeOptions.map((rt) => rt.value),
+    ];
+    final selectedIndex = roomTypeValues.indexOf(selectedRoomType);
 
     // Keep search field controller synced if searchQuery in state changes
     if (loadedState != null &&
@@ -335,12 +342,65 @@ class _AdsScreenState extends State<AdsScreen> {
           if (loadedState != null)
             _buildActiveFilterChips(context, loadedState),
           const SizedBox(height: 8),
-          FilterPillBar(
-            labels: _roomTypeLabels,
-            selectedIndex: selectedIndex < 0 ? 0 : selectedIndex,
-            insetPadding: false,
-            onSelected: (index) =>
-                context.read<AdsCubit>().filterRoomType(_roomTypeValues[index]),
+          SizedBox(
+            height: 38,
+            child: ListView.separated(
+              clipBehavior: Clip.none,
+              separatorBuilder: (_, _) => const SizedBox(width: 4),
+              padding: EdgeInsets.zero,
+              scrollDirection: Axis.horizontal,
+              itemCount: roomTypeLabels.length,
+              itemBuilder: (context, index) {
+                final isSelected = selectedIndex == index;
+                return GestureDetector(
+                  onTap: () => context.read<AdsCubit>().filterRoomType(
+                    roomTypeValues[index],
+                  ),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.brandDark
+                          : AppColors.paperRaised,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.brandDark
+                            : AppColors.paperLine,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.brandDark.withValues(
+                                  alpha: 0.2,
+                                ),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        roomTypeLabels[index],
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isSelected ? Colors.white : AppColors.inkSoft,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -351,14 +411,11 @@ class _AdsScreenState extends State<AdsScreen> {
     final query = state.searchQuery;
     final city = state.selectedCity;
     final area = state.selectedArea;
-    final roomType = state.selectedRoomType;
 
     final hasActiveFilter =
-        (query != null && query.isNotEmpty) ||
-        city != null ||
-        area != null ||
-        roomType != null;
+        (query != null && query.isNotEmpty) || city != null || area != null;
 
+    // Room type alone is already visible via the pill bar below.
     if (!hasActiveFilter) return const SizedBox.shrink();
 
     return Padding(
@@ -389,12 +446,6 @@ class _AdsScreenState extends State<AdsScreen> {
                   area: null,
                   roomType: state.selectedRoomType,
                 ),
-              ),
-            if (roomType != null)
-              _buildRemovableChip(
-                label:
-                    'Type: ${roomType[0].toUpperCase()}${roomType.substring(1)}',
-                onRemove: () => context.read<AdsCubit>().filterRoomType(null),
               ),
             const SizedBox(width: 4),
             GestureDetector(

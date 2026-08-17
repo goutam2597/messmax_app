@@ -5,12 +5,14 @@ class ApiEndpoints {
   // home & ads
   static const String home = '/v1/home';
   static const String ads = '/v1/ads';
+  static const String areas = '/v1/areas';
+  static const String cities = '/v1/cities';
   static const String blogs = '/v1/blogs';
 
-  // auth
-  static const String login = '/auth/login';
-  static const String register = '/auth/register';
-
-  // messes
-  static const String messes = '/messes';
+  // auth (Sanctum Bearer)
+  static const String authRegister = '/v1/auth/register';
+  static const String authLogin = '/v1/auth/login';
+  static const String authFirebase = '/v1/auth/firebase';
+  static const String authLogout = '/v1/auth/logout';
+  static const String me = '/v1/me';
 }

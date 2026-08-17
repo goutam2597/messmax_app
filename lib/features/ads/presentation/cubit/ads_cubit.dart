@@ -26,7 +26,23 @@ class AdsCubit extends Cubit<AdsState> {
     _selectedArea = area;
     _selectedRoomType = roomType;
 
-    emit(const AdsLoading());
+    final prev = state;
+    final hasPrev = prev is AdsLoaded;
+
+    if (hasPrev) {
+      emit(AdsLoaded(
+        response: prev.response,
+        searchQuery: _searchQuery,
+        selectedCity: _selectedCity,
+        selectedArea: _selectedArea,
+        selectedRoomType: _selectedRoomType,
+        isLoadingMore: prev.isLoadingMore,
+        isFiltering: true,
+      ));
+    } else {
+      emit(const AdsLoading());
+    }
+
     try {
       final res = await _repository.getAds(
         search: _searchQuery,
@@ -43,7 +59,18 @@ class AdsCubit extends Cubit<AdsState> {
         selectedRoomType: _selectedRoomType,
       ));
     } catch (e) {
-      emit(AdsError(e.toString()));
+      if (hasPrev) {
+        emit(AdsLoaded(
+          response: prev.response,
+          searchQuery: _searchQuery,
+          selectedCity: _selectedCity,
+          selectedArea: _selectedArea,
+          selectedRoomType: _selectedRoomType,
+          isLoadingMore: prev.isLoadingMore,
+        ));
+      } else {
+        emit(AdsError(e.toString()));
+      }
     }
   }
 
@@ -92,6 +119,21 @@ class AdsCubit extends Cubit<AdsState> {
     } catch (e) {
       emit(currentState.copyWith(isLoadingMore: false));
     }
+  }
+
+  Future<({List<String> items, bool hasMore})> fetchAreas({
+    String? city,
+    String? search,
+    int page = 1,
+  }) {
+    return _repository.fetchAreas(city: city, search: search, page: page);
+  }
+
+  Future<({List<String> items, bool hasMore})> fetchCities({
+    String? search,
+    int page = 1,
+  }) {
+    return _repository.fetchCities(search: search, page: page);
   }
 
   void updateSearch(String query) {

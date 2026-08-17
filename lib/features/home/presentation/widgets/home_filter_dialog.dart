@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
 import '../../data/models/home_data_model.dart';
 
 typedef OnApplyHomeFilter =
@@ -10,49 +11,62 @@ typedef OnApplyHomeFilter =
       String? query,
     });
 
+/// Loads a page of cities for the dropdown.
+typedef CityLoader = Future<({List<String> items, bool hasMore})> Function(
+  String? search,
+  int page,
+);
+
+/// Loads a page of areas for the dropdown, scoped to [city] (null = all areas).
+typedef AreaLoader = Future<({List<String> items, bool hasMore})> Function(
+  String? city,
+  String? search,
+  int page,
+);
+
 class HomeFilterDialog extends StatefulWidget {
-  final List<String> cities;
-  final List<String> areas;
   final List<RoomTypeOption> roomTypes;
   final String? initialCity;
   final String? initialArea;
   final String? initialRoomType;
   final String? initialQuery;
+  final CityLoader loadCities;
+  final AreaLoader loadAreas;
   final OnApplyHomeFilter onApply;
 
   const HomeFilterDialog({
     super.key,
-    required this.cities,
-    required this.areas,
     required this.roomTypes,
     this.initialCity,
     this.initialArea,
     this.initialRoomType,
     this.initialQuery,
+    required this.loadCities,
+    required this.loadAreas,
     required this.onApply,
   });
 
   static void show(
     BuildContext context, {
-    required List<String> cities,
-    required List<String> areas,
     required List<RoomTypeOption> roomTypes,
     String? initialCity,
     String? initialArea,
     String? initialRoomType,
     String? initialQuery,
+    required CityLoader loadCities,
+    required AreaLoader loadAreas,
     required OnApplyHomeFilter onApply,
   }) {
     showDialog(
       context: context,
       builder: (ctx) => HomeFilterDialog(
-        cities: cities,
-        areas: areas,
         roomTypes: roomTypes,
         initialCity: initialCity,
         initialArea: initialArea,
         initialRoomType: initialRoomType,
         initialQuery: initialQuery,
+        loadCities: loadCities,
+        loadAreas: loadAreas,
         onApply: onApply,
       ),
     );
@@ -83,17 +97,14 @@ class _HomeFilterDialogState extends State<HomeFilterDialog> {
     super.dispose();
   }
 
+  bool get _hasFilterApplied =>
+      _selectedCity != null ||
+      _selectedArea != null ||
+      _selectedRoomType != null ||
+      _queryController.text.isNotEmpty;
+
   @override
   Widget build(BuildContext context) {
-    final defaultRoomTypes = widget.roomTypes.isNotEmpty
-        ? widget.roomTypes
-        : const [
-            RoomTypeOption(value: 'single', label: 'Single'),
-            RoomTypeOption(value: 'shared', label: 'Shared'),
-            RoomTypeOption(value: 'bunk', label: 'Bunk'),
-            RoomTypeOption(value: 'semi-private', label: 'Semi-private'),
-          ];
-
     return Dialog(
       backgroundColor: AppColors.paper,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -166,39 +177,48 @@ class _HomeFilterDialogState extends State<HomeFilterDialog> {
             ),
             const SizedBox(height: 16),
 
-            // City Dropdown
+            // City — searchable + paginated
             const _FieldLabel('Select City'),
             const SizedBox(height: 6),
-            _FilterDropdown(
+            SearchableDropdown(
               value: _selectedCity,
               hint: 'All Cities',
-              items: widget.cities,
-              onChanged: (value) => setState(() => _selectedCity = value),
+              fetcher: widget.loadCities,
+              onChanged: (value) {
+                setState(() {
+                  _selectedCity = value;
+                  _selectedArea = null;
+                });
+              },
             ),
             const SizedBox(height: 16),
 
-            // Area Dropdown
-            if (widget.areas.isNotEmpty) ...[
-              const _FieldLabel('Select Area'),
-              const SizedBox(height: 6),
-              _FilterDropdown(
-                value: _selectedArea,
-                hint: 'All Areas',
-                items: widget.areas,
-                onChanged: (value) => setState(() => _selectedArea = value),
+            // Area — always available: all areas when no city, city areas when selected
+            const _FieldLabel('Select Area'),
+            const SizedBox(height: 6),
+            SearchableDropdown(
+              key: ValueKey<String?>(_selectedCity),
+              value: _selectedArea,
+              hint: 'All Areas',
+              fetcher: (search, page) => widget.loadAreas(
+                _selectedCity,
+                search,
+                page,
               ),
-              const SizedBox(height: 16),
-            ],
+              onChanged: (value) =>
+                  setState(() => _selectedArea = value),
+            ),
+            const SizedBox(height: 16),
 
             // Room Type Dropdown
             const _FieldLabel('Room Type'),
             const SizedBox(height: 6),
             _FilterDropdown<RoomTypeOption>(
-              value: defaultRoomTypes
+              value: widget.roomTypes
                   .where((rt) => rt.value == _selectedRoomType)
                   .firstOrNull,
               hint: 'All Types',
-              items: defaultRoomTypes,
+              items: widget.roomTypes,
               labelOf: (rt) => rt.label,
               onChanged: (value) =>
                   setState(() => _selectedRoomType = value?.value),
@@ -218,17 +238,19 @@ class _HomeFilterDialogState extends State<HomeFilterDialog> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _selectedCity = null;
-                        _selectedArea = null;
-                        _selectedRoomType = null;
-                        _queryController.clear();
-                      });
-                    },
-                    child: const Text(
-                      'Reset',
-                      style: TextStyle(
+                    onPressed: _hasFilterApplied
+                        ? () {
+                            setState(() {
+                              _selectedCity = null;
+                              _selectedArea = null;
+                              _selectedRoomType = null;
+                              _queryController.clear();
+                            });
+                          }
+                        : () => Navigator.of(context).pop(),
+                    child: Text(
+                      _hasFilterApplied ? 'Reset' : 'Cancel',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),

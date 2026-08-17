@@ -252,19 +252,8 @@ class _BlogScreenState extends State<BlogScreen> {
   Widget _buildArticleCard(BuildContext context, BlogModel blog) {
     return GestureDetector(
       onTap: () => _openDetail(context, blog),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.paperRaised,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.paperLine),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
+      child: Card(
+        margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

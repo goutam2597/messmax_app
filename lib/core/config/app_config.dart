@@ -7,7 +7,7 @@ class AppConfig {
 
   /// Host LAN IP address for backend connection across physical mobile devices,
   /// emulators, and local development environments.
-  static const String hostIp = '192.168.0.173';
+  static const String hostIp = '192.168.0.187';
 
   /// Backend origin base URL using host IP.
   static String get apiBaseUrl {

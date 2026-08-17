@@ -23,15 +23,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const _categories = [
-    'All',
-    'Single',
-    'Shared',
-    'Bunk',
-    'Semi-private',
-  ];
-
-  String _selectedCategory = 'All';
+  String? _selectedRoomType;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -49,10 +41,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openFilterDialog(BuildContext context, HomeDataModel data) {
     HomeFilterDialog.show(
       context,
-      cities: data.availableCities,
-      areas: data.availableAreas,
       roomTypes: data.availableRoomTypes,
       initialQuery: _searchController.text.trim(),
+      loadCities: (search, page) =>
+          context.read<AdsCubit>().fetchCities(search: search, page: page),
+      loadAreas: (city, search, page) => context.read<AdsCubit>().fetchAreas(
+          city: city, search: search, page: page),
       onApply: ({city, area, roomType, query}) {
         _applyFilterAndNavigate(
           context,
@@ -160,11 +154,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
               if (state is HomeLoaded) {
                 final data = state.data;
+                final roomTypeLabel = data.availableRoomTypes
+                    .where((rt) => rt.value == _selectedRoomType)
+                    .map((rt) => rt.label)
+                    .firstOrNull;
                 final filteredNewAds = _filterAds(data.newAds);
 
                 return Column(
                   children: [
-                    _buildHeader(),
+                    _buildHeader(data),
 
                     Expanded(
                       child: RefreshIndicator(
@@ -185,11 +183,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(height: 12),
                               ],
 
-                              _buildCategoryFilterBar(),
+                              _buildCategoryFilterBar(data),
 
                               const SizedBox(height: 16),
 
-                              _buildNewListingsSection(filteredNewAds),
+                              _buildNewListingsSection(
+                                filteredNewAds,
+                                selectedLabel: roomTypeLabel,
+                              ),
                             ],
                           ),
                         ),
@@ -208,19 +209,26 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<AdModel> _filterAds(List<AdModel> ads) {
-    if (_selectedCategory == 'All') return ads;
-    final cat = _selectedCategory.toLowerCase();
-    return ads.where((a) => a.roomType.toLowerCase() == cat).toList();
+    if (_selectedRoomType == null) return ads;
+    return ads
+        .where((a) => a.roomType.toLowerCase() == _selectedRoomType)
+        .toList();
   }
 
-  Widget _buildHeader() {
-    return const MessMaxAppBar(
+  Widget _buildHeader(HomeDataModel data) {
+    final cities = data.availableCities;
+    final cityLabel = cities.isEmpty
+        ? 'All Cities'
+        : cities.length > 1
+            ? '${cities.first} +${cities.length - 1} cities'
+            : cities.first;
+    return MessMaxAppBar(
       title: 'MessMax',
       subtitle: 'Seats & Meals Hub',
-      leading: BrandMark(),
+      leading: const BrandMark(),
       actions: [
-        LocationChip(label: 'Dhaka'),
-        AppBarActionButton(
+        LocationChip(label: cityLabel),
+        const AppBarActionButton(
           icon: Icons.notifications_none_rounded,
           svgAsset: 'assets/icons/bell.svg',
           showDot: true,
@@ -279,7 +287,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryFilterBar() {
+  Widget _buildCategoryFilterBar(HomeDataModel data) {
+    final roomTypeValues = <String?>[
+      null,
+      ...data.availableRoomTypes.map((rt) => rt.value),
+    ];
+    final labels = [
+      'All',
+      ...data.availableRoomTypes.map((rt) => rt.label),
+    ];
+    var selectedIndex = roomTypeValues.indexOf(_selectedRoomType);
+    if (selectedIndex < 0) selectedIndex = 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -297,16 +316,19 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 10),
         FilterPillBar(
-          labels: _categories,
-          selectedIndex: _categories.indexOf(_selectedCategory),
+          labels: labels,
+          selectedIndex: selectedIndex,
           onSelected: (index) =>
-              setState(() => _selectedCategory = _categories[index]),
+              setState(() => _selectedRoomType = roomTypeValues[index]),
         ),
       ],
     );
   }
 
-  Widget _buildNewListingsSection(List<AdModel> ads) {
+  Widget _buildNewListingsSection(
+    List<AdModel> ads, {
+    String? selectedLabel,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Column(
@@ -316,9 +338,9 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _selectedCategory == 'All'
+                selectedLabel == null
                     ? 'New Seat Listings'
-                    : '$_selectedCategory Seats',
+                    : '$selectedLabel Seats',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -355,7 +377,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'No $_selectedCategory seats currently listed.',
+                    selectedLabel == null
+                        ? 'No seats currently listed.'
+                        : 'No $selectedLabel seats currently listed.',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

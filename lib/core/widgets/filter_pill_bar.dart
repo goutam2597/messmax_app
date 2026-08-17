@@ -24,7 +24,7 @@ class FilterPillBar extends StatelessWidget {
     return SizedBox(
       height: height,
       child: ListView.separated(
-        clipBehavior:Clip.none ,
+        clipBehavior: Clip.none,
         separatorBuilder: (_, _) => const SizedBox(width: 4),
         padding: EdgeInsets.symmetric(horizontal: 12),
         scrollDirection: Axis.horizontal,

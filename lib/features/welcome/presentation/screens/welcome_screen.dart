@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../auth/presentation/screens/register_screen.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
 
 /// Marketing / landing screen — the first thing after splash.
@@ -254,21 +256,15 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   void _onCreateMess() {
     AppLogger.d('Welcome: Create mess tapped');
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const MainShellScreen(initialTab: 3),
-      ),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const RegisterScreen()),
     );
   }
 
   void _onLogin() {
     AppLogger.d('Welcome: Login tapped');
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const MainShellScreen(initialTab: 3),
-      ),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
 }
