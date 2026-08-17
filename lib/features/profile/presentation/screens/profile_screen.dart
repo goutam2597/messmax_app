@@ -7,6 +7,7 @@ import '../../../../core/widgets/messmax_app_bar.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:messmax_app/features/main/presentation/screens/main_shell_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -43,7 +44,9 @@ class ProfileScreen extends StatelessWidget {
                         return _guestHeader(context);
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
+                    _buildDashboardButton(context),
+                    const SizedBox(height: 16),
                     _quickActions(context),
                     const SizedBox(height: 24),
                     _sectionTitle('ACCOUNT & SETTINGS'),
@@ -154,6 +157,86 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboardButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.brandDark, AppColors.brandDeep],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.brandDark.withValues(alpha: 0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const DashboardScreen()),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.dashboard_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Open Manager Dashboard',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Access meal ledger, bazar roster & mess drawer',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ],
+            ),
           ),
         ),
       ),
