@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../../features/ads/data/models/ad_model.dart';
@@ -26,7 +26,7 @@ class AdFeaturedCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.12),
@@ -39,13 +39,9 @@ class AdFeaturedCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            NetworkImageCover(
-              url: ad.coverImageUrl,
-              scrim: true,
-              iconSize: 48,
-            ),
+            NetworkImageCover(url: ad.coverImageUrl, scrim: true, iconSize: 48),
 
-            // Seats pill — top left
+            // Seats pill  top left
             Positioned(
               top: 14,
               left: 14,
@@ -89,7 +85,7 @@ class AdFeaturedCard extends StatelessWidget {
               ),
             ),
 
-            // Room type pill — top right
+            // Room type pill â€” top right
             Positioned(
               top: 14,
               right: 14,
@@ -181,12 +177,352 @@ class AdFeaturedCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Text(
-                        'View Details  →',
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              'View Details',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Masonry-style card for the staggered grid with full listing info.
+class AdGridCard extends StatelessWidget {
+  final AdModel ad;
+  final VoidCallback onTap;
+  final double imageHeight;
+
+  const AdGridCard({
+    super.key,
+    required this.ad,
+    required this.onTap,
+    this.imageHeight = 160,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.paperRaised,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.paperLine),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              children: [
+                SizedBox(
+                  height: imageHeight,
+                  width: double.infinity,
+                  child: NetworkImageCover(
+                    url: ad.coverImageUrl,
+                    scrim: true,
+                    iconSize: 40,
+                  ),
+                ),
+
+                // Room type pill (top-left)
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      ad.roomType.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Featured star
+                if (ad.isFeatured)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.star_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+
+                // Rent badge (bottom-left)
+                Positioned(
+                  bottom: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '৳${ad.rentPerSeat.toInt()} /mo',
+                      style: const TextStyle(
+                        color: AppColors.accentDark,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Seats left pill (bottom-right)
+                Positioned(
+                  bottom: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ad.seatsAvailable > 1
+                          ? AppColors.emerald
+                          : AppColors.amber,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.event_seat_rounded,
+                          color: Colors.white,
+                          size: 12,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${ad.seatsAvailable} left',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Full details footer
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ad.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.ink,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Location row
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_rounded,
+                        size: 13,
+                        color: AppColors.accent,
+                      ),
+                      const SizedBox(width: 3),
+                      Expanded(
+                        child: Text(
+                          ad.areaLabel ?? ad.city ?? 'Dhaka',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.inkSoft,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Mess name
+                  if (ad.messName != null) ...[
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.apartment_rounded,
+                          size: 12,
+                          color: AppColors.inkFaded,
+                        ),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            ad.messName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              color: AppColors.inkFaded,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+
+                  // Room capacity
+                  if (ad.roomCapacity != null) ...[
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.people_outline_rounded,
+                          size: 12,
+                          color: AppColors.inkFaded,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${ad.roomCapacity} persons room',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.inkFaded,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+
+                  const SizedBox(height: 10),
+                  const Divider(height: 1, color: AppColors.paperLine),
+                  const SizedBox(height: 8),
+
+                  // Footer: published date + details link
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          ad.publishedAt ?? 'New listing',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: ad.publishedAt != null
+                                ? AppColors.inkFaded
+                                : AppColors.emerald,
+                            fontWeight: ad.publishedAt != null
+                                ? FontWeight.w600
+                                : FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Details →',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: AppColors.brandDark,
                         ),
                       ),
                     ],
@@ -303,7 +639,7 @@ class AdRowCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '৳${ad.rentPerSeat.toInt()} /mo',
+                          'à§³${ad.rentPerSeat.toInt()} /mo',
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w900,
@@ -389,7 +725,9 @@ class AdListCard extends StatelessWidget {
                   left: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: ad.seatsAvailable > 1
                           ? AppColors.emerald
@@ -417,8 +755,10 @@ class AdListCard extends StatelessWidget {
                   bottom: 12,
                   right: 12,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.brandDark,
                       borderRadius: BorderRadius.circular(10),
@@ -430,7 +770,7 @@ class AdListCard extends StatelessWidget {
                       ],
                     ),
                     child: Text(
-                      '৳${ad.rentPerSeat.toInt()} /mo',
+                      'à§³${ad.rentPerSeat.toInt()} /mo',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -460,8 +800,11 @@ class AdListCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_rounded,
-                          size: 14, color: AppColors.accent),
+                      const Icon(
+                        Icons.location_on_rounded,
+                        size: 14,
+                        color: AppColors.accent,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -475,7 +818,9 @@ class AdListCard extends StatelessWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.brandSoft,
                           borderRadius: BorderRadius.circular(6),
@@ -495,8 +840,11 @@ class AdListCard extends StatelessWidget {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.apartment_rounded,
-                            size: 13, color: AppColors.inkFaded),
+                        const Icon(
+                          Icons.apartment_rounded,
+                          size: 13,
+                          color: AppColors.inkFaded,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           ad.messName!,

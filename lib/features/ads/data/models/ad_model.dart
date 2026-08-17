@@ -86,7 +86,7 @@ class AdModel extends Equatable {
       contactEmail: json['contact_email'] as String?,
       contactWhatsapp: json['contact_whatsapp'] as String?,
       isFeatured: json['is_featured'] as bool? ?? false,
-      publishedAt: json['published_at'] as String?,
+      publishedAt: _formatPublishedDate(json['published_at'] as String?),
       coverImageUrl: AppConfig.sanitizeImageUrl(json['cover_image_url'] as String?),
       imageUrls: (json['image_urls'] as List<dynamic>?)
               ?.map((e) => AppConfig.sanitizeImageUrl(e.toString())!)
@@ -96,6 +96,21 @@ class AdModel extends Equatable {
       posterName: poster?['name'] as String?,
       posterAvatarUrl: AppConfig.sanitizeImageUrl(poster?['avatar_url'] as String?),
     );
+  }
+
+  /// Converts a raw API timestamp like `2026-08-16T19:33:32.000000Z`
+  /// into a short readable form like `Aug 16, 2026`.
+  static String? _formatPublishedDate(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    final date = DateTime.tryParse(raw);
+    if (date == null) return raw;
+
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    final local = date.toLocal();
+    return '${months[local.month - 1]} ${local.day}, ${local.year}';
   }
 
   @override

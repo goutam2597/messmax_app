@@ -1,6 +1,23 @@
 import 'package:equatable/equatable.dart';
 import '../../../ads/data/models/ad_model.dart';
 
+class RoomTypeOption extends Equatable {
+  final String value;
+  final String label;
+
+  const RoomTypeOption({required this.value, required this.label});
+
+  factory RoomTypeOption.fromJson(Map<String, dynamic> json) {
+    return RoomTypeOption(
+      value: json['value'] as String? ?? '',
+      label: json['label'] as String? ?? '',
+    );
+  }
+
+  @override
+  List<Object?> get props => [value, label];
+}
+
 class HomeDataModel extends Equatable {
   final String tagline;
   final String heroTitle;
@@ -10,6 +27,9 @@ class HomeDataModel extends Equatable {
   final int totalSeatsAvailable;
   final List<AdModel> featuredAds;
   final List<AdModel> newAds;
+  final List<String> availableCities;
+  final List<String> availableAreas;
+  final List<RoomTypeOption> availableRoomTypes;
 
   const HomeDataModel({
     required this.tagline,
@@ -20,6 +40,9 @@ class HomeDataModel extends Equatable {
     required this.totalSeatsAvailable,
     required this.featuredAds,
     required this.newAds,
+    this.availableCities = const [],
+    this.availableAreas = const [],
+    this.availableRoomTypes = const [],
   });
 
   factory HomeDataModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +59,24 @@ class HomeDataModel extends Equatable {
             .toList() ??
         const [];
 
+    final filters = json['filters'] as Map<String, dynamic>? ?? {};
+    final available = filters['available'] as Map<String, dynamic>? ?? {};
+
+    final cities = (available['cities'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        const [];
+
+    final areas = (available['areas'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        const [];
+
+    final roomTypes = (available['room_types'] as List<dynamic>?)
+            ?.map((e) => RoomTypeOption.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [];
+
     return HomeDataModel(
       tagline: json['tagline'] as String? ??
           'Find & manage your mess · meals, seats and bazar in one place',
@@ -48,6 +89,9 @@ class HomeDataModel extends Equatable {
       totalSeatsAvailable: stats['total_seats_available'] as int? ?? 0,
       featuredAds: featuredList,
       newAds: newList,
+      availableCities: cities,
+      availableAreas: areas,
+      availableRoomTypes: roomTypes,
     );
   }
 
@@ -60,5 +104,8 @@ class HomeDataModel extends Equatable {
         totalSeatsAvailable,
         featuredAds,
         newAds,
+        availableCities,
+        availableAreas,
+        availableRoomTypes,
       ];
 }

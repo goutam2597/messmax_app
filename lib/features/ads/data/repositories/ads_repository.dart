@@ -52,13 +52,20 @@ class AdsRepository {
     }
   }
 
-  Future<AdModel> getAdDetail(String slug) async {
+  Future<({AdModel ad, List<AdModel> relatedAds})> getAdDetail(String slug) async {
     try {
       final response = await _dioClient.get('${ApiEndpoints.ads}/$slug');
       final body = response.data as Map<String, dynamic>;
       final data = body['data'] as Map<String, dynamic>;
       final adJson = data['ad'] as Map<String, dynamic>;
-      return AdModel.fromJson(adJson);
+      final relatedJson = (data['related_ads'] as List<dynamic>?)
+              ?.map((e) => AdModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <AdModel>[];
+      return (
+        ad: AdModel.fromJson(adJson),
+        relatedAds: relatedJson,
+      );
     } catch (e, stack) {
       AppLogger.e('AdsRepository: failed to fetch ad detail for slug: $slug', e, stack);
       rethrow;

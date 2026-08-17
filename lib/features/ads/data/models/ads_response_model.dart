@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../home/data/models/home_data_model.dart';
 import 'ad_model.dart';
 
 class AdsResponseModel extends Equatable {
@@ -9,6 +10,7 @@ class AdsResponseModel extends Equatable {
   final bool hasMore;
   final List<String> availableCities;
   final List<String> availableAreas;
+  final List<RoomTypeOption> availableRoomTypes;
 
   const AdsResponseModel({
     required this.ads,
@@ -18,6 +20,7 @@ class AdsResponseModel extends Equatable {
     required this.hasMore,
     required this.availableCities,
     required this.availableAreas,
+    this.availableRoomTypes = const [],
   });
 
   factory AdsResponseModel.fromJson(Map<String, dynamic> json) {
@@ -40,6 +43,11 @@ class AdsResponseModel extends Equatable {
             .toList() ??
         const [];
 
+    final roomTypes = (available['room_types'] as List<dynamic>?)
+            ?.map((e) => RoomTypeOption.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [];
+
     return AdsResponseModel(
       ads: adsList,
       total: pagination['total'] as int? ?? adsList.length,
@@ -48,9 +56,19 @@ class AdsResponseModel extends Equatable {
       hasMore: pagination['has_more'] as bool? ?? false,
       availableCities: cities,
       availableAreas: areas,
+      availableRoomTypes: roomTypes,
     );
   }
 
   @override
-  List<Object?> get props => [ads, total, currentPage, lastPage, hasMore];
+  List<Object?> get props => [
+        ads,
+        total,
+        currentPage,
+        lastPage,
+        hasMore,
+        availableCities,
+        availableAreas,
+        availableRoomTypes,
+      ];
 }

@@ -5,3 +5,14 @@
 - Do not use dot indicators on the Home featured carousel slider. Confidence: 0.65
 - Do not overlay any page counter/position chip (e.g. "1 / N") on the Home featured carousel slider. Confidence: 0.65
 - Use the carousel_slider package (instead of a raw PageView) for the Home featured carousel slider. Confidence: 0.65
+- Search bar and its adjacent filter button should share a single unified border (no separate border on the filter button), with a vertical divider on the left of the filter button. Confidence: 0.65
+- Filter UI should use a dialog (not a bottom sheet), with dropdowns for filter options instead of chips. Confidence: 0.70
+- For the search bar design, reference the market_sabil_app project (C:\laragon\www\market\market_sabil_app) and replicate its search bar exactly as-is. Confidence: 0.60
+- Dialog close buttons should be a brand-colored circle (AppColors.brand) with a white X icon. Confidence: 0.70
+- Use the flutter_staggered_grid_view package for the listings grid on the Home and Find Seats screens. Confidence: 0.60
+- The listing grid cards should display all available info about a listing; increase card height as needed to fit everything rather than hiding any fields. Confidence: 0.65
+- Reuse the same listing card widget across the Home and Find Seats (Ads) screens for visual consistency. Confidence: 0.65
+- Keep the image gallery/hero slider on the Ad Detail screen full-width edge-to-edge (no horizontal margins or rounded outer corners). Confidence: 0.65
+- The Ad Detail screen image gallery/hero slider should support infinite (endless/looping) scrolling. Confidence: 0.65
+- Add a pull-to-refresh indicator to the Ad Detail screen. Confidence: 0.60
+- Keep the Home screen app bar sticky (fixed/pinned at the top). Confidence: 0.65

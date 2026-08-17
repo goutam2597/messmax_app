@@ -22,6 +22,7 @@ final class AdsLoaded extends AdsState {
   final String? selectedCity;
   final String? selectedArea;
   final String? selectedRoomType;
+  final bool isLoadingMore;
 
   const AdsLoaded({
     required this.response,
@@ -29,7 +30,26 @@ final class AdsLoaded extends AdsState {
     this.selectedCity,
     this.selectedArea,
     this.selectedRoomType,
+    this.isLoadingMore = false,
   });
+
+  AdsLoaded copyWith({
+    AdsResponseModel? response,
+    String? searchQuery,
+    String? selectedCity,
+    String? selectedArea,
+    String? selectedRoomType,
+    bool? isLoadingMore,
+  }) {
+    return AdsLoaded(
+      response: response ?? this.response,
+      searchQuery: searchQuery ?? this.searchQuery,
+      selectedCity: selectedCity ?? this.selectedCity,
+      selectedArea: selectedArea ?? this.selectedArea,
+      selectedRoomType: selectedRoomType ?? this.selectedRoomType,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -38,6 +58,7 @@ final class AdsLoaded extends AdsState {
         selectedCity,
         selectedArea,
         selectedRoomType,
+        isLoadingMore,
       ];
 }
 

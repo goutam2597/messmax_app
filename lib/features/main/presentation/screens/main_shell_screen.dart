@@ -4,10 +4,28 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../ads/presentation/cubit/ads_cubit.dart';
 import '../../../ads/presentation/screens/ads_screen.dart';
+import '../../../blog/presentation/cubit/blog_cubit.dart';
 import '../../../blog/presentation/screens/blog_screen.dart';
 import '../../../home/presentation/cubit/home_cubit.dart';
 import '../../../home/presentation/screens/home_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
+
+class MainShellScope extends InheritedWidget {
+  final void Function(int index) selectTab;
+
+  const MainShellScope({
+    super.key,
+    required this.selectTab,
+    required super.child,
+  });
+
+  static MainShellScope? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<MainShellScope>();
+  }
+
+  @override
+  bool updateShouldNotify(MainShellScope oldWidget) => false;
+}
 
 class MainShellScreen extends StatefulWidget {
   final int initialTab;
@@ -58,17 +76,27 @@ class _MainShellScreenState extends State<MainShellScreen> {
       providers: [
         BlocProvider(create: (_) => HomeCubit()),
         BlocProvider(create: (_) => AdsCubit()),
+        BlocProvider(create: (_) => BlogCubit()),
       ],
-      child: Scaffold(
-        extendBody: true,
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _screens,
-        ),
-        bottomNavigationBar: _FloatingNavBar(
-          currentIndex: _currentIndex,
-          items: _navItems,
-          onTap: _onTabSelected,
+      child: MainShellScope(
+        selectTab: (index) {
+          if (mounted) {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
+        },
+        child: Scaffold(
+          extendBody: true,
+          body: IndexedStack(
+            index: _currentIndex,
+            children: _screens,
+          ),
+          bottomNavigationBar: _FloatingNavBar(
+            currentIndex: _currentIndex,
+            items: _navItems,
+            onTap: _onTabSelected,
+          ),
         ),
       ),
     );

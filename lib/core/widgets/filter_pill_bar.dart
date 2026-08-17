@@ -23,10 +23,10 @@ class FilterPillBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: height,
-      child: ListView.builder(
-        padding: insetPadding
-            ? const EdgeInsets.symmetric(horizontal: 12)
-            : EdgeInsets.zero,
+      child: ListView.separated(
+        clipBehavior:Clip.none ,
+        separatorBuilder: (_, _) => const SizedBox(width: 4),
+        padding: EdgeInsets.symmetric(horizontal: 12),
         scrollDirection: Axis.horizontal,
         itemCount: labels.length,
         itemBuilder: (context, index) {
@@ -38,8 +38,7 @@ class FilterPillBar extends StatelessWidget {
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color:
-                    isSelected ? AppColors.brandDark : AppColors.paperRaised,
+                color: isSelected ? AppColors.brandDark : AppColors.paperRaised,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected ? AppColors.brandDark : AppColors.paperLine,
@@ -59,8 +58,7 @@ class FilterPillBar extends StatelessWidget {
                   labels[index],
                   style: TextStyle(
                     fontSize: 12.5,
-                    fontWeight:
-                        isSelected ? FontWeight.w800 : FontWeight.w600,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     color: isSelected ? Colors.white : AppColors.inkSoft,
                   ),
                 ),

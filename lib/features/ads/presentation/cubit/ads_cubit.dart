@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/models/ads_response_model.dart';
 import '../../data/repositories/ads_repository.dart';
 import 'ads_state.dart';
 
@@ -32,6 +33,7 @@ class AdsCubit extends Cubit<AdsState> {
         city: _selectedCity,
         area: _selectedArea,
         roomType: _selectedRoomType,
+        page: 1,
       );
       emit(AdsLoaded(
         response: res,
@@ -42,6 +44,53 @@ class AdsCubit extends Cubit<AdsState> {
       ));
     } catch (e) {
       emit(AdsError(e.toString()));
+    }
+  }
+
+  Future<void> fetchNextPage() async {
+    final currentState = state;
+    if (currentState is! AdsLoaded ||
+        currentState.isLoadingMore ||
+        !currentState.response.hasMore) {
+      return;
+    }
+
+    emit(currentState.copyWith(isLoadingMore: true));
+
+    try {
+      final nextPage = currentState.response.currentPage + 1;
+      final nextRes = await _repository.getAds(
+        search: _searchQuery,
+        city: _selectedCity,
+        area: _selectedArea,
+        roomType: _selectedRoomType,
+        page: nextPage,
+      );
+
+      final combinedAds = [...currentState.response.ads, ...nextRes.ads];
+      final updatedResponse = AdsResponseModel(
+        ads: combinedAds,
+        total: nextRes.total,
+        currentPage: nextRes.currentPage,
+        lastPage: nextRes.lastPage,
+        hasMore: nextRes.hasMore,
+        availableCities: nextRes.availableCities.isNotEmpty
+            ? nextRes.availableCities
+            : currentState.response.availableCities,
+        availableAreas: nextRes.availableAreas.isNotEmpty
+            ? nextRes.availableAreas
+            : currentState.response.availableAreas,
+        availableRoomTypes: nextRes.availableRoomTypes.isNotEmpty
+            ? nextRes.availableRoomTypes
+            : currentState.response.availableRoomTypes,
+      );
+
+      emit(currentState.copyWith(
+        response: updatedResponse,
+        isLoadingMore: false,
+      ));
+    } catch (e) {
+      emit(currentState.copyWith(isLoadingMore: false));
     }
   }
 
