@@ -752,61 +752,71 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             ],
                           ),
                         ),
-                        if (data.canManage) ...[
-                          FilledButton.icon(
-                            onPressed: () => _showAddEditModal(context, data),
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('Add assignment'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.brandDark,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                          if (assignedRows.isNotEmpty) ...[
-                            const SizedBox(width: 8),
-                            IconButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (dCtx) => AlertDialog(
-                                    title: const Text('Clear Entire Month?'),
-                                    content: Text(
-                                      'Are you sure you want to remove all assignments for ${data.monthLabel}?',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(dCtx),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(dCtx);
-                                          context
-                                              .read<BazarScheduleCubit>()
-                                              .clearMonth();
-                                        },
-                                        child: const Text(
-                                          'Clear Month',
-                                          style: TextStyle(color: Colors.red),
-                                        ),
-                                      ),
-                                    ],
+                        if (data.canManage)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              FilledButton.icon(
+                                onPressed: () =>
+                                    _showAddEditModal(context, data),
+                                icon: const Icon(Icons.add_rounded, size: 18),
+                                label: const Text('Add assignment'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.brandDark,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
                                   ),
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.delete_sweep_outlined,
-                                color: AppColors.accentDark,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
-                        ],
+                              if (assignedRows.isNotEmpty) ...[
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (dCtx) => AlertDialog(
+                                        title: const Text(
+                                          'Clear Entire Month?',
+                                        ),
+                                        content: Text(
+                                          'Are you sure you want to remove all assignments for ${data.monthLabel}?',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(dCtx),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(dCtx);
+                                              context
+                                                  .read<BazarScheduleCubit>()
+                                                  .clearMonth();
+                                            },
+                                            child: const Text(
+                                              'Clear Month',
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete_sweep_outlined,
+                                    color: AppColors.accentDark,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                       ],
                     ),
                     const SizedBox(height: 14),
