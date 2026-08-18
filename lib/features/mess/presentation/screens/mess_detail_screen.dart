@@ -870,7 +870,8 @@ class _MessDetailView extends StatelessWidget {
 
   Widget _buildMemberSettlementCard(MemberSettlementModel s) {
     final isPositive = s.balance >= 0;
-    final isManager = s.role == 'manager' || s.role == 'owner';
+    final isOwner = s.role.toLowerCase() == 'owner';
+    final isManager = s.role.toLowerCase() == 'manager';
     final mealsStr = s.meals % 1 == 0
         ? s.meals.toInt().toString()
         : s.meals.toStringAsFixed(1);
@@ -941,30 +942,42 @@ class _MessDetailView extends StatelessWidget {
                                 const SizedBox(width: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 5,
-                                    vertical: 1.5,
+                                    horizontal: 6,
+                                    vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: isManager
-                                        ? AppColors.brandSoft
-                                        : AppColors.paper,
+                                    color: isOwner
+                                        ? const Color(0xFFEDE7F6)
+                                        : isManager
+                                            ? AppColors.brandSoft
+                                            : AppColors.paper,
                                     borderRadius: BorderRadius.circular(5),
                                     border: Border.all(
-                                      color: isManager
-                                          ? AppColors.brandDark.withValues(
-                                              alpha: 0.2,
+                                      color: isOwner
+                                          ? const Color(0xFF5E35B1).withValues(
+                                              alpha: 0.3,
                                             )
-                                          : AppColors.paperLine,
+                                          : isManager
+                                              ? AppColors.brandDark.withValues(
+                                                  alpha: 0.2,
+                                                )
+                                              : AppColors.paperLine,
                                     ),
                                   ),
                                   child: Text(
-                                    s.role.toUpperCase(),
+                                    isOwner
+                                        ? 'OWNER'
+                                        : isManager
+                                            ? 'MANAGER'
+                                            : 'MEMBER',
                                     style: TextStyle(
-                                      fontSize: 8,
+                                      fontSize: 8.5,
                                       fontWeight: FontWeight.w800,
-                                      color: isManager
-                                          ? AppColors.brandDark
-                                          : AppColors.inkFaded,
+                                      color: isOwner
+                                          ? const Color(0xFF5E35B1)
+                                          : isManager
+                                              ? AppColors.brandDark
+                                              : AppColors.inkFaded,
                                     ),
                                   ),
                                 ),
