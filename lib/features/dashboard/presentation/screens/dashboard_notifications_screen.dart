@@ -681,27 +681,51 @@ class _DashboardNotificationsScreenState
           BlocBuilder<NotificationCubit, NotificationState>(
             builder: (context, state) {
               final unread = state is NotificationLoaded ? state.unreadCount : 0;
-              if (unread == 0) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Center(
-                  child: TextButton(
-                    onPressed: () => context.read<NotificationCubit>().markAllAsRead(),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text(
-                      'Mark read',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.brandDark,
+              return PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert_rounded, color: AppColors.ink),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                onSelected: (value) {
+                  if (value == 'read_all') {
+                    context.read<NotificationCubit>().markAllAsRead();
+                  } else if (value == 'clear_read') {
+                    context.read<NotificationCubit>().bulkDelete(readOnly: true);
+                  } else if (value == 'clear_all') {
+                    context.read<NotificationCubit>().clearAll();
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (unread > 0)
+                    const PopupMenuItem(
+                      value: 'read_all',
+                      child: Row(
+                        children: [
+                          Icon(Icons.done_all_rounded, size: 18, color: AppColors.brandDark),
+                          SizedBox(width: 10),
+                          Text('Mark all as read', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        ],
                       ),
                     ),
+                  const PopupMenuItem(
+                    value: 'clear_read',
+                    child: Row(
+                      children: [
+                        Icon(Icons.cleaning_services_rounded, size: 18, color: AppColors.inkFaded),
+                        SizedBox(width: 10),
+                        Text('Clear read', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
                   ),
-                ),
+                  const PopupMenuItem(
+                    value: 'clear_all',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_sweep_rounded, size: 18, color: Color(0xFFEF4444)),
+                        SizedBox(width: 10),
+                        Text('Clear all', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFEF4444))),
+                      ],
+                    ),
+                  ),
+                ],
               );
             },
           ),
@@ -760,7 +784,40 @@ class _DashboardNotificationsScreenState
                                 separatorBuilder: (_, index) =>
                                     const SizedBox(height: 10),
                                 itemBuilder: (context, index) {
-                                  return _buildActivityCard(items[index]);
+                                  final item = items[index];
+                                  return Dismissible(
+                                    key: ValueKey('notif_${item.id}'),
+                                    direction: DismissDirection.endToStart,
+                                    background: Container(
+                                      alignment: Alignment.centerRight,
+                                      padding: const EdgeInsets.only(right: 20),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
+                                          SizedBox(width: 6),
+                                          Text(
+                                            'Delete',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    onDismissed: (_) {
+                                      if (item.notificationId != null) {
+                                        context.read<NotificationCubit>().deleteNotification(item.notificationId!);
+                                      }
+                                    },
+                                    child: _buildActivityCard(item),
+                                  );
                                 },
                               ),
                             ),

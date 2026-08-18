@@ -61,6 +61,39 @@ class NotificationRepository {
     return response.statusCode == 200 && response.data['success'] == true;
   }
 
+  Future<bool> markBulkRead(List<int> ids) async {
+    final response = await _dio.post(
+      '/v1/notifications/bulk-read',
+      data: {'ids': ids},
+    );
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> deleteNotification(int notificationId) async {
+    final response = await _dio.delete('/v1/notifications/$notificationId');
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> bulkDelete({List<int>? ids, bool readOnly = false}) async {
+    final data = <String, dynamic>{};
+    if (ids != null && ids.isNotEmpty) {
+      data['ids'] = ids;
+    }
+    if (readOnly) {
+      data['read_only'] = true;
+    }
+    final response = await _dio.post(
+      '/v1/notifications/bulk-delete',
+      data: data,
+    );
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
+  Future<bool> clearAll() async {
+    final response = await _dio.delete('/v1/notifications');
+    return response.statusCode == 200 && response.data['success'] == true;
+  }
+
   Future<bool> handleAction(int notificationId, String action) async {
     final response = await _dio.post(
       '/v1/notifications/$notificationId/action',

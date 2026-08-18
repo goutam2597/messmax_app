@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/push_notification_service.dart';
+import '../../data/models/app_notification_model.dart';
 import '../../data/repositories/notification_repository.dart';
 import 'notification_state.dart';
 
@@ -85,6 +86,81 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     try {
       await _repository.markAllAsRead();
+    } catch (_) {}
+  }
+
+  Future<void> markBulkRead(List<int> ids) async {
+    if (state is! NotificationLoaded) return;
+    final current = state as NotificationLoaded;
+
+    final idSet = ids.toSet();
+    final updated = current.notifications.map((n) {
+      if (idSet.contains(n.id)) return n.copyWith(isRead: true);
+      return n;
+    }).toList();
+
+    final unreadCount = updated.where((n) => !n.isRead).length;
+    emit(current.copyWith(notifications: updated, unreadCount: unreadCount));
+
+    try {
+      await _repository.markBulkRead(ids);
+    } catch (_) {}
+  }
+
+  Future<void> deleteNotification(int notificationId) async {
+    if (state is! NotificationLoaded) return;
+    final current = state as NotificationLoaded;
+
+    final target = current.notifications.firstWhere(
+      (n) => n.id == notificationId,
+      orElse: () => current.notifications.first,
+    );
+    final wasUnread = !target.isRead;
+
+    final updated = current.notifications
+        .where((n) => n.id != notificationId)
+        .toList();
+    final newUnread = wasUnread
+        ? (current.unreadCount - 1).clamp(0, 999)
+        : current.unreadCount;
+
+    emit(current.copyWith(notifications: updated, unreadCount: newUnread));
+
+    try {
+      await _repository.deleteNotification(notificationId);
+    } catch (_) {}
+  }
+
+  Future<void> bulkDelete({List<int>? ids, bool readOnly = false}) async {
+    if (state is! NotificationLoaded) return;
+    final current = state as NotificationLoaded;
+
+    List<AppNotificationModel> updated;
+    if (ids != null && ids.isNotEmpty) {
+      final idSet = ids.toSet();
+      updated = current.notifications.where((n) => !idSet.contains(n.id)).toList();
+    } else if (readOnly) {
+      updated = current.notifications.where((n) => !n.isRead).toList();
+    } else {
+      updated = [];
+    }
+
+    final unreadCount = updated.where((n) => !n.isRead).length;
+    emit(current.copyWith(notifications: updated, unreadCount: unreadCount));
+
+    try {
+      await _repository.bulkDelete(ids: ids, readOnly: readOnly);
+    } catch (_) {}
+  }
+
+  Future<void> clearAll() async {
+    if (state is! NotificationLoaded) return;
+    final current = state as NotificationLoaded;
+
+    emit(current.copyWith(notifications: [], unreadCount: 0));
+
+    try {
+      await _repository.clearAll();
     } catch (_) {}
   }
 
