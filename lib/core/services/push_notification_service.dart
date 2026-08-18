@@ -169,7 +169,7 @@ class PushNotificationService {
           ? 'ios'
           : 'android';
       final res = await DioClient.instance.post(
-        '/api/v1/notifications/device-token',
+        '/v1/notifications/device-token',
         data: {'token': token, 'device_type': deviceType},
       );
       if (res.statusCode == 200) {
@@ -186,7 +186,7 @@ class PushNotificationService {
       final token = await _fcm.getToken();
       if (token != null) {
         await DioClient.instance.delete(
-          '/api/v1/notifications/device-token',
+          '/v1/notifications/device-token',
           data: {'token': token},
         );
         AppLogger.i('FCM device token unregistered');

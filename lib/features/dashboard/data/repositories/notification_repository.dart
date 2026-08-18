@@ -24,7 +24,7 @@ class NotificationRepository {
     }
 
     final response = await _dio.get(
-      '/api/v1/notifications',
+      '/v1/notifications',
       queryParameters: queryParams,
     );
 
@@ -44,7 +44,7 @@ class NotificationRepository {
   }
 
   Future<int> fetchUnreadCount() async {
-    final response = await _dio.get('/api/v1/notifications/unread-count');
+    final response = await _dio.get('/v1/notifications/unread-count');
     if (response.statusCode == 200 && response.data['success'] == true) {
       return (response.data['unread_count'] as num?)?.toInt() ?? 0;
     }
@@ -52,18 +52,18 @@ class NotificationRepository {
   }
 
   Future<bool> markAsRead(int notificationId) async {
-    final response = await _dio.post('/api/v1/notifications/$notificationId/read');
+    final response = await _dio.post('/v1/notifications/$notificationId/read');
     return response.statusCode == 200 && response.data['success'] == true;
   }
 
   Future<bool> markAllAsRead() async {
-    final response = await _dio.post('/api/v1/notifications/read-all');
+    final response = await _dio.post('/v1/notifications/read-all');
     return response.statusCode == 200 && response.data['success'] == true;
   }
 
   Future<bool> handleAction(int notificationId, String action) async {
     final response = await _dio.post(
-      '/api/v1/notifications/$notificationId/action',
+      '/v1/notifications/$notificationId/action',
       data: {'action': action},
     );
     return response.statusCode == 200 && response.data['success'] == true;

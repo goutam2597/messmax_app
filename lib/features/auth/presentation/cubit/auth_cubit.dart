@@ -9,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/network/auth_storage.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/services/push_notification_service.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'auth_state.dart';
 
@@ -50,6 +51,7 @@ class AuthCubit extends Cubit<AuthState> {
       final user = await _repo.fetchMe();
       AuthStorage.setUserInMemory(user);
       emit(AuthAuthenticated(user));
+      PushNotificationService.syncDeviceToken();
     } catch (e, st) {
       AppLogger.e('AuthCubit.checkAuth failed — clearing', e, st);
       await AuthStorage.clear();
@@ -65,6 +67,7 @@ class AuthCubit extends Cubit<AuthState> {
       final res = await _repo.login(email: email, password: password);
       AppLogger.i('Email login success user=${res.user.id}');
       emit(AuthAuthenticated(res.user));
+      PushNotificationService.syncDeviceToken();
     } catch (e, st) {
       AppLogger.e('Email login failed', e, st);
       emit(AuthError(_extractMessage(e) ?? 'Login failed'));
@@ -90,6 +93,7 @@ class AuthCubit extends Cubit<AuthState> {
       );
       AppLogger.i('Register success user=${res.user.id}');
       emit(AuthAuthenticated(res.user));
+      PushNotificationService.syncDeviceToken();
     } catch (e, st) {
       AppLogger.e('Register failed', e, st);
       emit(AuthError(_extractMessage(e) ?? 'Registration failed'));
@@ -164,6 +168,7 @@ class AuthCubit extends Cubit<AuthState> {
       );
       AppLogger.i('Sanctum success user=${res.user.id} email=${res.user.email}');
       emit(AuthAuthenticated(res.user));
+      PushNotificationService.syncDeviceToken();
       return true;
     } on GoogleSignInException catch (e, st) {
       AppLogger.e('GoogleSignInException code=${e.code} desc=${e.description}', e, st);
@@ -247,6 +252,7 @@ class AuthCubit extends Cubit<AuthState> {
       final res = await _repo.loginWithFirebase(idToken: idToken, accountType: accountType);
       AppLogger.i('loginWithIdToken success user=${res.user.id}');
       emit(AuthAuthenticated(res.user));
+      PushNotificationService.syncDeviceToken();
     } catch (e, st) {
       AppLogger.e('loginWithIdToken failed', e, st);
       emit(AuthError(_extractMessage(e) ?? 'Google sign-in failed'));
@@ -256,6 +262,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     AppLogger.i('Logout requested');
     try {
+      await PushNotificationService.unregisterDeviceToken();
       await _repo.logout();
       AppLogger.i('Logout: server clear done, signing out Firebase/Google');
       try {
