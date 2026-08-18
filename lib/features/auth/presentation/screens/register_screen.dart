@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/signup_role_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -77,84 +78,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _googleWithPick() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.brandSoft,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.g_mobiledata_rounded, color: AppColors.brandDark, size: 24),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Google Sign In',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Select account type for your new profile:',
-              style: TextStyle(fontSize: 13, color: AppColors.inkFaded),
-            ),
-            const SizedBox(height: 14),
-            StatefulBuilder(
-              builder: (context, setDialogState) => Row(
-                children: [
-                  Expanded(
-                    child: AccountTypeTile(
-                      title: 'Hostel Owner',
-                      subtitle: 'Multi mess',
-                      icon: Icons.business_rounded,
-                      selected: _accountType == 'hostel_owner',
-                      onTap: () {
-                        setState(() => _accountType = 'hostel_owner');
-                        setDialogState(() {});
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: AccountTypeTile(
-                      title: 'Individual',
-                      subtitle: 'Single mess',
-                      icon: Icons.person_rounded,
-                      selected: _accountType == 'individual',
-                      onTap: () {
-                        setState(() => _accountType = 'individual');
-                        setDialogState(() {});
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.inkFaded)),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.brandDark),
-            child: const Text('Continue'),
-          ),
-        ],
-      ),
+    final selectedRole = await SignUpRoleDialog.show(
+      context,
+      initialRole: _accountType,
     );
-    if (ok != true || !mounted) return;
-    context.read<AuthCubit>().loginWithGoogle(accountType: _accountType);
+    if (selectedRole == null || !mounted) return;
+    setState(() => _accountType = selectedRole);
+    context.read<AuthCubit>().loginWithGoogle(accountType: selectedRole);
   }
 
   @override

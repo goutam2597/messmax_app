@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/ad_cards.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/dot_indicator_row.dart';
 import '../../../../core/widgets/network_image_cover.dart';
 import '../../data/models/ad_model.dart';
@@ -22,6 +25,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
   int _galleryIndex = 0;
   late AdModel _ad;
   List<AdModel> _relatedAds = [];
+  bool _isLoading = true;
   bool _isLoadingRelated = true;
   bool _fetching = false;
   bool _galleryInitialized = false;
@@ -33,7 +37,17 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
   void initState() {
     super.initState();
     _ad = widget.ad;
-    _fetchDetailAndRelated();
+    final cached = AdsRepository.getDetailCached(_ad.slug);
+    if (cached != null) {
+      _ad = cached.ad;
+      _relatedAds = cached.relatedAds;
+      _isLoading = false;
+      _isLoadingRelated = false;
+      _fetchDetailAndRelated(forceRefresh: false);
+    } else {
+      _isLoading = true;
+      _fetchDetailAndRelated(forceRefresh: true);
+    }
   }
 
   @override
@@ -42,19 +56,25 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchDetailAndRelated() async {
+  Future<void> _fetchDetailAndRelated({bool forceRefresh = false}) async {
     if (_fetching) return;
     _fetching = true;
     try {
-      final res = await _repository.getAdDetail(_ad.slug);
+      final res = await _repository.getAdDetail(_ad.slug, forceRefresh: forceRefresh);
       if (!mounted) return;
       setState(() {
         _ad = res.ad;
         _relatedAds = res.relatedAds;
+        _isLoading = false;
         _isLoadingRelated = false;
       });
     } catch (_) {
-      if (mounted) setState(() => _isLoadingRelated = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isLoadingRelated = false;
+        });
+      }
     } finally {
       _fetching = false;
     }
@@ -82,6 +102,12 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return _SeatDetailSkeleton(
+        onBack: () => Navigator.of(context).pop(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
@@ -89,7 +115,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           RefreshIndicator(
             color: AppColors.brandDark,
             backgroundColor: Colors.white,
-            onRefresh: _fetchDetailAndRelated,
+            onRefresh: () => _fetchDetailAndRelated(forceRefresh: true),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 110),
@@ -1088,15 +1114,98 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
     );
   }
 
+  Future<void> _makePhoneCall(BuildContext context) async {
+    final rawPhone = ad.contactPhone?.trim();
+    if (rawPhone == null || rawPhone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Phone number not provided for this listing.'),
+          backgroundColor: AppColors.ink,
+        ),
+      );
+      return;
+    }
+
+    final clean = rawPhone.replaceAll(RegExp(r'[^0-9+]'), '');
+    final uri = Uri(scheme: 'tel', path: clean);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open phone dialer for $rawPhone'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
+  Future<void> _openWhatsApp(BuildContext context) async {
+    final rawWhatsapp = (ad.contactWhatsapp != null && ad.contactWhatsapp!.trim().isNotEmpty)
+        ? ad.contactWhatsapp!.trim()
+        : ad.contactPhone?.trim();
+
+    if (rawWhatsapp == null || rawWhatsapp.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('WhatsApp number not provided for this listing.'),
+          backgroundColor: AppColors.ink,
+        ),
+      );
+      return;
+    }
+
+    // Extract digits only
+    String digits = rawWhatsapp.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Format Bangladeshi local 11-digit number 01xxxxxxxxx to international 8801xxxxxxxxx
+    if (digits.startsWith('01') && digits.length == 11) {
+      digits = '88$digits';
+    } else if (digits.startsWith('1') && digits.length == 10) {
+      digits = '880$digits';
+    }
+
+    final message = 'Hi, I am interested in your seat listing on MessMax: "${ad.title}"';
+    final whatsappUrl = Uri.parse(
+      'https://wa.me/$digits?text=${Uri.encodeComponent(message)}',
+    );
+
+    try {
+      final launched = await launchUrl(
+        whatsappUrl,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        await launchUrl(whatsappUrl, mode: LaunchMode.platformDefault);
+      }
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open WhatsApp for $rawWhatsapp'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
   Widget _buildBottomContactBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
+        border: const Border(
+          top: BorderSide(color: AppColors.paperLine, width: 1.2),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
             offset: const Offset(0, -4),
           ),
         ],
@@ -1105,64 +1214,78 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
         top: false,
         child: Row(
           children: [
+            // 1. Phone Call Action Button
             Expanded(
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.brandDark,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  minimumSize: const Size(0, 48),
+                  fixedSize: const Size.fromHeight(48),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   elevation: 0,
                 ),
-                onPressed: () {
-                  final phone = ad.contactPhone ?? '01700000000';
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Calling Manager at $phone')),
-                  );
-                },
-                icon: const Icon(Icons.phone_rounded, size: 20),
+                onPressed: () => _makePhoneCall(context),
+                icon: SvgPicture.asset(
+                  'assets/icons/phone_call.svg',
+                  width: 18,
+                  height: 18,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                ),
                 label: const Text(
-                  'Call Manager',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  'Call Phone',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
             ),
 
-            if (ad.contactWhatsapp != null) ...[
-              const SizedBox(width: 12),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF25D366),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF25D366).withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+            const SizedBox(width: 12),
+
+            // 2. WhatsApp Action Button (same height, official WhatsApp branding)
+            Expanded(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF25D366),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(0, 48),
+                  fixedSize: const Size.fromHeight(48),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                  shadowColor: const Color(0xFF25D366).withValues(alpha: 0.35),
                 ),
-                child: IconButton(
-                  padding: const EdgeInsets.all(14),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Opening WhatsApp: ${ad.contactWhatsapp}',
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.chat_rounded,
-                    color: Colors.white,
-                    size: 22,
+                onPressed: () => _openWhatsApp(context),
+                icon: SvgPicture.asset(
+                  'assets/icons/whatsapp.svg',
+                  width: 19,
+                  height: 19,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                label: const Text(
+                  'WhatsApp',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
-            ],
+            ),
           ],
         ),
       ),
@@ -1298,6 +1421,304 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Preloader skeleton shown exclusively on the first load of a seat ad.
+class _SeatDetailSkeleton extends StatefulWidget {
+  final VoidCallback onBack;
+
+  const _SeatDetailSkeleton({required this.onBack});
+
+  @override
+  State<_SeatDetailSkeleton> createState() => _SeatDetailSkeletonState();
+}
+
+class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _shimmerAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat();
+    _shimmerAnim = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  Widget _shimmerBox({
+    required double width,
+    required double height,
+    double radius = 10,
+  }) {
+    return AnimatedBuilder(
+      animation: _shimmerAnim,
+      builder: (context, _) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            gradient: LinearGradient(
+              begin: Alignment(_shimmerAnim.value - 1, 0),
+              end: Alignment(_shimmerAnim.value + 1, 0),
+              colors: const [
+                Color(0xFFEAEAE6),
+                Color(0xFFF7F7F4),
+                Color(0xFFEAEAE6),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Scaffold(
+      backgroundColor: AppColors.paper,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: 120),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. Hero Gallery Skeleton
+                Stack(
+                  children: [
+                    _shimmerBox(
+                      width: double.infinity,
+                      height: 310,
+                      radius: 0,
+                    ),
+                    Positioned(
+                      top: topPadding + 10,
+                      left: 16,
+                      child: AppBackButton(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        iconColor: Colors.white,
+                        onPressed: widget.onBack,
+                      ),
+                    ),
+                    Positioned(
+                      top: topPadding + 10,
+                      right: 16,
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.share_rounded,
+                          color: Colors.white70,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 16,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Loading seat details…',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 2. Price Banner Skeleton Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.paperRaised,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.paperLine),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _shimmerBox(width: 60, height: 10, radius: 4),
+                                const SizedBox(height: 6),
+                                _shimmerBox(width: 140, height: 24, radius: 6),
+                              ],
+                            ),
+                            _shimmerBox(width: 90, height: 32, radius: 10),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // 3. Title Skeleton
+                      _shimmerBox(width: double.infinity, height: 20, radius: 6),
+                      const SizedBox(height: 8),
+                      _shimmerBox(width: 220, height: 16, radius: 6),
+
+                      const SizedBox(height: 16),
+
+                      // 4. Highlight Badges Skeleton
+                      Row(
+                        children: [
+                          _shimmerBox(width: 80, height: 28, radius: 8),
+                          const SizedBox(width: 8),
+                          _shimmerBox(width: 70, height: 28, radius: 8),
+                          const SizedBox(width: 8),
+                          _shimmerBox(width: 90, height: 28, radius: 8),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // 5. Manager / Host Card Skeleton
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.paperRaised,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.paperLine),
+                        ),
+                        child: Row(
+                          children: [
+                            _shimmerBox(width: 44, height: 44, radius: 12),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _shimmerBox(width: 120, height: 14, radius: 4),
+                                  const SizedBox(height: 6),
+                                  _shimmerBox(width: 180, height: 11, radius: 4),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // 6. Specs 2x2 Grid Skeleton
+                      GridView.count(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        shrinkWrap: true,
+                        childAspectRatio: 1.8,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: List.generate(
+                          4,
+                          (_) => Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.paperRaised,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.paperLine),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _shimmerBox(width: 24, height: 24, radius: 6),
+                                const SizedBox(height: 8),
+                                _shimmerBox(width: 70, height: 10, radius: 4),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 7. Sticky Bottom Action Bar Skeleton
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              decoration: const BoxDecoration(
+                color: AppColors.paperRaised,
+                border: Border(
+                  top: BorderSide(color: AppColors.paperLine),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _shimmerBox(width: double.infinity, height: 48, radius: 14),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _shimmerBox(width: double.infinity, height: 48, radius: 14),
+                  ),
+                ],
               ),
             ),
           ),

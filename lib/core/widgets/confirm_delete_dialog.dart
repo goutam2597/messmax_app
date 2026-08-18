@@ -141,9 +141,11 @@ class ConfirmDeleteDialog extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.ink,
                         side: const BorderSide(color: AppColors.paperLine),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size(0, 48),
+                        fixedSize: const Size.fromHeight(48),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: Text(
@@ -170,9 +172,11 @@ class ConfirmDeleteDialog extends StatelessWidget {
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.danger,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size(0, 48),
+                        fixedSize: const Size.fromHeight(48),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),

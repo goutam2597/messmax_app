@@ -11,31 +11,12 @@ class AppAuthHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.brand, AppColors.brandDark],
-            ),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.brand.withValues(alpha: 0.35),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.restaurant_menu_rounded,
-            color: Colors.white,
-            size: 30,
-          ),
+        SvgPicture.asset(
+          'assets/images/logo.svg',
+          height: 40,
+          fit: BoxFit.contain,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
         Text(
           title,
           style: const TextStyle(

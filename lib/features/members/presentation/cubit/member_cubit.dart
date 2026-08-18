@@ -12,17 +12,32 @@ class MemberCubit extends Cubit<MemberState> {
 
   int? get currentMessId => _currentMessId;
 
-  Future<void> loadMembers({int? messId}) async {
+  Future<void> loadMembers({int? messId, bool forceRefresh = false}) async {
     if (messId != null) {
       _currentMessId = messId;
     }
-    emit(MemberLoading());
+    final cached = _repository.getCached(messId: _currentMessId);
+    if (cached != null && !forceRefresh) {
+      _currentMessId = cached.messId;
+      emit(MemberLoaded(response: cached));
+      return;
+    }
+    if (state is! MemberLoaded) {
+      emit(MemberLoading());
+    }
     try {
-      final response = await _repository.fetchMembers(messId: _currentMessId);
+      final response = await _repository.fetchMembers(
+        messId: _currentMessId,
+        forceRefresh: forceRefresh,
+      );
       _currentMessId = response.messId;
       emit(MemberLoaded(response: response));
     } catch (e) {
-      emit(MemberError(e.toString().replaceAll('Exception: ', '')));
+      if (cached != null) {
+        emit(MemberLoaded(response: cached));
+      } else {
+        emit(MemberError(e.toString().replaceAll('Exception: ', '')));
+      }
     }
   }
 

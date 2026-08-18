@@ -14,6 +14,9 @@ import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../dashboard/presentation/cubit/dashboard_cubit.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 
+import 'package:flutter/services.dart';
+import '../../../../core/widgets/app_exit_dialog.dart';
+
 class MainShellScope extends InheritedWidget {
   final void Function(int index) selectTab;
 
@@ -98,16 +101,32 @@ class _MainShellScreenState extends State<MainShellScreen> {
             });
           }
         },
-        child: Scaffold(
-          extendBody: true,
-          body: IndexedStack(
-            index: _currentIndex,
-            children: _screens,
-          ),
-          bottomNavigationBar: _FloatingNavBar(
-            currentIndex: _currentIndex,
-            items: _navItems,
-            onTap: _onTabSelected,
+        child: PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
+            // 1. If we are on a tab other than Home (0), return to Home first
+            if (_currentIndex != 0) {
+              setState(() => _currentIndex = 0);
+              return;
+            }
+            // 2. If at root of the shell (tab 0): confirm before exit
+            final shouldExit = await AppExitDialog.show(context);
+            if (shouldExit == true) {
+              SystemNavigator.pop();
+            }
+          },
+          child: Scaffold(
+            extendBody: true,
+            body: IndexedStack(
+              index: _currentIndex,
+              children: _screens,
+            ),
+            bottomNavigationBar: _FloatingNavBar(
+              currentIndex: _currentIndex,
+              items: _navItems,
+              onTap: _onTabSelected,
+            ),
           ),
         ),
       ),
@@ -129,13 +148,22 @@ class _FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    // On devices with 3-button system navigation bar (Android inset >= 36px),
+    // add bottom safe area inset to margin so it clears Back/Home/Recents buttons.
+    // On gesture navigation devices (thin gesture pill / iOS / Android gesture nav),
+    // keep the exact existing floating margin (16px).
+    final bool isThreeButtonNav = isAndroid && bottomInset >= 36;
+    final double bottomMargin = isThreeButtonNav ? (8.0 + bottomInset) : 16.0;
+
     return Container(
       color: Colors.transparent,
       child: SafeArea(
         top: false,
         bottom: false,
         child: Container(
-          margin: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+          margin: EdgeInsets.fromLTRB(12, 0, 12, bottomMargin),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           decoration: BoxDecoration(
             color: AppColors.paperRaised,

@@ -2,18 +2,19 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:messmax_app/features/welcome/presentation/screens/welcome_screen.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../dashboard/presentation/screens/dashboard_screen.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/push_notification_service.dart';
-import 'package:messmax_app/features/welcome/presentation/screens/welcome_screen.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/splash_cubit.dart';
 import '../cubit/splash_state.dart';
 
-/// Animated brand splash: drifting glow mesh, orbiting feature icons,
-/// a filling progress ring around the logo, wordmark fade-up and a
-/// gentle bottom wave — then hands off to welcome.
+/// Animated brand splash in luminous light mode: drifting warm glow mesh,
+/// orbiting feature icons, progress ring around the official logo emblem,
+/// full logo wordmark fade-up, and gentle bottom waves.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -126,6 +127,12 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final bool isThreeButtonNav = isAndroid && bottomInset >= 36;
+    final double versionBottom = isThreeButtonNav ? (16.0 + bottomInset) : 34.0;
+    final double dotsBottom = isThreeButtonNav ? (76.0 + bottomInset) : 96.0;
+
     return BlocListener<SplashCubit, SplashState>(
       listener: (context, state) {
         if (state is SplashReady) _onReady(context, state.destination);
@@ -136,12 +143,15 @@ class _SplashScreenState extends State<SplashScreen>
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [AppColors.splashTop, AppColors.splashBottom],
+              colors: [
+                Color(0xFFFAFAF7),
+                Color(0xFFF2F2EC),
+              ],
             ),
           ),
           child: Stack(
             children: [
-              // drifting ambient glow mesh
+              // drifting ambient warm glow mesh
               Positioned.fill(
                 child: AnimatedBuilder(
                   animation: _ambientController,
@@ -171,8 +181,8 @@ class _SplashScreenState extends State<SplashScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
-                      width: 208,
-                      height: 208,
+                      width: 216,
+                      height: 216,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
@@ -199,7 +209,7 @@ class _SplashScreenState extends State<SplashScreen>
                               animation: _progress,
                               builder: (context, _) {
                                 return CustomPaint(
-                                  size: const Size(150, 150),
+                                  size: const Size(156, 156),
                                   painter: _ProgressRingPainter(
                                     _progress.value,
                                   ),
@@ -211,51 +221,57 @@ class _SplashScreenState extends State<SplashScreen>
                           FadeTransition(
                             opacity: _wordFade,
                             child: Container(
-                              width: 128,
-                              height: 128,
+                              width: 140,
+                              height: 140,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: RadialGradient(
                                   colors: [
-                                    AppColors.brand.withValues(alpha: 0.35),
+                                    AppColors.brand.withValues(alpha: 0.18),
                                     AppColors.brand.withValues(alpha: 0),
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                          // logo mark
+                          // Official Logo Emblem Card
                           FadeTransition(
                             opacity: _logoFade,
                             child: ScaleTransition(
                               scale: _logoScale,
                               child: Container(
-                                width: 92,
-                                height: 92,
+                                width: 102,
+                                height: 102,
+                                padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      AppColors.brand,
-                                      AppColors.brandDark,
-                                    ],
-                                  ),
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(26),
+                                  border: Border.all(
+                                    color: AppColors.brand.withValues(alpha: 0.2),
+                                    width: 1.5,
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.brand.withValues(
-                                        alpha: 0.5,
+                                      color: AppColors.brandDark.withValues(
+                                        alpha: 0.14,
                                       ),
-                                      blurRadius: 44,
+                                      blurRadius: 36,
                                       spreadRadius: 2,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                    const BoxShadow(
+                                      color: Color(0x0A000000),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
-                                  Icons.restaurant_menu_rounded,
-                                  color: Colors.white,
-                                  size: 46,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: SvgPicture.asset(
+                                    'assets/images/mm_fav.svg',
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
                               ),
                             ),
@@ -263,24 +279,20 @@ class _SplashScreenState extends State<SplashScreen>
                         ],
                       ),
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 32),
                     FadeTransition(
                       opacity: _wordFade,
                       child: SlideTransition(
                         position: _wordSlide,
                         child: Column(
-                          children: const [
-                            Text(
-                              AppStrings.appName,
-                              style: TextStyle(
-                                fontSize: 34,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.ink,
-                                letterSpacing: -0.5,
-                              ),
+                          children: [
+                            SvgPicture.asset(
+                              'assets/images/logo.svg',
+                              height: 34,
+                              fit: BoxFit.contain,
                             ),
-                            SizedBox(height: 8),
-                            _TaglineBadge(),
+                            const SizedBox(height: 12),
+                            const _TaglineBadge(),
                           ],
                         ),
                       ),
@@ -291,7 +303,7 @@ class _SplashScreenState extends State<SplashScreen>
 
               // pulsing dots loader
               Positioned(
-                bottom: 96,
+                bottom: dotsBottom,
                 left: 0,
                 right: 0,
                 child: FadeTransition(
@@ -302,7 +314,7 @@ class _SplashScreenState extends State<SplashScreen>
 
               // version
               Positioned(
-                bottom: 34,
+                bottom: versionBottom,
                 left: 0,
                 right: 0,
                 child: FadeTransition(
@@ -313,6 +325,7 @@ class _SplashScreenState extends State<SplashScreen>
                     style: TextStyle(
                       fontSize: 11,
                       color: AppColors.inkFaded,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -328,7 +341,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget _buildOrbitIcon(int index) {
     final baseAngle = (index / _orbitIcons.length) * 2 * math.pi;
     final angle = baseAngle + _ambientController.value * 2 * math.pi;
-    const radius = 96.0;
+    const radius = 98.0;
     final dx = radius * math.cos(angle);
     final dy = radius * math.sin(angle);
     return Transform.translate(
@@ -339,12 +352,12 @@ class _SplashScreenState extends State<SplashScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.brand.withValues(alpha: 0.25)),
+          border: Border.all(color: const Color(0xFFE4E4DF)),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x1A000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
+              color: Color(0x10000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
             ),
           ],
         ),
@@ -363,28 +376,34 @@ class _TaglineBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.brand.withValues(alpha: 0.06),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.brand.withValues(alpha: 0.35),
+          color: AppColors.brand.withValues(alpha: 0.25),
           width: 1,
         ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: const Text(
         AppStrings.tagline,
         style: TextStyle(
-          fontSize: 12.5,
+          fontSize: 12,
           color: AppColors.inkSoft,
-          letterSpacing: 2.2,
-          fontWeight: FontWeight.w500,
+          letterSpacing: 1.8,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
 }
 
-/// Paints two large, slowly drifting soft-glow blobs to give the
-/// background depth instead of a flat gradient.
+/// Paints two large, slowly drifting soft-glow warm blobs.
 class _MeshGlowPainter extends CustomPainter {
   _MeshGlowPainter(this.t);
 
@@ -409,7 +428,7 @@ class _MeshGlowPainter extends CustomPainter {
       ..shader =
           RadialGradient(
             colors: [
-              AppColors.brand.withValues(alpha: 0.14),
+              AppColors.brand.withValues(alpha: 0.08),
               AppColors.brand.withValues(alpha: 0),
             ],
           ).createShader(
@@ -419,8 +438,8 @@ class _MeshGlowPainter extends CustomPainter {
       ..shader =
           RadialGradient(
             colors: [
-              AppColors.brandDeep.withValues(alpha: 0.22),
-              AppColors.brandDeep.withValues(alpha: 0),
+              AppColors.brandDark.withValues(alpha: 0.06),
+              AppColors.brandDark.withValues(alpha: 0),
             ],
           ).createShader(
             Rect.fromCircle(center: center2, radius: size.width * 0.5),
@@ -448,14 +467,14 @@ class _ProgressRingPainter extends CustomPainter {
     final radius = size.width / 2;
 
     final track = Paint()
-      ..color = AppColors.brand.withValues(alpha: 0.12)
+      ..color = const Color(0xFFE4E4DF)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
     canvas.drawCircle(center, radius, track);
 
     final arc = Paint()
-      ..color = AppColors.brand.withValues(alpha: 0.85)
+      ..color = AppColors.brand
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
@@ -473,7 +492,7 @@ class _ProgressRingPainter extends CustomPainter {
       oldDelegate.progress != progress;
 }
 
-/// Two soft, gently rolling waves hugging the bottom of the screen.
+/// Soft, low-contrast rolling waves at the bottom of the screen.
 class _WavePainter extends CustomPainter {
   _WavePainter(this.t);
 
@@ -486,17 +505,17 @@ class _WavePainter extends CustomPainter {
       canvas,
       size,
       phase: t * 2 * math.pi,
-      amplitude: 14,
-      baseHeight: size.height * 0.92,
-      color: AppColors.brand.withValues(alpha: 0.06),
+      amplitude: 12,
+      baseHeight: size.height * 0.93,
+      color: const Color(0x0C000000),
     );
     _drawWave(
       canvas,
       size,
       phase: t * 2 * math.pi + math.pi / 2,
-      amplitude: 10,
+      amplitude: 8,
       baseHeight: size.height * 0.96,
-      color: AppColors.brand.withValues(alpha: 0.1),
+      color: const Color(0x08000000),
     );
   }
 
@@ -563,7 +582,6 @@ class _PulsingDotsState extends State<_PulsingDots>
         return AnimatedBuilder(
           animation: _controller,
           builder: (context, _) {
-            // stagger each dot by a third of the cycle
             final t = (_controller.value * 3 - index).clamp(0.0, 1.0);
             final pulse = (1 - (2 * t - 1).abs()).toDouble(); // 0→1→0
             return Container(
@@ -573,7 +591,7 @@ class _PulsingDotsState extends State<_PulsingDots>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Color.lerp(
-                  AppColors.brand.withValues(alpha: 0.2),
+                  AppColors.brand.withValues(alpha: 0.25),
                   AppColors.brand,
                   pulse,
                 ),

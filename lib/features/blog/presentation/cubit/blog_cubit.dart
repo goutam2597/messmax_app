@@ -10,22 +10,46 @@ class BlogCubit extends Cubit<BlogState> {
 
   BlogCubit({BlogRepository? repository})
       : _repository = repository ?? BlogRepository(),
-        super(const BlogInitial());
+        super(
+          BlogRepository.getDefaultCached() != null
+              ? BlogLoaded(
+                  response: BlogRepository.getDefaultCached()!,
+                  selectedCategory: 'All',
+                )
+              : const BlogInitial(),
+        );
 
   Future<void> fetchBlogs({
     String? search,
     String? category,
+    bool forceRefresh = false,
   }) async {
     _searchQuery = search;
     if (category != null) {
       _selectedCategory = category;
     }
 
-    emit(const BlogLoading());
+    final isDefault = (search == null || search.isEmpty) &&
+        (_selectedCategory == 'All');
+
+    if (isDefault && !forceRefresh && BlogRepository.getDefaultCached() != null) {
+      emit(BlogLoaded(
+        response: BlogRepository.getDefaultCached()!,
+        searchQuery: _searchQuery,
+        selectedCategory: _selectedCategory,
+      ));
+      return;
+    }
+
+    if (state is! BlogLoaded) {
+      emit(const BlogLoading());
+    }
+
     try {
       final res = await _repository.getBlogs(
         search: _searchQuery,
         category: _selectedCategory,
+        forceRefresh: forceRefresh,
       );
       emit(BlogLoaded(
         response: res,
@@ -33,7 +57,9 @@ class BlogCubit extends Cubit<BlogState> {
         selectedCategory: _selectedCategory,
       ));
     } catch (e) {
-      emit(BlogError(e.toString()));
+      if (state is! BlogLoaded) {
+        emit(BlogError(e.toString()));
+      }
     }
   }
 

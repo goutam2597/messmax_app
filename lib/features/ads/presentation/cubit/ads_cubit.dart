@@ -13,18 +13,39 @@ class AdsCubit extends Cubit<AdsState> {
 
   AdsCubit({AdsRepository? repository})
       : _repository = repository ?? AdsRepository(),
-        super(const AdsInitial());
+        super(
+          AdsRepository.getDefaultCached() != null
+              ? AdsLoaded(response: AdsRepository.getDefaultCached()!)
+              : const AdsInitial(),
+        );
 
   Future<void> fetchAds({
     String? search,
     String? city,
     String? area,
     String? roomType,
+    bool forceRefresh = false,
   }) async {
     _searchQuery = search;
     _selectedCity = city;
     _selectedArea = area;
     _selectedRoomType = roomType;
+
+    final isDefault = (search == null || search.trim().isEmpty) &&
+        (city == null || city.trim().isEmpty) &&
+        (area == null || area.trim().isEmpty) &&
+        (roomType == null || roomType.trim().isEmpty);
+
+    if (isDefault && !forceRefresh && AdsRepository.getDefaultCached() != null) {
+      emit(AdsLoaded(
+        response: AdsRepository.getDefaultCached()!,
+        searchQuery: _searchQuery,
+        selectedCity: _selectedCity,
+        selectedArea: _selectedArea,
+        selectedRoomType: _selectedRoomType,
+      ));
+      return;
+    }
 
     final prev = state;
     final hasPrev = prev is AdsLoaded;
@@ -50,6 +71,7 @@ class AdsCubit extends Cubit<AdsState> {
         area: _selectedArea,
         roomType: _selectedRoomType,
         page: 1,
+        forceRefresh: forceRefresh,
       );
       emit(AdsLoaded(
         response: res,

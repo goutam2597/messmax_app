@@ -6,34 +6,59 @@ import '../models/mess_model.dart';
 
 class MessRepository {
   final Dio _dio;
+  static List<MessModel>? _messesCache;
+  static final Map<int, MessDetailModel> _messDetailCache = {};
+
   MessRepository({Dio? dio}) : _dio = dio ?? DioClient.instance;
 
-  Future<List<MessModel>> fetchMesses() async {
+  static void clearCache() {
+    _messesCache = null;
+    _messDetailCache.clear();
+  }
+
+  List<MessModel>? getCachedMesses() => _messesCache;
+  MessDetailModel? getCachedMess(int id) => _messDetailCache[id];
+
+  Future<List<MessModel>> fetchMesses({bool forceRefresh = false}) async {
+    if (!forceRefresh && _messesCache != null) {
+      return _messesCache!;
+    }
     try {
       final res = await _dio.get(ApiEndpoints.messes);
       final data = res.data as Map<String, dynamic>;
       if (data['success'] == true) {
         final list = (data['data']['messes'] as List<dynamic>? ?? []);
-        return list
+        final parsed = list
             .map((e) => MessModel.fromJson(e as Map<String, dynamic>))
             .toList();
+        _messesCache = parsed;
+        return parsed;
       }
       throw Exception(data['message'] ?? 'Failed to load messes');
     } catch (e) {
+      if (_messesCache != null) return _messesCache!;
       AppLogger.w('fetchMesses failed: $e');
       rethrow;
     }
   }
 
-  Future<MessDetailModel> fetchMess(int id) async {
+  Future<MessDetailModel> fetchMess(int id, {bool forceRefresh = false}) async {
+    if (!forceRefresh && _messDetailCache.containsKey(id)) {
+      return _messDetailCache[id]!;
+    }
     try {
       final res = await _dio.get('${ApiEndpoints.messes}/$id');
       final data = res.data as Map<String, dynamic>;
       if (data['success'] == true) {
-        return MessDetailModel.fromJson(data['data'] as Map<String, dynamic>);
+        final model = MessDetailModel.fromJson(
+          data['data'] as Map<String, dynamic>,
+        );
+        _messDetailCache[id] = model;
+        return model;
       }
       throw Exception(data['message'] ?? 'Failed to load mess');
     } catch (e) {
+      if (_messDetailCache.containsKey(id)) return _messDetailCache[id]!;
       AppLogger.w('fetchMess failed: $e');
       rethrow;
     }

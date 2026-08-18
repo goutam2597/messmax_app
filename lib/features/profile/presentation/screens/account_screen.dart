@@ -10,8 +10,10 @@ import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../data/models/account_response_model.dart';
 import '../../data/repositories/account_repository.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/delete_account_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../../features/dashboard/data/models/dashboard_model.dart';
+import '../../../main/presentation/screens/main_shell_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -60,7 +62,15 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   void initState() {
     super.initState();
-    _loadAccountDetails();
+    final cached = AccountRepository.getCached();
+    if (cached != null) {
+      _accountData = cached;
+      _nameController.text = cached.user.name;
+      _emailController.text = cached.user.email;
+      _isLoading = false;
+    } else {
+      _loadAccountDetails();
+    }
   }
 
   @override
@@ -872,33 +882,83 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Deleting your account will remove your personal data and mess memberships.',
+            'Deleting your account is permanent. All your personal data, mess memberships, and seat listings will be immediately deleted.',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.5,
               color: Color(0xFF852222),
-              height: 1.35,
+              height: 1.4,
             ),
           ),
-          const SizedBox(height: 14),
-          OutlinedButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Account deletion requires web confirmation'),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 48,
+            child: OutlinedButton.icon(
+              onPressed: _handleDeleteAccount,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFFA02626),
+                side: const BorderSide(color: Color(0xFFA02626), width: 1.2),
+                minimumSize: const Size(0, 48),
+                fixedSize: const Size.fromHeight(48),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFA02626),
-              side: const BorderSide(color: Color(0xFFA02626), width: 1.2),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              ),
+              icon: const Icon(Icons.delete_forever_rounded, size: 18),
+              label: const Text(
+                'Delete Account',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
               ),
             ),
-            child: const Text('Delete Account'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _handleDeleteAccount() async {
+    final password = await DeleteAccountDialog.show(context);
+    if (password == null || !mounted) return;
+
+    // Show loading spinner
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.danger),
+        ),
+      ),
+    );
+
+    try {
+      await context.read<AuthCubit>().deleteAccount(
+            password: password.isNotEmpty ? password : null,
+          );
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainShellScreen(initialTab: 0)),
+        (_) => false,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your account has been deleted successfully.'),
+          backgroundColor: AppColors.ink,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceAll('Exception: ', ''),
+          ),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
   }
 }

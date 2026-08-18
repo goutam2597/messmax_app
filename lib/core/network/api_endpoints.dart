@@ -20,4 +20,5 @@ class ApiEndpoints {
   static const String accountPassword = '/v1/account/password';
   static const String members = '/v1/members';
   static const String messes = '/v1/messes';
+  static const String publicNotifications = '/v1/public-notifications';
 }

@@ -9,13 +9,27 @@ class DashboardCubit extends Cubit<DashboardState> {
       : _repository = repository ?? DashboardRepository(),
         super(const DashboardInitial());
 
-  Future<void> loadDashboard({int? messId}) async {
-    emit(const DashboardLoading());
+  Future<void> loadDashboard({int? messId, bool forceRefresh = false}) async {
+    final cached = _repository.getCached(messId: messId);
+    if (cached != null && !forceRefresh) {
+      emit(DashboardLoaded(cached));
+      return;
+    }
+    if (state is! DashboardLoaded) {
+      emit(const DashboardLoading());
+    }
     try {
-      final dashboard = await _repository.fetchDashboard(messId: messId);
+      final dashboard = await _repository.fetchDashboard(
+        messId: messId,
+        forceRefresh: forceRefresh,
+      );
       emit(DashboardLoaded(dashboard));
     } catch (e) {
-      emit(DashboardError(e.toString()));
+      if (cached != null) {
+        emit(DashboardLoaded(cached));
+      } else {
+        emit(DashboardError(e.toString()));
+      }
     }
   }
 }

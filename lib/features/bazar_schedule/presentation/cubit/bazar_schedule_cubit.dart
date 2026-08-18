@@ -13,13 +13,40 @@ class BazarScheduleCubit extends Cubit<BazarScheduleState> {
       : _repository = repository ?? BazarScheduleRepository(),
         super(const BazarScheduleInitial());
 
-  Future<void> loadSchedule({int? messId, int? year, int? month}) async {
-    emit(const BazarScheduleLoading());
+  Future<void> loadSchedule({
+    int? messId,
+    int? year,
+    int? month,
+    bool forceRefresh = false,
+  }) async {
+    final targetMessId = messId ?? _currentMessId;
+    final targetYear = year ?? _currentYear;
+    final targetMonth = month ?? _currentMonth;
+
+    final cached = _repository.getCached(
+      messId: targetMessId,
+      year: targetYear,
+      month: targetMonth,
+    );
+
+    if (cached != null && !forceRefresh) {
+      _currentMessId = cached.mess.id;
+      _currentYear = cached.year;
+      _currentMonth = cached.month;
+      emit(BazarScheduleLoaded(schedule: cached));
+      return;
+    }
+
+    if (state is! BazarScheduleLoaded) {
+      emit(const BazarScheduleLoading());
+    }
+
     try {
       final data = await _repository.fetchSchedule(
-        messId: messId ?? _currentMessId,
-        year: year ?? _currentYear,
-        month: month ?? _currentMonth,
+        messId: targetMessId,
+        year: targetYear,
+        month: targetMonth,
+        forceRefresh: forceRefresh,
       );
       _currentMessId = data.mess.id;
       _currentYear = data.year;
@@ -28,7 +55,11 @@ class BazarScheduleCubit extends Cubit<BazarScheduleState> {
       emit(BazarScheduleLoaded(schedule: data));
     } catch (e) {
       AppLogger.w('BazarScheduleCubit.loadSchedule failed: $e');
-      emit(BazarScheduleError(e.toString().replaceAll('Exception: ', '')));
+      if (cached != null) {
+        emit(BazarScheduleLoaded(schedule: cached));
+      } else {
+        emit(BazarScheduleError(e.toString().replaceAll('Exception: ', '')));
+      }
     }
   }
 

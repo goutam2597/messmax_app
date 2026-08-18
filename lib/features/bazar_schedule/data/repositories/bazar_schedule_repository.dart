@@ -6,14 +6,38 @@ import '../models/bazar_schedule_model.dart';
 
 class BazarScheduleRepository {
   final Dio _dio;
+  static final Map<String, BazarScheduleResponseModel> _cache = {};
 
   BazarScheduleRepository({Dio? dio}) : _dio = dio ?? DioClient.instance;
+
+  static void clearCache() => _cache.clear();
+
+  BazarScheduleResponseModel? getCached({
+    int? messId,
+    int? year,
+    int? month,
+  }) {
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    return _cache['${messId ?? 0}_${y}_$m'];
+  }
 
   Future<BazarScheduleResponseModel> fetchSchedule({
     int? messId,
     int? year,
     int? month,
+    bool forceRefresh = false,
   }) async {
+    final now = DateTime.now();
+    final y = year ?? now.year;
+    final m = month ?? now.month;
+    final key = '${messId ?? 0}_${y}_$m';
+
+    if (!forceRefresh && _cache.containsKey(key)) {
+      return _cache[key]!;
+    }
+
     try {
       final query = <String, dynamic>{};
       if (messId != null) query['mess_id'] = messId;
@@ -26,12 +50,15 @@ class BazarScheduleRepository {
       );
 
       if (response.data != null && response.data is Map<String, dynamic>) {
-        return BazarScheduleResponseModel.fromJson(
+        final model = BazarScheduleResponseModel.fromJson(
           response.data as Map<String, dynamic>,
         );
+        _cache[key] = model;
+        return model;
       }
       throw Exception('Invalid bazar schedule payload');
     } catch (e) {
+      if (_cache.containsKey(key)) return _cache[key]!;
       AppLogger.w('BazarScheduleRepository.fetchSchedule failed: $e');
       rethrow;
     }

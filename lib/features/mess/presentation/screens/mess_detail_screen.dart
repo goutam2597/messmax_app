@@ -52,156 +52,154 @@ class _MessDetailView extends StatelessWidget {
           elevation: 0,
           scrolledUnderElevation: 0.5,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
-          leading: AppBackButton(
-            onPressed: () => _backToDashboard(context),
+          leading: AppBackButton(onPressed: () => _backToDashboard(context)),
+          title: BlocBuilder<MessCubit, MessState>(
+            builder: (context, state) {
+              final name = state is MessDetailLoaded
+                  ? state.detail.mess.name
+                  : 'Mess Details';
+              return Text(
+                name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.ink,
+                  fontSize: 16,
+                ),
+              );
+            },
           ),
-        title: BlocBuilder<MessCubit, MessState>(
-          builder: (context, state) {
-            final name = state is MessDetailLoaded
-                ? state.detail.mess.name
-                : 'Mess Details';
-            return Text(
-              name,
-              style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                color: AppColors.ink,
-                fontSize: 16,
-              ),
-            );
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => context.read<MessCubit>().loadMess(messId),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.paper,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.paperLine),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.refresh_rounded,
-                        color: AppColors.ink,
-                        size: 18,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.read<MessCubit>().loadMess(messId),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.paper,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.paperLine),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.refresh_rounded,
+                          color: AppColors.ink,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: BlocConsumer<MessCubit, MessState>(
-          listener: (context, state) {
-            if (state is MessDetailLoaded && state.message != null) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.message!)));
-            }
-          },
-          builder: (context, state) {
-            if (state is MessLoading) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: AppColors.brandDark,
-                ),
-              );
-            }
-            if (state is MessError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline_rounded,
-                        size: 40,
-                        color: AppColors.danger,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        state.message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: AppColors.inkFaded,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
-                        onPressed: () =>
-                            context.read<MessCubit>().loadMess(messId),
-                        icon: const Icon(Icons.refresh_rounded, size: 15),
-                        label: const Text('Try Again'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.brandDark,
-                          side: const BorderSide(color: AppColors.paperLine),
-                          minimumSize: const Size(120, 38),
-                        ),
-                      ),
-                    ],
+          ],
+        ),
+        body: SafeArea(
+          child: BlocConsumer<MessCubit, MessState>(
+            listener: (context, state) {
+              if (state is MessDetailLoaded && state.message != null) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message!)));
+              }
+            },
+            builder: (context, state) {
+              if (state is MessLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: AppColors.brandDark,
                   ),
-                ),
-              );
-            }
+                );
+              }
+              if (state is MessError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline_rounded,
+                          size: 40,
+                          color: AppColors.danger,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          state.message,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.inkFaded,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              context.read<MessCubit>().loadMess(messId),
+                          icon: const Icon(Icons.refresh_rounded, size: 15),
+                          label: const Text('Try Again'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.brandDark,
+                            side: const BorderSide(color: AppColors.paperLine),
+                            minimumSize: const Size(120, 38),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
 
-            if (state is MessDetailLoaded) {
-              final d = state.detail;
-              final mess = d.mess;
-              final canManage = d.canManage;
-              final months = d.months;
+              if (state is MessDetailLoaded) {
+                final d = state.detail;
+                final mess = d.mess;
+                final canManage = d.canManage;
+                final months = d.months;
 
-              return RefreshIndicator(
-                color: AppColors.brandDark,
-                onRefresh: () async =>
-                    context.read<MessCubit>().loadMess(messId),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 720),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // 1. Header Summary Card
-                          _buildHeaderCard(context, mess, canManage),
+                return RefreshIndicator(
+                  color: AppColors.brandDark,
+                  onRefresh: () async =>
+                      context.read<MessCubit>().loadMess(messId),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 720),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // 1. Header Summary Card
+                            _buildHeaderCard(context, mess, canManage),
 
-                          const SizedBox(height: 18),
+                            const SizedBox(height: 18),
 
-                          // 2. Active Month Sheet Card
-                          _buildSheetsSection(context, months, canManage),
+                            // 2. Active Month Sheet Card
+                            _buildSheetsSection(context, months, canManage),
 
-                          const SizedBox(height: 20),
+                            const SizedBox(height: 20),
 
-                          // 3. Member Settlement Section
-                          _buildMemberSettlementsSection(d),
-                        ],
+                            // 3. Member Settlement Section
+                            _buildMemberSettlementsSection(d),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
-    ),
     );
   }
 
@@ -966,35 +964,35 @@ class _MessDetailView extends StatelessWidget {
                                     color: isOwner
                                         ? const Color(0xFFEDE7F6)
                                         : isManager
-                                            ? AppColors.brandSoft
-                                            : AppColors.paper,
+                                        ? AppColors.brandSoft
+                                        : AppColors.paper,
                                     borderRadius: BorderRadius.circular(5),
                                     border: Border.all(
                                       color: isOwner
-                                          ? const Color(0xFF5E35B1).withValues(
-                                              alpha: 0.3,
-                                            )
+                                          ? const Color(
+                                              0xFF5E35B1,
+                                            ).withValues(alpha: 0.3)
                                           : isManager
-                                              ? AppColors.brandDark.withValues(
-                                                  alpha: 0.2,
-                                                )
-                                              : AppColors.paperLine,
+                                          ? AppColors.brandDark.withValues(
+                                              alpha: 0.2,
+                                            )
+                                          : AppColors.paperLine,
                                     ),
                                   ),
                                   child: Text(
                                     isOwner
                                         ? 'OWNER'
                                         : isManager
-                                            ? 'MANAGER'
-                                            : 'MEMBER',
+                                        ? 'MANAGER'
+                                        : 'MEMBER',
                                     style: TextStyle(
                                       fontSize: 8.5,
                                       fontWeight: FontWeight.w800,
                                       color: isOwner
                                           ? const Color(0xFF5E35B1)
                                           : isManager
-                                              ? AppColors.brandDark
-                                              : AppColors.inkFaded,
+                                          ? AppColors.brandDark
+                                          : AppColors.inkFaded,
                                     ),
                                   ),
                                 ),
@@ -1452,8 +1450,9 @@ class _MessDetailView extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: AppColors.paper,
                                   shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: AppColors.paperLine),
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
                                 ),
                                 child: const Center(
                                   child: Icon(
@@ -1484,18 +1483,21 @@ class _MessDetailView extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: selectedMonth == now.month &&
+                                    color:
+                                        selectedMonth == now.month &&
                                             yearCtrl.text == '${now.year}'
                                         ? Colors.white
                                         : AppColors.ink,
                                   ),
                                 ),
-                                backgroundColor: selectedMonth == now.month &&
+                                backgroundColor:
+                                    selectedMonth == now.month &&
                                         yearCtrl.text == '${now.year}'
                                     ? AppColors.brandDark
                                     : AppColors.paper,
                                 side: BorderSide(
-                                  color: selectedMonth == now.month &&
+                                  color:
+                                      selectedMonth == now.month &&
                                           yearCtrl.text == '${now.year}'
                                       ? AppColors.brandDark
                                       : AppColors.paperLine,
@@ -1517,22 +1519,22 @@ class _MessDetailView extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: selectedMonth ==
-                                                nextMonthDate.month &&
+                                    color:
+                                        selectedMonth == nextMonthDate.month &&
                                             yearCtrl.text ==
                                                 '${nextMonthDate.year}'
                                         ? Colors.white
                                         : AppColors.ink,
                                   ),
                                 ),
-                                backgroundColor: selectedMonth ==
-                                            nextMonthDate.month &&
+                                backgroundColor:
+                                    selectedMonth == nextMonthDate.month &&
                                         yearCtrl.text == '${nextMonthDate.year}'
                                     ? AppColors.brandDark
                                     : AppColors.paper,
                                 side: BorderSide(
-                                  color: selectedMonth ==
-                                              nextMonthDate.month &&
+                                  color:
+                                      selectedMonth == nextMonthDate.month &&
                                           yearCtrl.text ==
                                               '${nextMonthDate.year}'
                                       ? AppColors.brandDark
@@ -1563,8 +1565,7 @@ class _MessDetailView extends StatelessWidget {
                                     labelText: 'Month',
                                     filled: true,
                                     fillColor: AppColors.paper,
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
+                                    contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 12,
                                     ),
@@ -1610,8 +1611,7 @@ class _MessDetailView extends StatelessWidget {
                                     labelText: 'Year',
                                     filled: true,
                                     fillColor: AppColors.paper,
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
+                                    contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 12,
                                     ),
@@ -1644,11 +1644,11 @@ class _MessDetailView extends StatelessWidget {
                                       try {
                                         await MessRepository()
                                             .createMonth(messId, {
-                                          'year':
-                                              int.tryParse(yearCtrl.text) ??
-                                              DateTime.now().year,
-                                          'month': selectedMonth,
-                                        });
+                                              'year':
+                                                  int.tryParse(yearCtrl.text) ??
+                                                  DateTime.now().year,
+                                              'month': selectedMonth,
+                                            });
                                         if (context.mounted) {
                                           Navigator.pop(ctx2);
                                           ScaffoldMessenger.of(
@@ -1660,9 +1660,9 @@ class _MessDetailView extends StatelessWidget {
                                               ),
                                             ),
                                           );
-                                          context
-                                              .read<MessCubit>()
-                                              .loadMess(messId);
+                                          context.read<MessCubit>().loadMess(
+                                            messId,
+                                          );
                                         }
                                       } catch (e) {
                                         if (context.mounted) {
@@ -1672,9 +1672,9 @@ class _MessDetailView extends StatelessWidget {
                                             SnackBar(
                                               content: Text(
                                                 e.toString().replaceAll(
-                                                      'Exception: ',
-                                                      '',
-                                                    ),
+                                                  'Exception: ',
+                                                  '',
+                                                ),
                                               ),
                                             ),
                                           );
@@ -1697,9 +1697,7 @@ class _MessDetailView extends StatelessWidget {
                                       size: 18,
                                     ),
                               label: Text(
-                                saving
-                                    ? 'Opening...'
-                                    : 'Create Monthly Sheet',
+                                saving ? 'Opening...' : 'Create Monthly Sheet',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 14,
@@ -1708,8 +1706,9 @@ class _MessDetailView extends StatelessWidget {
                               style: FilledButton.styleFrom(
                                 backgroundColor: AppColors.brandDark,
                                 foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                 ),

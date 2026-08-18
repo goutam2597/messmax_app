@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/logger/app_logger.dart';
@@ -11,9 +12,9 @@ import '../../../main/presentation/screens/main_shell_screen.dart';
 
 /// Marketing / landing screen — the first thing after splash.
 ///
-/// Fully light-themed: no dark hero band, just a soft paper/brand gradient
-/// backdrop behind a floating logo medallion with six feature icons
-/// orbiting it, flowing straight into the copy, feature chips and actions.
+/// Fully light-themed: soft paper/brand gradient backdrop behind a floating
+/// official logo emblem with six feature icons orbiting it, flowing into
+/// the official wordmark, value proposition, feature chips and actions.
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -32,7 +33,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   late final Animation<double> _actionsFade;
   late final Animation<Offset> _actionsSlide;
 
-  // endless slow rotation for the orbiting feature icons
+  // Endless slow rotation for the orbiting feature icons
   late final AnimationController _orbitController;
 
   @override
@@ -103,16 +104,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       backgroundColor: AppColors.paper,
       body: Stack(
         children: [
-          // soft ambient glow blobs, echoing the splash screen — light only.
+          // Soft ambient warm glow blobs
           const Positioned(
             top: -60,
             right: -50,
-            child: _GlowBlob(size: 220, color: AppColors.brandSoft),
+            child: _GlowBlob(size: 240, color: AppColors.brandSoft),
           ),
           const Positioned(
-            top: 140,
+            top: 160,
             left: -70,
-            child: _GlowBlob(size: 180, color: AppColors.brandSoft),
+            child: _GlowBlob(size: 200, color: AppColors.brandSoft),
           ),
 
           SafeArea(
@@ -120,11 +121,15 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+                        // Orbiting Hero with official emblem
                         Center(
                           child: FadeTransition(
                             opacity: _heroFade,
@@ -136,54 +141,91 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             ),
                           ),
                         ),
-                        const SizedBox(height: 22),
-                        FadeTransition(
-                          opacity: _textFade,
-                          child: SlideTransition(
-                            position: _textSlide,
-                            child: const Text(
-                              AppStrings.welcomeTitle,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 28,
-                                height: 1.15,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.ink,
-                                letterSpacing: -0.6,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        FadeTransition(
-                          opacity: _textFade,
-                          child: SlideTransition(
-                            position: _textSlide,
-                            child: const Text(
-                              AppStrings.welcomeSubtitle,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14.5,
-                                height: 1.5,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                          ),
-                        ),
                         const SizedBox(height: 24),
+                        // Official Logo Wordmark & Headline
+                        FadeTransition(
+                          opacity: _textFade,
+                          child: SlideTransition(
+                            position: _textSlide,
+                            child: Column(
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/images/logo.svg',
+                                  height: 38,
+                                  fit: BoxFit.contain,
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.brand.withValues(
+                                      alpha: 0.08,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: AppColors.brand.withValues(
+                                        alpha: 0.25,
+                                      ),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'UNIVERSAL MESS NETWORK',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1.6,
+                                      color: AppColors.brandDark,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                const Text(
+                                  'Manage Messes, Meals & Find Seats',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    height: 1.25,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.ink,
+                                    letterSpacing: -0.4,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  child: Text(
+                                    'The complete all-in-one ecosystem for mess members, managers & seat seekers across Bangladesh.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      height: 1.45,
+                                      color: AppColors.inkFaded,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        // Feature Pills
                         FadeTransition(
                           opacity: _chipsFade,
                           child: const _FeatureChips(),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
                 ),
-                // Actions are pinned above the safe-area inset, never
-                // flush against the very bottom edge or the system nav bar.
+                // Action Buttons
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -207,11 +249,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               label: AppStrings.findMesses,
                               onPressed: _onFindMesses,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             OutlinedButton.icon(
                               onPressed: _onCreateMess,
                               icon: const Icon(
                                 Icons.add_circle_outline_rounded,
+                                size: 18,
                               ),
                               label: Text(AppStrings.createMess),
                               style: OutlinedButton.styleFrom(
@@ -221,14 +264,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   width: 1.4,
                                 ),
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                                  vertical: 14,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 14),
                             _LoginLink(onTap: _onLogin),
                           ],
                         ),
@@ -293,7 +336,7 @@ class _GlowBlob extends StatelessWidget {
   }
 }
 
-/// Central brand medallion with six feature icons slowly orbiting it.
+/// Central brand medallion with official emblem and six feature icons slowly orbiting it.
 class _OrbitingHero extends StatelessWidget {
   const _OrbitingHero({required this.controller});
 
@@ -311,18 +354,18 @@ class _OrbitingHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 260,
-      height: 260,
+      width: 250,
+      height: 250,
       child: AnimatedBuilder(
         animation: controller,
         builder: (context, _) {
           return Stack(
             alignment: Alignment.center,
             children: [
-              // faint outer ring
+              // Faint outer ring
               Container(
-                width: 236,
-                height: 236,
+                width: 228,
+                height: 228,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -331,10 +374,10 @@ class _OrbitingHero extends StatelessWidget {
                   ),
                 ),
               ),
-              // dashed-look inner tick ring
+              // Inner orbit guide ring
               Container(
-                width: 200,
-                height: 200,
+                width: 196,
+                height: 196,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -343,31 +386,54 @@ class _OrbitingHero extends StatelessWidget {
                   ),
                 ),
               ),
-              // orbiting icons
-              for (var i = 0; i < _orbitIcons.length; i++) _orbitIcon(i),
-              // brand medallion
+              // Soft ambient glow behind emblem
               Container(
-                width: 118,
-                height: 118,
+                width: 140,
+                height: 140,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppColors.brand, AppColors.brandDark],
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.brand.withValues(alpha: 0.18),
+                      AppColors.brand.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+              ),
+              // Orbiting icons
+              for (var i = 0; i < _orbitIcons.length; i++) _orbitIcon(i),
+              // Official Emblem Card
+              Container(
+                width: 104,
+                height: 104,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: AppColors.brand.withValues(alpha: 0.22),
+                    width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.brand.withValues(alpha: 0.38),
-                      blurRadius: 36,
+                      color: AppColors.brandDark.withValues(alpha: 0.14),
+                      blurRadius: 32,
                       spreadRadius: 2,
+                      offset: const Offset(0, 10),
+                    ),
+                    const BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.restaurant_menu_rounded,
-                  color: Colors.white,
-                  size: 50,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: SvgPicture.asset(
+                    'assets/images/mm_fav.svg',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ],
@@ -380,28 +446,28 @@ class _OrbitingHero extends StatelessWidget {
   Widget _orbitIcon(int index) {
     final baseAngle = (index / _orbitIcons.length) * 2 * math.pi;
     final angle = baseAngle + controller.value * 2 * math.pi;
-    const radius = 118.0;
+    const radius = 114.0;
     final dx = radius * math.cos(angle);
     final dy = radius * math.sin(angle);
     final (icon, _) = _orbitIcons[index];
     return Transform.translate(
       offset: Offset(dx, dy),
       child: Container(
-        width: 40,
-        height: 40,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.paperLine),
+          border: Border.all(color: const Color(0xFFE4E4DF)),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x1F000000),
-              blurRadius: 12,
-              offset: Offset(0, 5),
+              color: Color(0x14000000),
+              blurRadius: 10,
+              offset: Offset(0, 4),
             ),
           ],
         ),
-        child: Icon(icon, color: AppColors.brandDark, size: 18),
+        child: Icon(icon, color: AppColors.brandDark, size: 17),
       ),
     );
   }
@@ -432,8 +498,8 @@ class _PrimaryActionButton extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: AppColors.brand.withValues(alpha: 0.38),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -443,7 +509,7 @@ class _PrimaryActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: onPressed,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -488,14 +554,14 @@ class _FeatureChips extends StatelessWidget {
       children: [
         for (final (icon, label) in _items)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: AppColors.paperLine),
+              border: Border.all(color: const Color(0xFFE5E5DF)),
               boxShadow: const [
                 BoxShadow(
-                  color: Color(0x0D000000),
+                  color: Color(0x0A000000),
                   blurRadius: 8,
                   offset: Offset(0, 3),
                 ),
@@ -509,7 +575,7 @@ class _FeatureChips extends StatelessWidget {
                 Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppColors.inkSoft,
                   ),

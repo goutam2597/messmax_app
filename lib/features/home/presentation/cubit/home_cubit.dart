@@ -7,15 +7,28 @@ class HomeCubit extends Cubit<HomeState> {
 
   HomeCubit({HomeRepository? repository})
       : _repository = repository ?? HomeRepository(),
-        super(const HomeInitial());
+        super(
+          HomeRepository.getCached() != null
+              ? HomeLoaded(HomeRepository.getCached()!)
+              : const HomeInitial(),
+        );
 
-  Future<void> fetchHomeData() async {
-    emit(const HomeLoading());
+  Future<void> fetchHomeData({bool forceRefresh = false}) async {
+    final cached = HomeRepository.getCached();
+    if (!forceRefresh && cached != null) {
+      emit(HomeLoaded(cached));
+      return;
+    }
+    if (state is! HomeLoaded) {
+      emit(const HomeLoading());
+    }
     try {
-      final data = await _repository.getHomeData();
+      final data = await _repository.getHomeData(forceRefresh: forceRefresh);
       emit(HomeLoaded(data));
     } catch (e) {
-      emit(HomeError(e.toString()));
+      if (state is! HomeLoaded) {
+        emit(HomeError(e.toString()));
+      }
     }
   }
 }

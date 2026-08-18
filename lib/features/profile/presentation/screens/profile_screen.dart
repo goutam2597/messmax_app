@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/messmax_app_bar.dart';
+import '../../../../core/widgets/sign_out_dialog.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../ads/presentation/screens/my_ads_screen.dart';
@@ -218,15 +219,22 @@ class ProfileScreen extends StatelessWidget {
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () async {
-                              final rootNav = Navigator.of(context, rootNavigator: true);
-                              await context.read<AuthCubit>().logout();
-                              rootNav.pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const MainShellScreen(initialTab: 0),
-                                ),
-                                (_) => false,
+                              final confirmed = await SignOutDialog.show(
+                                context,
+                                userEmail: authState.user.email,
+                                userName: authState.user.name,
                               );
+                              if (confirmed == true && context.mounted) {
+                                final rootNav = Navigator.of(context, rootNavigator: true);
+                                await context.read<AuthCubit>().logout();
+                                rootNav.pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const MainShellScreen(initialTab: 0),
+                                  ),
+                                  (_) => false,
+                                );
+                              }
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.danger,

@@ -8,26 +8,47 @@ class MessCubit extends Cubit<MessState> {
     : _repo = repo ?? MessRepository(),
       super(MessInitial());
 
-  Future<void> loadMesses() async {
-    emit(MessLoading());
+  Future<void> loadMesses({bool forceRefresh = false}) async {
+    final cached = _repo.getCachedMesses();
+    if (cached != null && !forceRefresh) {
+      emit(MessListLoaded(messes: cached, canCreate: true, isIndividual: false));
+      return;
+    }
+    if (state is! MessListLoaded) {
+      emit(MessLoading());
+    }
     try {
-      final messes = await _repo.fetchMesses();
-      // fetch canCreate/isIndividual from last detail? use repo directly
+      final messes = await _repo.fetchMesses(forceRefresh: forceRefresh);
       emit(
         MessListLoaded(messes: messes, canCreate: true, isIndividual: false),
       );
     } catch (e) {
-      emit(MessError(e.toString().replaceAll('Exception: ', '')));
+      if (cached != null) {
+        emit(MessListLoaded(messes: cached, canCreate: true, isIndividual: false));
+      } else {
+        emit(MessError(e.toString().replaceAll('Exception: ', '')));
+      }
     }
   }
 
-  Future<void> loadMess(int id) async {
-    emit(MessLoading());
+  Future<void> loadMess(int id, {bool forceRefresh = false}) async {
+    final cached = _repo.getCachedMess(id);
+    if (cached != null && !forceRefresh) {
+      emit(MessDetailLoaded(cached));
+      return;
+    }
+    if (state is! MessDetailLoaded) {
+      emit(MessLoading());
+    }
     try {
-      final d = await _repo.fetchMess(id);
+      final d = await _repo.fetchMess(id, forceRefresh: forceRefresh);
       emit(MessDetailLoaded(d));
     } catch (e) {
-      emit(MessError(e.toString().replaceAll('Exception: ', '')));
+      if (cached != null) {
+        emit(MessDetailLoaded(cached));
+      } else {
+        emit(MessError(e.toString().replaceAll('Exception: ', '')));
+      }
     }
   }
 

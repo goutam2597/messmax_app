@@ -142,8 +142,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          onPressed: () =>
-                              context.read<HomeCubit>().fetchHomeData(),
+                          onPressed: () => context
+                              .read<HomeCubit>()
+                              .fetchHomeData(forceRefresh: true),
                           icon: const Icon(Icons.refresh_rounded, size: 18),
                           label: const Text('Try Again'),
                         ),
@@ -169,8 +170,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: RefreshIndicator(
                         color: AppColors.accent,
                         backgroundColor: Colors.white,
-                        onRefresh: () =>
-                            context.read<HomeCubit>().fetchHomeData(),
+                        onRefresh: () => context
+                            .read<HomeCubit>()
+                            .fetchHomeData(forceRefresh: true),
                         child: SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.only(bottom: 40),
@@ -217,18 +219,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader(HomeDataModel data) {
-    final cities = data.availableCities;
-    final cityLabel = cities.isEmpty
-        ? 'All Cities'
-        : cities.length > 1
-            ? '${cities.first} +${cities.length - 1} cities'
-            : cities.first;
     return MessMaxAppBar(
-      title: 'MessMax',
-      subtitle: 'Seats & Meals Hub',
-      leading: const BrandMark(),
+      useLogo: true,
       actions: [
-        LocationChip(label: cityLabel),
         AppBarActionButton(
           icon: Icons.notifications_none_rounded,
           svgAsset: 'assets/icons/bell.svg',

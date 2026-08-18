@@ -80,7 +80,9 @@ class _MessesViewState extends State<_MessesView> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => context.read<MessCubit>().loadMesses(),
+                  onTap: () => context
+                      .read<MessCubit>()
+                      .loadMesses(forceRefresh: true),
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
                     width: 36,
@@ -151,7 +153,9 @@ class _MessesViewState extends State<_MessesView> {
               if (messes.isEmpty) {
                 return RefreshIndicator(
                   color: AppColors.brandDark,
-                  onRefresh: () => context.read<MessCubit>().loadMesses(),
+                  onRefresh: () => context
+                      .read<MessCubit>()
+                      .loadMesses(forceRefresh: true),
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
@@ -181,7 +185,7 @@ class _MessesViewState extends State<_MessesView> {
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'Create your first mess to start tracking meals and bazar.',
+                            'Create a mess or ask your manager for an invite to start managing meals and expenses.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
@@ -191,18 +195,14 @@ class _MessesViewState extends State<_MessesView> {
                           ),
                           const SizedBox(height: 24),
                           FilledButton.icon(
-                            onPressed: () async {
-                              final ok = await Navigator.push<bool>(
+                            onPressed: () {
+                              final cubit = context.read<MessCubit>();
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => MessFormScreen(
-                                    cubit: context.read<MessCubit>(),
-                                  ),
+                                  builder: (_) => MessFormScreen(cubit: cubit),
                                 ),
                               );
-                              if (ok == true && context.mounted) {
-                                context.read<MessCubit>().loadMesses();
-                              }
                             },
                             icon: const Icon(Icons.add_rounded, size: 20),
                             label: const Text('Create New Mess'),
@@ -218,7 +218,9 @@ class _MessesViewState extends State<_MessesView> {
               }
               return RefreshIndicator(
                 color: AppColors.brandDark,
-                onRefresh: () => context.read<MessCubit>().loadMesses(),
+                onRefresh: () => context
+                    .read<MessCubit>()
+                    .loadMesses(forceRefresh: true),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),

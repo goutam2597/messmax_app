@@ -25,6 +25,7 @@ class UserModel extends Equatable {
 
   bool get isHostelOwner => accountType == 'hostel_owner';
   bool get isIndividual => accountType == 'individual';
+  bool get isVerified => emailVerifiedAt != null && emailVerifiedAt!.isNotEmpty;
 
   String get initials {
     final p = name.trim().isEmpty ? email.trim() : name.trim();

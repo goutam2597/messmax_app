@@ -1012,8 +1012,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () =>
-                      context.read<BazarScheduleCubit>().loadSchedule(),
+                  onTap: () => context
+                      .read<BazarScheduleCubit>()
+                      .loadSchedule(forceRefresh: true),
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
                     width: 36,
@@ -1045,6 +1046,13 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                 SnackBar(
                   content: Text(state.successMessage!),
                   backgroundColor: AppColors.brandDark,
+                ),
+              );
+            } else if (state is BazarScheduleError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.danger,
                 ),
               );
             }
@@ -1086,8 +1094,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                       ),
                       const SizedBox(height: 20),
                       FilledButton.icon(
-                        onPressed: () =>
-                            context.read<BazarScheduleCubit>().loadSchedule(),
+                        onPressed: () => context
+                            .read<BazarScheduleCubit>()
+                            .loadSchedule(forceRefresh: true),
                         icon: const Icon(Icons.refresh_rounded, size: 18),
                         label: const Text('Try Again'),
                       ),
@@ -1103,20 +1112,26 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                   .where((s) => s.isAssigned)
                   .toList();
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // --- 1. HERO MONTH HEADER & STATS CARD ---
-                    _buildHeroMonthCard(context, data),
-                    const SizedBox(height: 20),
+              return RefreshIndicator(
+                color: AppColors.brandDark,
+                onRefresh: () => context
+                    .read<BazarScheduleCubit>()
+                    .loadSchedule(forceRefresh: true),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // --- 1. HERO MONTH HEADER & STATS CARD ---
+                      _buildHeroMonthCard(context, data),
+                      const SizedBox(height: 20),
 
-                    // --- 2. MANAGER ACTIONS TOOLBAR ---
-                    _buildSectionHeader(
-                      Icons.list_alt_rounded,
-                      'SHOPPING ROTA (${data.assignedCount}/${data.daysInMonth} DAYS ASSIGNED)',
-                    ),
+                      // --- 2. MANAGER ACTIONS TOOLBAR ---
+                      _buildSectionHeader(
+                        Icons.list_alt_rounded,
+                        'SHOPPING ROTA (${data.assignedCount}/${data.daysInMonth} DAYS ASSIGNED)',
+                      ),
                     const SizedBox(height: 10),
                     if (data.canManage)
                       _buildManagerToolbar(context, data, assignedRows),
@@ -1144,6 +1159,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     if (data.canManage) _buildAnnouncementCard(context, data),
                   ],
                 ),
+              ),
               );
             }
 

@@ -6,19 +6,31 @@ import '../models/ad_model.dart';
 
 class UserAdRepository {
   final Dio _dio;
+  static List<AdModel>? _cachedAds;
 
   UserAdRepository({Dio? dio}) : _dio = dio ?? DioClient.instance;
 
-  Future<List<AdModel>> fetchMyAds() async {
+  static void clearCache() => _cachedAds = null;
+  static List<AdModel>? getCached() => _cachedAds;
+
+  Future<List<AdModel>> fetchMyAds({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedAds != null) {
+      return _cachedAds!;
+    }
     try {
       final response = await _dio.get('${ApiEndpoints.ads}/../user/ads');
       if (response.data != null && response.data is Map<String, dynamic>) {
         final data = response.data['data'] as Map<String, dynamic>?;
         final list = data?['ads'] as List<dynamic>? ?? [];
-        return list.map((e) => AdModel.fromJson(e as Map<String, dynamic>)).toList();
+        final parsed = list
+            .map((e) => AdModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        _cachedAds = parsed;
+        return parsed;
       }
       throw Exception('Invalid user ads payload');
     } catch (e) {
+      if (_cachedAds != null) return _cachedAds!;
       AppLogger.w('UserAdRepository.fetchMyAds failed: $e');
       rethrow;
     }

@@ -152,7 +152,7 @@ class _BlogScreenState extends State<BlogScreen> {
                                 foregroundColor: Colors.white,
                               ),
                               onPressed: () =>
-                                  context.read<BlogCubit>().fetchBlogs(),
+                                  context.read<BlogCubit>().fetchBlogs(forceRefresh: true),
                               child: const Text('Try Again'),
                             ),
                           ],
@@ -221,8 +221,9 @@ class _BlogScreenState extends State<BlogScreen> {
                                 )
                               : RefreshIndicator(
                                   color: AppColors.accent,
-                                  onRefresh: () =>
-                                      context.read<BlogCubit>().fetchBlogs(),
+                                  onRefresh: () => context
+                                      .read<BlogCubit>()
+                                      .fetchBlogs(forceRefresh: true),
                                   child: ListView.separated(
                                     padding: const EdgeInsets.all(12),
                                     itemCount: blogs.length,

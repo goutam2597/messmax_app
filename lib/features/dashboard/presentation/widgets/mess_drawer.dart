@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/sign_out_dialog.dart';
 import '../../../ads/presentation/screens/my_ads_screen.dart';
 import '../../../bazar_schedule/presentation/screens/bazar_schedule_screen.dart';
 import '../../../members/presentation/screens/members_screen.dart';
@@ -190,7 +192,7 @@ class MessDrawer extends StatelessWidget {
                   _drawerTile(
                     id: 'find_mess',
                     icon: Icons.search_rounded,
-                    title: 'Find Seats',
+                    title: 'Go Home',
                     subtitle: 'Browse live seat ads',
                     context: context,
                   ),
@@ -285,7 +287,9 @@ class MessDrawer extends StatelessWidget {
 
                   if (drawerMesses.isNotEmpty) ...[
                     const SizedBox(height: 14),
-                    _buildSectionLabel('JOINED MESSES (${drawerMesses.length})'),
+                    _buildSectionLabel(
+                      'JOINED MESSES (${drawerMesses.length})',
+                    ),
                     for (final m in drawerMesses) ...[
                       _buildMessDetailTile(
                         context: context,
@@ -367,7 +371,9 @@ class MessDrawer extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.brandDark : AppColors.brandSoft,
+                    color: isSelected
+                        ? AppColors.brandDark
+                        : AppColors.brandSoft,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -385,8 +391,12 @@ class MessDrawer extends StatelessWidget {
                         mess.name,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? AppColors.brandDark : AppColors.ink,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isSelected
+                              ? AppColors.brandDark
+                              : AppColors.ink,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -521,6 +531,10 @@ class MessDrawer extends StatelessWidget {
 
     final isMultiMess = !isIndividual && headerMesses.length > 1;
 
+    final authState = context.watch<AuthCubit>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    final isVerified = user?.isVerified ?? false;
+
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -541,19 +555,28 @@ class MessDrawer extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: const Icon(
-                  Icons.apartment_rounded,
                   color: Colors.white,
-                  size: 22,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.18),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SvgPicture.asset(
+                    'assets/images/mm_fav.svg',
+                    width: 34,
+                    height: 34,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -625,8 +648,8 @@ class MessDrawer extends StatelessWidget {
                   onSelected: (selected) {
                     try {
                       context.read<DashboardCubit>().loadDashboard(
-                            messId: selected.id,
-                          );
+                        messId: selected.id,
+                      );
                     } catch (_) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -684,6 +707,56 @@ class MessDrawer extends StatelessWidget {
                       ),
                     );
                   }).toList(),
+                )
+              else
+                Tooltip(
+                  message: isVerified
+                      ? 'Verified Account'
+                      : 'Unverified Account',
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isVerified
+                          ? const Color(0xFF10B981).withValues(alpha: 0.22)
+                          : Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isVerified
+                            ? const Color(0xFF34D399).withValues(alpha: 0.5)
+                            : Colors.white.withValues(alpha: 0.25),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isVerified
+                              ? Icons.verified_rounded
+                              : Icons.shield_outlined,
+                          color: isVerified
+                              ? const Color(0xFF34D399)
+                              : Colors.white70,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isVerified ? 'Verified' : 'Unverified',
+                          style: TextStyle(
+                            color: isVerified
+                                ? const Color(0xFF34D399)
+                                : Colors.white70,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -902,8 +975,9 @@ class MessDrawer extends StatelessWidget {
                       title,
                       style: TextStyle(
                         fontSize: 13.5,
-                        fontWeight:
-                            isSelected ? FontWeight.w800 : FontWeight.w600,
+                        fontWeight: isSelected
+                            ? FontWeight.w800
+                            : FontWeight.w600,
                         color: isSelected ? AppColors.brandDark : AppColors.ink,
                       ),
                       maxLines: 1,
@@ -946,25 +1020,26 @@ class MessDrawer extends StatelessWidget {
   }) {
     final authState = context.watch<AuthCubit>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
         color: AppColors.paperRaised,
         border: Border(top: BorderSide(color: AppColors.paperLine)),
       ),
+      padding: EdgeInsets.fromLTRB(14, 12, 14, 12 + bottomInset),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 17,
+            radius: 18,
             backgroundColor: AppColors.brandSoft,
             backgroundImage:
                 (user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty)
-                    ? NetworkImage(
-                        AppConfig.sanitizeImageUrl(user.avatarUrl) ??
-                            user.avatarUrl!,
-                      )
-                    : null,
+                ? NetworkImage(
+                    AppConfig.sanitizeImageUrl(user.avatarUrl) ??
+                        user.avatarUrl!,
+                  )
+                : null,
             child: (user?.avatarUrl == null || user!.avatarUrl!.isEmpty)
                 ? Text(
                     (user?.name.isNotEmpty == true)
@@ -973,7 +1048,7 @@ class MessDrawer extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.brandDark,
                       fontWeight: FontWeight.w800,
-                      fontSize: 13,
+                      fontSize: 13.5,
                     ),
                   )
                 : null,
@@ -982,11 +1057,12 @@ class MessDrawer extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   user?.name ?? 'User',
                   style: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
                     color: AppColors.ink,
                   ),
@@ -996,7 +1072,7 @@ class MessDrawer extends StatelessWidget {
                 Text(
                   roleSubtitle,
                   style: const TextStyle(
-                    fontSize: 10.5,
+                    fontSize: 11,
                     color: AppColors.inkFaded,
                     fontWeight: FontWeight.w500,
                   ),
@@ -1004,18 +1080,29 @@ class MessDrawer extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            onPressed: () => _confirmLogout(context),
-            icon: const Icon(
-              Icons.logout_rounded,
-              size: 18,
-              color: AppColors.inkFaded,
-            ),
-            tooltip: 'Sign Out',
-            style: IconButton.styleFrom(
-              padding: const EdgeInsets.all(6),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          Tooltip(
+            message: 'Sign Out',
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _confirmLogout(context),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.dangerSoft,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppColors.danger.withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.logout_rounded,
+                    size: 18,
+                    color: AppColors.danger,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -1023,38 +1110,22 @@ class MessDrawer extends StatelessWidget {
     );
   }
 
-  void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.paperRaised,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Sign Out',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-        ),
-        content: const Text(
-          'Are you sure you want to sign out of MessMax?',
-          style: TextStyle(fontSize: 13, color: AppColors.inkSoft),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pop(context); // close drawer
-              context.read<AuthCubit>().logout();
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFE53935),
-            ),
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
+  Future<void> _confirmLogout(BuildContext context) async {
+    final authState = context.read<AuthCubit>().state;
+    String? email;
+    String? name;
+    if (authState is AuthAuthenticated) {
+      email = authState.user.email;
+      name = authState.user.name;
+    }
+    final confirmed = await SignOutDialog.show(
+      context,
+      userEmail: email,
+      userName: name,
     );
+    if (confirmed == true && context.mounted) {
+      Navigator.of(context).pop(); // close drawer
+      context.read<AuthCubit>().logout();
+    }
   }
 }

@@ -11,6 +11,7 @@ import '../../../../core/network/auth_storage.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../../../profile/data/repositories/account_repository.dart';
 import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
@@ -256,6 +257,41 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e, st) {
       AppLogger.e('loginWithIdToken failed', e, st);
       emit(AuthError(_extractMessage(e) ?? 'Google sign-in failed'));
+    }
+  }
+
+  Future<void> deleteAccount({String? password}) async {
+    emit(const AuthLoading(AuthLoadingType.general));
+    AppLogger.i('Delete account requested');
+    try {
+      await PushNotificationService.unregisterDeviceToken();
+      await AccountRepository().deleteAccount(password: password);
+      try {
+        await FirebaseAuth.instance.signOut();
+      } catch (e) {
+        AppLogger.w('Firebase signOut ignored: $e');
+      }
+      if (!kIsWeb) {
+        try {
+          await GoogleSignIn.instance.signOut();
+        } catch (e) {
+          AppLogger.w('GoogleSignIn signOut ignored: $e');
+        }
+      }
+      await AuthStorage.clear();
+      DioClient.clearAuthToken();
+      AccountRepository.clearCache();
+      emit(const AuthUnauthenticated());
+      AppLogger.i('Account deleted -> AuthUnauthenticated');
+    } catch (e, st) {
+      AppLogger.e('Delete account failed', e, st);
+      final user = AuthStorage.cachedUser;
+      if (user != null) {
+        emit(AuthAuthenticated(user));
+      } else {
+        emit(const AuthUnauthenticated());
+      }
+      rethrow;
     }
   }
 

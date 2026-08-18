@@ -25,12 +25,22 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMyAds();
+    final cached = UserAdRepository.getCached();
+    if (cached != null) {
+      _ads = cached;
+      _isLoading = false;
+      _loadMyAds(forceRefresh: false);
+    } else {
+      _loadMyAds();
+    }
   }
 
-  Future<void> _loadMyAds() async {
+  Future<void> _loadMyAds({bool forceRefresh = false}) async {
+    if (_ads.isEmpty) {
+      setState(() => _isLoading = true);
+    }
     try {
-      final list = await _repository.fetchMyAds();
+      final list = await _repository.fetchMyAds(forceRefresh: forceRefresh);
       if (!mounted) return;
       setState(() {
         _ads = list;
@@ -60,7 +70,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Seat ad deleted successfully')),
       );
-      _loadMyAds();
+      _loadMyAds(forceRefresh: true);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -76,7 +86,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
       ),
     );
     if (result == true) {
-      _loadMyAds();
+      _loadMyAds(forceRefresh: true);
     }
   }
 
@@ -130,7 +140,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
               )
             : RefreshIndicator(
                 color: AppColors.brandDark,
-                onRefresh: _loadMyAds,
+                onRefresh: () => _loadMyAds(forceRefresh: true),
                 child: _ads.isEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),

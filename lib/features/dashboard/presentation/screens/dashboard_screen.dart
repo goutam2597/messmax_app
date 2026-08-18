@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_exit_dialog.dart';
 import '../../../../core/widgets/app_menu_button.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
@@ -44,9 +45,29 @@ class _DashboardViewState extends State<_DashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.paper,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        // 1. If drawer is open, close it
+        if (_scaffoldKey.currentState?.isDrawerOpen == true) {
+          _scaffoldKey.currentState?.closeDrawer();
+          return;
+        }
+        // 2. If navigator can pop (pushed on top of previous route), pop normally
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+          return;
+        }
+        // 3. We are at the root: show exit confirmation dialog
+        final shouldExit = await AppExitDialog.show(context);
+        if (shouldExit == true) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: AppColors.paper,
       drawer: MessDrawer(
         activeSection: _activeSection,
         onSectionSelected: (section) {
@@ -382,8 +403,9 @@ class _DashboardViewState extends State<_DashboardView> {
                   if (!dashboard.hasMess) {
                     return RefreshIndicator(
                       color: AppColors.brandDark,
-                      onRefresh: () =>
-                          context.read<DashboardCubit>().loadDashboard(),
+                      onRefresh: () => context
+                          .read<DashboardCubit>()
+                          .loadDashboard(forceRefresh: true),
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
@@ -450,8 +472,12 @@ class _DashboardViewState extends State<_DashboardView> {
 
                   return RefreshIndicator(
                     color: AppColors.brandDark,
-                    onRefresh: () =>
-                        context.read<DashboardCubit>().loadDashboard(),
+                    onRefresh: () => context
+                        .read<DashboardCubit>()
+                        .loadDashboard(
+                          messId: activeMess?.id,
+                          forceRefresh: true,
+                        ),
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
@@ -580,7 +606,8 @@ class _DashboardViewState extends State<_DashboardView> {
           );
         },
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildSectionHeader(

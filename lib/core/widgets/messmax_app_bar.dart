@@ -14,21 +14,25 @@ class MessMaxAppBar extends StatelessWidget {
   final List<Widget> actions;
   final Widget? bottom;
   final bool showBorder;
+  final bool useLogo;
 
   const MessMaxAppBar({
     super.key,
-    required this.title,
+    this.title = '',
     this.subtitle,
     this.leading,
     this.actions = const [],
     this.bottom,
     this.showBorder = false,
+    this.useLogo = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final showBrandLogo = useLogo || (title == 'MessMax' && subtitle == 'Seats & Meals Hub');
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
         color: AppColors.paper,
         border: showBorder
@@ -42,38 +46,47 @@ class MessMaxAppBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (leading != null) ...[
-                leading!,
-                const SizedBox(width: 10),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: AppColors.ink,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 20,
-                        letterSpacing: -0.5,
-                        height: 1.1,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
+              if (showBrandLogo) ...[
+                SvgPicture.asset(
+                  'assets/images/logo.svg',
+                  height: 28,
+                  fit: BoxFit.contain,
+                ),
+              ] else ...[
+                if (leading != null) ...[
+                  leading!,
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        subtitle!,
+                        title,
                         style: const TextStyle(
-                          color: AppColors.inkFaded,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                          letterSpacing: -0.5,
+                          height: 1.1,
                         ),
                       ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: const TextStyle(
+                            color: AppColors.inkFaded,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
+              ],
+              const Spacer(),
               if (actions.isNotEmpty) ...[
                 const SizedBox(width: 8),
                 Row(
@@ -98,35 +111,37 @@ class MessMaxAppBar extends StatelessWidget {
   }
 }
 
-/// Gradient logo medallion shown in the Home app bar leading slot.
+/// Brand mark medallion using official favicon emblem SVG.
 class BrandMark extends StatelessWidget {
   final double size;
 
-  const BrandMark({super.key, this.size = 20});
+  const BrandMark({super.key, this.size = 36});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(9),
+      width: size,
+      height: size,
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.brand, AppColors.brandDark],
-        ),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: AppColors.brandDark.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Icon(
-        Icons.restaurant_menu_rounded,
-        color: Colors.white,
-        size: size,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: SvgPicture.asset(
+          'assets/images/mm_fav.svg',
+          width: size - 8,
+          height: size - 8,
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }

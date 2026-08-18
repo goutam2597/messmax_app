@@ -131,8 +131,9 @@ class _AdsScreenState extends State<AdsScreen> {
                                   backgroundColor: AppColors.brandDark,
                                   foregroundColor: Colors.white,
                                 ),
-                                onPressed: () =>
-                                    context.read<AdsCubit>().fetchAds(),
+                                onPressed: () => context
+                                    .read<AdsCubit>()
+                                    .fetchAds(forceRefresh: true),
                                 child: const Text('Try Again'),
                               ),
                             ],
@@ -172,9 +173,9 @@ class _AdsScreenState extends State<AdsScreen> {
                                     color: AppColors.ink,
                                   ),
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: 8),
                                 const Text(
-                                  'Try clearing your filters or searching for a broader location.',
+                                  'Try adjusting your search query, location or room type filter.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 13,
@@ -182,11 +183,7 @@ class _AdsScreenState extends State<AdsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.brandDark,
-                                    foregroundColor: Colors.white,
-                                  ),
+                                OutlinedButton(
                                   onPressed: () {
                                     _searchController.clear();
                                     context.read<AdsCubit>().clearFilters();
@@ -201,7 +198,9 @@ class _AdsScreenState extends State<AdsScreen> {
 
                       return RefreshIndicator(
                         color: AppColors.accent,
-                        onRefresh: () => context.read<AdsCubit>().fetchAds(),
+                        onRefresh: () => context
+                            .read<AdsCubit>()
+                            .fetchAds(forceRefresh: true),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

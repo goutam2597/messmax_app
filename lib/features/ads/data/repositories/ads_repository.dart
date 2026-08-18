@@ -7,9 +7,18 @@ import '../models/ads_response_model.dart';
 
 class AdsRepository {
   final Dio _dioClient;
+  static AdsResponseModel? _defaultAdsCache;
+  static final Map<String, ({AdModel ad, List<AdModel> relatedAds})> _detailCache = {};
 
   AdsRepository({Dio? dioClient})
       : _dioClient = dioClient ?? DioClient.instance;
+
+  static AdsResponseModel? getDefaultCached() => _defaultAdsCache;
+
+  static void clearCache() {
+    _defaultAdsCache = null;
+    _detailCache.clear();
+  }
 
   Future<AdsResponseModel> getAds({
     String? search,
@@ -18,7 +27,18 @@ class AdsRepository {
     String? roomType,
     int page = 1,
     int perPage = 12,
+    bool forceRefresh = false,
   }) async {
+    final isDefault = page == 1 &&
+        (search == null || search.trim().isEmpty) &&
+        (city == null || city.trim().isEmpty) &&
+        (area == null || area.trim().isEmpty) &&
+        (roomType == null || roomType.trim().isEmpty);
+
+    if (isDefault && !forceRefresh && _defaultAdsCache != null) {
+      return _defaultAdsCache!;
+    }
+
     try {
       final queryParams = <String, dynamic>{
         'page': page,
@@ -45,14 +65,30 @@ class AdsRepository {
 
       final body = response.data as Map<String, dynamic>;
       final data = body['data'] as Map<String, dynamic>;
-      return AdsResponseModel.fromJson(data);
+      final result = AdsResponseModel.fromJson(data);
+      if (isDefault) {
+        _defaultAdsCache = result;
+      }
+      return result;
     } catch (e, stack) {
       AppLogger.e('AdsRepository: failed to fetch ads', e, stack);
+      if (isDefault && _defaultAdsCache != null && !forceRefresh) {
+        return _defaultAdsCache!;
+      }
       rethrow;
     }
   }
 
-  Future<({AdModel ad, List<AdModel> relatedAds})> getAdDetail(String slug) async {
+  static ({AdModel ad, List<AdModel> relatedAds})? getDetailCached(String slug) =>
+      _detailCache[slug];
+
+  Future<({AdModel ad, List<AdModel> relatedAds})> getAdDetail(
+    String slug, {
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh && _detailCache.containsKey(slug)) {
+      return _detailCache[slug]!;
+    }
     try {
       final response = await _dioClient.get('${ApiEndpoints.ads}/$slug');
       final body = response.data as Map<String, dynamic>;
@@ -62,12 +98,17 @@ class AdsRepository {
               ?.map((e) => AdModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const <AdModel>[];
-      return (
+      final result = (
         ad: AdModel.fromJson(adJson),
         relatedAds: relatedJson,
       );
+      _detailCache[slug] = result;
+      return result;
     } catch (e, stack) {
       AppLogger.e('AdsRepository: failed to fetch ad detail for slug: $slug', e, stack);
+      if (_detailCache.containsKey(slug) && !forceRefresh) {
+        return _detailCache[slug]!;
+      }
       rethrow;
     }
   }

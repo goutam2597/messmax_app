@@ -15,6 +15,8 @@ class AccountRepository {
     _cachedAccount = null;
   }
 
+  static AccountResponseModel? getCached() => _cachedAccount;
+
   Future<AccountResponseModel> fetchAccountDetails({bool forceRefresh = false}) async {
     if (!forceRefresh && _cachedAccount != null) {
       return _cachedAccount!;
@@ -89,6 +91,23 @@ class AccountRepository {
       throw Exception(response.data?['message'] ?? 'Password update failed');
     } catch (e) {
       AppLogger.w('AccountRepository.updatePassword failed: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAccount({String? password}) async {
+    try {
+      final response = await _dio.delete(
+        ApiEndpoints.account,
+        data: password != null && password.isNotEmpty ? {'password': password} : null,
+      );
+      if (response.statusCode == 200 || response.data?['success'] == true) {
+        clearCache();
+        return;
+      }
+      throw Exception(response.data?['message'] ?? 'Account deletion failed');
+    } catch (e) {
+      AppLogger.w('AccountRepository.deleteAccount failed: $e');
       rethrow;
     }
   }

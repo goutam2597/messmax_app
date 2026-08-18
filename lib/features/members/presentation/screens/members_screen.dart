@@ -122,7 +122,7 @@ class _MembersViewState extends State<_MembersView> {
                 child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => context.read<MemberCubit>().loadMembers(),
+                  onTap: () => context.read<MemberCubit>().loadMembers(forceRefresh: true),
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
                     width: 36,
@@ -179,7 +179,7 @@ class _MembersViewState extends State<_MembersView> {
                       const SizedBox(height: 16),
                       FilledButton(
                         onPressed: () =>
-                            context.read<MemberCubit>().loadMembers(),
+                            context.read<MemberCubit>().loadMembers(forceRefresh: true),
                         child: const Text('Try Again'),
                       ),
                     ],
@@ -194,7 +194,7 @@ class _MembersViewState extends State<_MembersView> {
 
               return RefreshIndicator(
                 color: AppColors.brandDark,
-                onRefresh: () => context.read<MemberCubit>().loadMembers(),
+                onRefresh: () => context.read<MemberCubit>().loadMembers(forceRefresh: true),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),
