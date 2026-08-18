@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'shimmer_box.dart';
 
-/// Network image with branded shimmer placeholder showing the app SVG icon
+/// Network image with branded shimmer placeholder showing a house & meal icon
 /// in soft white/light-grey until fully loaded, and an optional bottom gradient scrim.
 class NetworkImageCover extends StatelessWidget {
   final String? url;
@@ -87,25 +86,17 @@ class NetworkImageCover extends StatelessWidget {
     );
   }
 
-  /// Shimmering placeholder with the white / light-grey brand SVG icon in center
+  /// Shimmering placeholder with house & meal icons in center
   Widget _buildLoadingShimmer() {
     return Shimmer(
       child: Container(
         height: height,
         width: width,
-        color: const Color(0xFFE8E9EE),
+        color: const Color(0xFFEAEBEF),
         alignment: Alignment.center,
-        child: Opacity(
-          opacity: 0.45,
-          child: SvgPicture.asset(
-            'assets/images/mm_fav.svg',
-            width: iconSize,
-            height: iconSize,
-            colorFilter: const ColorFilter.mode(
-              Color(0xFFB0B4BE),
-              BlendMode.srcIn,
-            ),
-          ),
+        child: _buildBrandedIcon(
+          iconColor: const Color(0xFFB4B9C4),
+          badgeColor: const Color(0xFFD3D7E0),
         ),
       ),
     );
@@ -118,17 +109,51 @@ class NetworkImageCover extends StatelessWidget {
       width: width,
       color: const Color(0xFFF1F2F6),
       alignment: Alignment.center,
-      child: Opacity(
-        opacity: 0.35,
-        child: SvgPicture.asset(
-          'assets/images/mm_fav.svg',
-          width: iconSize,
-          height: iconSize,
-          colorFilter: const ColorFilter.mode(
-            Color(0xFF989CA8),
-            BlendMode.srcIn,
+      child: _buildBrandedIcon(
+        iconColor: const Color(0xFFA6ABB6),
+        badgeColor: const Color(0xFFE2E4E8),
+      ),
+    );
+  }
+
+  /// Branded house + food emblem matching the MessMax brand concept
+  Widget _buildBrandedIcon({
+    required Color iconColor,
+    required Color badgeColor,
+  }) {
+    final effectiveSize = iconSize.clamp(20.0, 64.0);
+    final badgeSize = effectiveSize * 0.52;
+
+    return SizedBox(
+      width: effectiveSize * 1.3,
+      height: effectiveSize * 1.3,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Main house/apartment icon
+          Icon(
+            Icons.apartment_rounded,
+            size: effectiveSize,
+            color: iconColor,
           ),
-        ),
+          // Floating spoon & fork meal badge on bottom right
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: EdgeInsets.all(effectiveSize * 0.08),
+              decoration: BoxDecoration(
+                color: badgeColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.restaurant_rounded,
+                size: badgeSize,
+                color: iconColor,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

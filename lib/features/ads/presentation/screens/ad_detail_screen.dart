@@ -28,7 +28,6 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
   bool _isLoading = true;
   bool _isLoadingRelated = true;
   bool _fetching = false;
-  bool _galleryInitialized = false;
   final PageController _galleryController = PageController();
 
   final AdsRepository _repository = AdsRepository();
@@ -529,20 +528,6 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
   Widget _buildHeroGallery(BuildContext context) {
     if (ad.imageUrls.isNotEmpty) {
-      final isLoop = ad.imageUrls.length > 1;
-      final itemCount = isLoop ? ad.imageUrls.length * 1000 : ad.imageUrls.length;
-
-      if (isLoop && !_galleryInitialized) {
-        _galleryInitialized = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_galleryController.hasClients) {
-            _galleryController.jumpToPage(ad.imageUrls.length * 500);
-          }
-        });
-      }
-
-      final displayIndex = isLoop ? _galleryIndex % ad.imageUrls.length : _galleryIndex;
-
       return ClipRRect(
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
         child: Stack(
@@ -552,14 +537,13 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
               width: double.infinity,
               child: PageView.builder(
                 controller: _galleryController,
-                itemCount: itemCount,
+                itemCount: ad.imageUrls.length,
                 onPageChanged: (index) => setState(() => _galleryIndex = index),
                 itemBuilder: (context, index) {
-                  final imageIndex = isLoop ? index % ad.imageUrls.length : index;
                   return GestureDetector(
-                    onTap: () => _openPhotoViewer(imageIndex),
+                    onTap: () => _openPhotoViewer(index),
                     child: NetworkImageCover(
-                      url: ad.imageUrls[imageIndex],
+                      url: ad.imageUrls[index],
                       height: 310,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -610,7 +594,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                       const Icon(Icons.photo_library_rounded, size: 12, color: Colors.white),
                       const SizedBox(width: 5),
                       Text(
-                        '${displayIndex + 1}/${ad.imageUrls.length}',
+                        '${_galleryIndex + 1}/${ad.imageUrls.length}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11.5,
@@ -628,7 +612,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                 child: Center(
                   child: DotIndicatorRow(
                     count: ad.imageUrls.length,
-                    activeIndex: displayIndex,
+                    activeIndex: _galleryIndex,
                     light: true,
                   ),
                 ),
