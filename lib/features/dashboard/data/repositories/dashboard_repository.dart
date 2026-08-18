@@ -9,9 +9,12 @@ class DashboardRepository {
 
   DashboardRepository({Dio? dio}) : _dio = dio ?? DioClient.instance;
 
-  Future<DashboardModel> fetchDashboard() async {
+  Future<DashboardModel> fetchDashboard({int? messId}) async {
     try {
-      final response = await _dio.get(ApiEndpoints.dashboard);
+      final response = await _dio.get(
+        ApiEndpoints.dashboard,
+        queryParameters: messId != null ? {'mess_id': messId} : null,
+      );
       if (response.data != null && response.data is Map<String, dynamic>) {
         return DashboardModel.fromJson(response.data as Map<String, dynamic>);
       }

@@ -13,6 +13,7 @@ import '../../../main/presentation/screens/main_shell_screen.dart';
 import '../../../profile/presentation/screens/account_screen.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
+import '../../data/models/dashboard_model.dart';
 import '../../../members/presentation/cubit/member_cubit.dart';
 import '../../../members/presentation/cubit/member_state.dart';
 import '../../../bazar_schedule/presentation/cubit/bazar_schedule_cubit.dart';
@@ -106,7 +107,7 @@ class MessDrawer extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               children: [
-                // --- CASE 1: INDIVIDUAL ---
+                // --- CASE 1: INDIVIDUAL (Manager / Single Mess) ---
                 if (isIndividual) ...[
                   _drawerTile(
                     id: 'dashboard',
@@ -165,7 +166,7 @@ class MessDrawer extends StatelessWidget {
                     context: context,
                   ),
                 ]
-                // --- CASE 2: HOSTEL OWNER / MANAGER ---
+                // --- CASE 2: HOSTEL OWNER / MULTI-MESS MANAGER ---
                 else if (managesAny) ...[
                   _drawerTile(
                     id: 'dashboard',
@@ -178,7 +179,9 @@ class MessDrawer extends StatelessWidget {
                     id: 'messes',
                     icon: Icons.archive_rounded,
                     title: 'Messes',
-                    subtitle: 'All managed messes',
+                    subtitle: myMesses.length > 1
+                        ? 'All managed messes (${myMesses.length})'
+                        : 'All managed messes',
                     context: context,
                   ),
                   _drawerTile(
@@ -188,18 +191,30 @@ class MessDrawer extends StatelessWidget {
                     subtitle: 'Member list & roster',
                     context: context,
                   ),
-                  if (activeMess == null)
-                    _drawerTile(
-                      id: 'bazar_schedule',
-                      icon: Icons.calendar_month_rounded,
-                      title: 'Bazar Schedule',
-                      subtitle: 'Shopping duty roster',
-                      context: context,
-                    ),
+                  _drawerTile(
+                    id: 'bazar_schedule',
+                    icon: Icons.calendar_month_rounded,
+                    title: 'Bazar Schedule',
+                    subtitle: 'Shopping duty roster',
+                    context: context,
+                  ),
+
+                  // If multi-mess owner: show both/all messes so owner can switch or view each mess
+                  if (myMesses.length > 1) ...[
+                    const SizedBox(height: 14),
+                    _buildSectionLabel('YOUR MESSES (${myMesses.length})'),
+                    for (final m in myMesses) ...[
+                      _buildMessSelectTile(
+                        context: context,
+                        mess: m,
+                        isSelected: activeMess?.id == m.id,
+                      ),
+                    ],
+                  ],
 
                   if (activeMess != null) ...[
                     const SizedBox(height: 14),
-                    _buildSectionLabel('CURRENT MESS'),
+                    _buildSectionLabel('CURRENT ACTIVE MESS'),
                     _drawerTile(
                       id: 'current_mess',
                       icon: Icons.grid_view_rounded,
@@ -258,6 +273,18 @@ class MessDrawer extends StatelessWidget {
                       context: context,
                     ),
 
+                  if (myMesses.length > 1) ...[
+                    const SizedBox(height: 14),
+                    _buildSectionLabel('JOINED MESSES (${myMesses.length})'),
+                    for (final m in myMesses) ...[
+                      _buildMessSelectTile(
+                        context: context,
+                        mess: m,
+                        isSelected: activeMess?.id == m.id,
+                      ),
+                    ],
+                  ],
+
                   if (activeMess != null) ...[
                     const SizedBox(height: 14),
                     _buildSectionLabel('CURRENT MESS'),
@@ -311,6 +338,114 @@ class MessDrawer extends StatelessWidget {
     );
   }
 
+  Widget _buildMessSelectTile({
+    required BuildContext context,
+    required MyMessModel mess,
+    required bool isSelected,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.brandDark.withValues(alpha: 0.08)
+            : AppColors.paperRaised,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected
+              ? AppColors.brandDark.withValues(alpha: 0.35)
+              : AppColors.paperLine,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.pop(context); // close drawer
+            try {
+              context.read<DashboardCubit>().loadDashboard(messId: mess.id);
+            } catch (_) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MessDetailScreen(messId: mess.id),
+                ),
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.brandDark : AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.apartment_rounded,
+                    size: 16,
+                    color: isSelected ? Colors.white : AppColors.brandDark,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        mess.name,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected ? AppColors.brandDark : AppColors.ink,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        '${mess.membersCount} members • ${mess.code}',
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE6F4EA),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'ACTIVE',
+                      style: TextStyle(
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF0F9F59),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: AppColors.inkFaded,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDrawerHeader({
     required BuildContext context,
     required bool isIndividual,
@@ -330,6 +465,9 @@ class MessDrawer extends StatelessWidget {
     final activeMess = dashboardState is DashboardLoaded
         ? (dashboardState).dashboard.activeMess
         : null;
+    final myMesses = dashboardState is DashboardLoaded
+        ? (dashboardState).dashboard.myMesses
+        : <MyMessModel>[];
 
     String headerMessName = activeMess?.name ?? '';
     String headerMessCode = activeMess?.code ?? '';
@@ -386,6 +524,8 @@ class MessDrawer extends StatelessWidget {
         ? 'MY MESS'
         : (isMemberOnly ? 'MEMBER' : 'CONSOLE');
 
+    final isMultiMess = !isIndividual && myMesses.length > 1;
+
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -421,7 +561,7 @@ class MessDrawer extends StatelessWidget {
                   size: 22,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,7 +569,7 @@ class MessDrawer extends StatelessWidget {
                     Text(
                       messName,
                       style: const TextStyle(
-                        fontSize: 15.5,
+                        fontSize: 15,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
                       ),
@@ -439,7 +579,7 @@ class MessDrawer extends StatelessWidget {
                     Text(
                       'Code: $messCode',
                       style: const TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 11,
                         color: Colors.white70,
                         fontWeight: FontWeight.w600,
                       ),
@@ -447,6 +587,103 @@ class MessDrawer extends StatelessWidget {
                   ],
                 ),
               ),
+              if (isMultiMess)
+                PopupMenuButton<MyMessModel>(
+                  tooltip: 'Switch Mess (${myMesses.length})',
+                  color: AppColors.paperRaised,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: AppColors.paperLine),
+                  ),
+                  icon: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${myMesses.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        const Icon(
+                          Icons.unfold_more_rounded,
+                          color: Colors.white,
+                          size: 15,
+                        ),
+                      ],
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    try {
+                      context.read<DashboardCubit>().loadDashboard(
+                            messId: selected.id,
+                          );
+                    } catch (_) {}
+                  },
+                  itemBuilder: (ctx) => myMesses.map((m) {
+                    final isCurrent = m.id == activeMess?.id;
+                    return PopupMenuItem<MyMessModel>(
+                      value: m,
+                      child: Row(
+                        children: [
+                          Icon(
+                            isCurrent
+                                ? Icons.check_circle_rounded
+                                : Icons.circle_outlined,
+                            size: 18,
+                            color: isCurrent
+                                ? AppColors.brandDark
+                                : AppColors.inkFaded,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  m.name,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: isCurrent
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                    color: isCurrent
+                                        ? AppColors.brandDark
+                                        : AppColors.ink,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${m.membersCount} members • ${m.code}',
+                                  style: const TextStyle(
+                                    fontSize: 10.5,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
             ],
           ),
           const SizedBox(height: 14),
@@ -597,7 +834,8 @@ class MessDrawer extends StatelessWidget {
               ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
             }
           } else if (id == 'bazar_schedule' || id == 'mess_bazar') {
-            if (activeSection != 'bazar_schedule' && activeSection != 'mess_bazar') {
+            if (activeSection != 'bazar_schedule' &&
+                activeSection != 'mess_bazar') {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const BazarScheduleScreen()),
               );
@@ -650,8 +888,8 @@ class MessDrawer extends StatelessWidget {
                 ),
                 child: Icon(
                   icon,
-                  size: 17,
-                  color: isSelected ? Colors.white : AppColors.inkSoft,
+                  size: 18,
+                  color: isSelected ? Colors.white : AppColors.inkFaded,
                 ),
               ),
               const SizedBox(width: 12),
@@ -663,18 +901,21 @@ class MessDrawer extends StatelessWidget {
                       title,
                       style: TextStyle(
                         fontSize: 13.5,
-                        fontWeight: isSelected
-                            ? FontWeight.w900
-                            : FontWeight.w700,
+                        fontWeight:
+                            isSelected ? FontWeight.w800 : FontWeight.w600,
                         color: isSelected ? AppColors.brandDark : AppColors.ink,
                       ),
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 1.5),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.inkFaded,
+                        color: isSelected
+                            ? AppColors.brandDark.withValues(alpha: 0.8)
+                            : AppColors.inkFaded,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -682,6 +923,15 @@ class MessDrawer extends StatelessWidget {
                   ],
                 ),
               ),
+              if (isSelected)
+                Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.brandDark,
+                  ),
+                ),
             ],
           ),
         ),
@@ -695,116 +945,112 @@ class MessDrawer extends StatelessWidget {
   }) {
     final authState = context.watch<AuthCubit>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
-    final avatarUrl = user?.avatarUrl != null
-        ? AppConfig.sanitizeImageUrl(user!.avatarUrl)
-        : null;
-    final userName = user?.name ?? 'Mess User';
-    final userEmail = user?.email ?? 'user@messmax.com';
-    final userInitials = user?.initials ?? 'M';
-
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        14,
-        12,
-        14,
-        12 + (bottomPadding > 0 ? bottomPadding : 4),
-      ),
+      padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
         color: AppColors.paperRaised,
         border: Border(top: BorderSide(color: AppColors.paperLine)),
       ),
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.brandDark,
-            ),
-            child: ClipOval(
-              child: avatarUrl != null
-                  ? Image.network(
-                      avatarUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Center(
-                        child: Text(
-                          userInitials,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        userInitials,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
+          CircleAvatar(
+            radius: 17,
+            backgroundColor: AppColors.brandSoft,
+            backgroundImage:
+                (user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty)
+                    ? NetworkImage(
+                        AppConfig.sanitizeImageUrl(user.avatarUrl) ??
+                            user.avatarUrl!,
+                      )
+                    : null,
+            child: (user?.avatarUrl == null || user!.avatarUrl!.isEmpty)
+                ? Text(
+                    (user?.name.isNotEmpty == true)
+                        ? user!.name[0].toUpperCase()
+                        : 'U',
+                    style: const TextStyle(
+                      color: AppColors.brandDark,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
                     ),
-            ),
+                  )
+                : null,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      roleSubtitle,
-                      style: const TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.brandDark,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
                 Text(
-                  userName,
+                  user?.name ?? 'User',
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w800,
                     color: AppColors.ink,
                   ),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  userEmail,
+                  roleSubtitle,
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 10.5,
                     color: AppColors.inkFaded,
+                    fontWeight: FontWeight.w500,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
           IconButton(
-            onPressed: () async {
-              final rootNav = Navigator.of(context, rootNavigator: true);
-              Navigator.of(context).pop();
-              await context.read<AuthCubit>().logout();
-              rootNav.pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const MainShellScreen()),
-                (_) => false,
-              );
-            },
+            onPressed: () => _confirmLogout(context),
             icon: const Icon(
               Icons.logout_rounded,
+              size: 18,
               color: AppColors.inkFaded,
-              size: 20,
             ),
+            tooltip: 'Sign Out',
+            style: IconButton.styleFrom(
+              padding: const EdgeInsets.all(6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.paperRaised,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Sign Out',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        ),
+        content: const Text(
+          'Are you sure you want to sign out of MessMax?',
+          style: TextStyle(fontSize: 13, color: AppColors.inkSoft),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context); // close drawer
+              context.read<AuthCubit>().logout();
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFE53935),
+            ),
+            child: const Text('Sign Out'),
           ),
         ],
       ),
