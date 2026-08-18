@@ -70,8 +70,13 @@ class DashboardActivityItem {
 
     if (model.type == 'meal_off') {
       type = DashboardActivityType.mealOff;
-      tag = 'Meal Off';
-      highlightValue = data['slots']?.toString() ?? 'Meal Slot';
+      final isReenable = data['is_reenable'] == '1' ||
+          data['is_reenable'] == 1 ||
+          data['is_reenable'] == true ||
+          model.title.toLowerCase().contains('re-enable') ||
+          model.title.toLowerCase().contains('meal on');
+      tag = isReenable ? 'Meal ON' : 'Meal OFF';
+      highlightValue = data['slots']?.toString() ?? (isReenable ? 'Turn ON' : 'Turn OFF');
       status = statusStr == 'approved'
           ? ActivityStatus.approved
           : statusStr == 'denied'
@@ -91,6 +96,7 @@ class DashboardActivityItem {
               : ActivityStatus.pending;
       if (data['day'] != null) details['Day'] = 'Day ${data['day']}';
       if (data['guest_name'] != null) details['Guest'] = data['guest_name'].toString();
+      if (data['member_name'] != null) details['Requester'] = data['member_name'].toString();
     } else if (model.type == 'deposit') {
       type = DashboardActivityType.deposit;
       tag = 'Deposit';
@@ -98,13 +104,20 @@ class DashboardActivityItem {
       status = statusStr == 'approved'
           ? ActivityStatus.approved
           : ActivityStatus.pending;
+      if (data['amount'] != null) details['Amount'] = '৳${data['amount']}';
       if (data['trx_id'] != null) details['TrxID'] = data['trx_id'].toString();
       if (data['gateway'] != null) details['Gateway'] = data['gateway'].toString();
-    } else if (model.type == 'bazar_duty') {
+    } else if (model.type == 'bazar' || model.type == 'bazar_duty' || model.type == 'bazar_expense') {
       type = DashboardActivityType.bazarDuty;
-      tag = 'Bazar Duty';
-      highlightValue = data['date']?.toString() ?? 'Scheduled';
+      final isExpense = model.title.toLowerCase().contains('expense') ||
+          model.type == 'bazar';
+      tag = isExpense ? 'Bazar Expense' : 'Bazar Duty';
+      highlightValue = data['amount'] != null
+          ? '৳${data['amount']}'
+          : (data['days']?.toString() ?? (data['date']?.toString() ?? 'Bazar'));
       status = ActivityStatus.info;
+      if (data['day'] != null) details['Day'] = 'Day ${data['day']}';
+      if (data['amount'] != null) details['Amount'] = '৳${data['amount']}';
       if (data['budget'] != null && data['budget'].toString().isNotEmpty) {
         details['Budget'] = '৳${data['budget']}';
       }
@@ -118,7 +131,7 @@ class DashboardActivityItem {
       status = statusStr == 'approved' ? ActivityStatus.approved : ActivityStatus.pending;
     } else if (model.type == 'announcement') {
       type = DashboardActivityType.monthClose;
-      tag = 'Announcement';
+      tag = model.title.toLowerCase().contains('manager') ? 'Manager' : 'Announcement';
       status = ActivityStatus.info;
     }
 
@@ -975,9 +988,19 @@ class _DashboardNotificationsScreenState
 
     switch (item.type) {
       case DashboardActivityType.mealOff:
-        typeIcon = Icons.no_meals_rounded;
-        typeBg = const Color(0xFFFBE9E7);
-        typeColor = const Color(0xFFD84315);
+        if (item.tag == 'Meal ON') {
+          typeIcon = Icons.restaurant_rounded;
+          typeBg = const Color(0xFFE8F5E9);
+          typeColor = const Color(0xFF2E7D32);
+        } else if (item.tag == 'Guest Meal') {
+          typeIcon = Icons.people_outline_rounded;
+          typeBg = const Color(0xFFEDE7F6);
+          typeColor = const Color(0xFF5E35B1);
+        } else {
+          typeIcon = Icons.no_meals_rounded;
+          typeBg = const Color(0xFFFBE9E7);
+          typeColor = const Color(0xFFD84315);
+        }
         break;
       case DashboardActivityType.deposit:
         typeIcon = Icons.payments_rounded;
