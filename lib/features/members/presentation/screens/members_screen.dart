@@ -414,11 +414,8 @@ class _MembersViewState extends State<_MembersView> {
     bool canManage,
     int messId,
   ) {
-    final roleColor = member.isOwner
-        ? const Color(0xFFE85D04)
-        : member.isManager
-            ? AppColors.brandDark
-            : AppColors.inkFaded;
+    final isOwner = member.isOwner;
+    final isManager = member.isManager;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -482,15 +479,34 @@ class _MembersViewState extends State<_MembersView> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: roleColor.withValues(alpha: 0.12),
+                            color: isOwner
+                                ? const Color(0xFFEDE7F6)
+                                : isManager
+                                    ? AppColors.brandSoft
+                                    : AppColors.paper,
                             borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: isOwner
+                                  ? const Color(0xFF5E35B1).withValues(alpha: 0.3)
+                                  : isManager
+                                      ? AppColors.brandDark.withValues(alpha: 0.2)
+                                      : AppColors.paperLine,
+                            ),
                           ),
                           child: Text(
-                            member.role.toUpperCase(),
+                            isOwner
+                                ? 'OWNER'
+                                : isManager
+                                    ? 'MANAGER'
+                                    : 'MEMBER',
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
-                              color: roleColor,
+                              color: isOwner
+                                  ? const Color(0xFF5E35B1)
+                                  : isManager
+                                      ? AppColors.brandDark
+                                      : AppColors.inkFaded,
                             ),
                           ),
                         ),

@@ -13,6 +13,7 @@ import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
 import '../../../mess/presentation/screens/mess_detail_screen.dart';
 import '../../../mess/presentation/screens/mess_sheet_screen.dart';
+import '../../../bazar_schedule/presentation/screens/bazar_schedule_screen.dart';
 import '../widgets/mess_drawer.dart';
 import 'dashboard_notifications_screen.dart';
 import '../cubit/notification_cubit.dart';
@@ -511,14 +512,12 @@ class _DashboardViewState extends State<_DashboardView> {
                               Icons.shopping_basket_outlined,
                               'BAZAR SHOPPING DUTY SCHEDULE',
                               iconColor: const Color(0xFF0F9F59),
-                              actionLabel: activeMess?.currentMonthId != null ? 'Full Schedule' : null,
-                              onActionTap: activeMess?.currentMonthId != null
+                              actionLabel: activeMess != null ? 'Full Schedule' : null,
+                              onActionTap: activeMess != null
                                   ? () => Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (_) => MessSheetScreen(
-                                            messId: activeMess!.id,
-                                            monthId: activeMess.currentMonthId!,
-                                            initialTab: 0,
+                                          builder: (_) => BazarScheduleScreen(
+                                            messId: activeMess.id,
                                           ),
                                         ),
                                       )
@@ -1370,13 +1369,11 @@ class _DashboardViewState extends State<_DashboardView> {
             Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: activeMess?.currentMonthId != null
+                onTap: activeMess != null
                     ? () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => MessSheetScreen(
-                              messId: activeMess!.id,
-                              monthId: activeMess.currentMonthId!,
-                              initialTab: 0,
+                            builder: (_) => BazarScheduleScreen(
+                              messId: activeMess.id,
                             ),
                           ),
                         )
