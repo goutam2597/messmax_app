@@ -15,6 +15,8 @@ import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
 import '../../../members/presentation/cubit/member_cubit.dart';
 import '../../../members/presentation/cubit/member_state.dart';
+import '../../../bazar_schedule/presentation/cubit/bazar_schedule_cubit.dart';
+import '../../../bazar_schedule/presentation/cubit/bazar_schedule_state.dart';
 import '../../../mess/presentation/cubit/mess_cubit.dart';
 import '../../../mess/presentation/cubit/mess_state.dart';
 
@@ -67,6 +69,14 @@ class MessDrawer extends StatelessWidget {
           } else if (ms is MessSheetLoaded) {
             final m = ms.sheet['mess'] as Map<String, dynamic>?;
             fallbackMessName = m?['name'] as String?;
+          }
+        } catch (_) {}
+      }
+      if (fallbackMessName == null || fallbackMessName.isEmpty) {
+        try {
+          final bs = context.watch<BazarScheduleCubit>().state;
+          if (bs is BazarScheduleLoaded) {
+            fallbackMessName = bs.schedule.mess.name;
           }
         } catch (_) {}
       }
@@ -355,6 +365,17 @@ class MessDrawer extends StatelessWidget {
           }
         } catch (_) {}
       }
+      if (headerMessName.isEmpty) {
+        try {
+          final bs = context.watch<BazarScheduleCubit>().state;
+          if (bs is BazarScheduleLoaded) {
+            headerMessName = bs.schedule.mess.name;
+            headerMessCode = bs.schedule.mess.code.isNotEmpty
+                ? bs.schedule.mess.code
+                : '#MX-${bs.schedule.mess.id.toString().padLeft(4, '0')}';
+          }
+        } catch (_) {}
+      }
     }
     // Final fallback — never hide the header completely (that's the bug you reported)
     if (headerMessName.isEmpty) headerMessName = 'MessMax';
@@ -544,6 +565,14 @@ class MessDrawer extends StatelessWidget {
                 }
               } catch (_) {}
             }
+            if (messId == null) {
+              try {
+                final bs = context.read<BazarScheduleCubit>().state;
+                if (bs is BazarScheduleLoaded) {
+                  messId = bs.schedule.mess.id;
+                }
+              } catch (_) {}
+            }
             Navigator.pop(context);
             if (messId != null && messId != 0) {
               Navigator.of(context).push(
@@ -556,35 +585,43 @@ class MessDrawer extends StatelessWidget {
           }
           Navigator.pop(context); // Close drawer
           if (id == 'account') {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
+            if (activeSection != 'account') {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
+            }
           } else if (id == 'my_ads') {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
+            if (activeSection != 'my_ads') {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
+            }
           } else if (id == 'bazar_schedule' || id == 'mess_bazar') {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const BazarScheduleScreen()),
-            );
+            if (activeSection != 'bazar_schedule' && activeSection != 'mess_bazar') {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const BazarScheduleScreen()),
+              );
+            }
           } else if (id == 'members') {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const MembersScreen()));
+            if (activeSection != 'members') {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const MembersScreen()));
+            }
           } else if (id == 'messes') {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const MessesScreen()));
+            if (activeSection != 'messes') {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const MessesScreen()));
+            }
           } else if (id == 'find_mess') {
-            // "Find Seats" / "Search mess" always goes to Home (bottom nav tab 0)
-            Navigator.of(context).pop();
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MainShellScreen()),
+            );
             MainShellScope.of(context)?.selectTab(0);
           } else if (id == 'dashboard') {
-            // Overview should always land on the Dashboard, never on Profile (tab 3).
-            Navigator.of(context).pop();
-            // From standalone routes (Members/MessDetail) pop back to whatever is underneath
-            // which is the Dashboard/MainShell — then ensure drawer is closed.
+            // Overview should always land on the Dashboard
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).popUntil((route) => route.isFirst);
               final scope = MainShellScope.of(context);
@@ -759,9 +796,7 @@ class MessDrawer extends StatelessWidget {
               Navigator.of(context).pop();
               await context.read<AuthCubit>().logout();
               rootNav.pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (_) => const MainShellScreen(initialTab: 0),
-                ),
+                MaterialPageRoute(builder: (_) => const MainShellScreen()),
                 (_) => false,
               );
             },

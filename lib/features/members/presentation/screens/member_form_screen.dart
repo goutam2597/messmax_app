@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/network/auth_storage.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../data/models/member_model.dart';
 import '../cubit/member_cubit.dart';
 
@@ -203,6 +204,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
         backgroundColor: AppColors.paperRaised,
         elevation: 0,
         scrolledUnderElevation: 0.5,
+        leading: const AppBackButton(),
         title: Text(
           isEdit ? 'Edit Mess Member' : 'Add New Member',
           style: const TextStyle(

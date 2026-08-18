@@ -26,9 +26,13 @@ dependencies:
   # Secure storage
   flutter_secure_storage: ^11.0.0
 
-  # Firebase — Google sign-in (same project pushtest-kd as web)
+  # Firebase — Google sign-in & Push Notifications (same project pushtest-kd as web)
   firebase_core: ^4.13.0
   firebase_auth: ^6.5.7
+  firebase_messaging: ^16.5.0
+
+  # Local notifications (show FCM foreground messages as banners)
+  flutter_local_notifications: ^22.3.0
 
   # SVG icons
   flutter_svg: ^2.3.0

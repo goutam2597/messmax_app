@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_menu_button.dart';
+import '../../../../core/widgets/confirm_delete_dialog.dart';
+import '../../../dashboard/presentation/widgets/mess_drawer.dart';
 import '../../data/models/bazar_schedule_model.dart';
 import '../cubit/bazar_schedule_cubit.dart';
 import '../cubit/bazar_schedule_state.dart';
@@ -28,6 +31,7 @@ class _BazarScheduleView extends StatefulWidget {
 }
 
 class _BazarScheduleViewState extends State<_BazarScheduleView> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSendingAnnouncement = false;
   final _announcementSubjectController = TextEditingController();
   final _announcementMessageController = TextEditingController();
@@ -61,10 +65,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
       text: prefilledSchedule?.note ?? '',
     );
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      barrierDismissible: true,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
@@ -87,366 +90,612 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
             }
 
-            return Container(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                16,
-                20,
-                MediaQuery.of(context).viewInsets.bottom + 24,
+            return Dialog(
+              backgroundColor: AppColors.paperRaised,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
               ),
-              decoration: const BoxDecoration(
-                color: AppColors.paperRaised,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+                side: const BorderSide(color: AppColors.paperLine),
               ),
-              child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 480,
+                  maxHeight: MediaQuery.of(context).size.height * 0.88,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: Container(
-                        width: 36,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppColors.paperLine,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.brandSoft,
-                            borderRadius: BorderRadius.circular(10),
+                    // Header Row
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 14, 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.calendar_month_rounded,
+                              color: AppColors.brandDark,
+                              size: 20,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.calendar_month_rounded,
-                            color: AppColors.brandDark,
-                            size: 20,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  prefilledSchedule != null
+                                      ? 'Edit Duty Assignment'
+                                      : 'Assign Bazar Duty',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                                const SizedBox(height: 1),
+                                Text(
+                                  '${data.monthLabel} · Single day or date range',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          prefilledSchedule != null
-                              ? 'Edit Assignment — ${data.monthLabel}'
-                              : 'Add Assignment — ${data.monthLabel}',
-                          style: const TextStyle(
-                            fontSize: 16.5,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.ink,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Select From & optional To date to assign a person for single day or range.',
-                      style: TextStyle(fontSize: 12, color: AppColors.inkSoft),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // --- CALENDAR DATE PICKERS ---
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'FROM DATE *',
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.inkSoft,
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.pop(ctx),
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 16,
+                                    color: AppColors.inkSoft,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 6),
-                              InkWell(
-                                onTap: () async {
-                                  final picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: selectedFromDate ?? firstDate,
-                                    firstDate: firstDate,
-                                    lastDate: lastDate,
-                                  );
-                                  if (picked != null) {
-                                    setSheetState(() {
-                                      selectedFromDate = picked;
-                                      if (selectedToDate != null &&
-                                          selectedToDate!.isBefore(picked)) {
-                                        selectedToDate = picked;
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1, color: AppColors.paperLine),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // --- CALENDAR DATE PICKERS ---
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'FROM DATE *',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.inkSoft,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      InkWell(
+                                        onTap: () async {
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate:
+                                                selectedFromDate ?? firstDate,
+                                            firstDate: firstDate,
+                                            lastDate: lastDate,
+                                          );
+                                          if (picked != null) {
+                                            setSheetState(() {
+                                              selectedFromDate = picked;
+                                              if (selectedToDate != null &&
+                                                  selectedToDate!.isBefore(
+                                                    picked,
+                                                  )) {
+                                                selectedToDate = null;
+                                              }
+                                            });
+                                          }
+                                        },
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 11,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.paper,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: selectedFromDate != null
+                                                  ? AppColors.brandDark
+                                                  : AppColors.paperLine,
+                                              width: selectedFromDate != null
+                                                  ? 1.5
+                                                  : 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.event_rounded,
+                                                size: 16,
+                                                color: AppColors.brandDark,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  formatDateLabel(
+                                                    selectedFromDate,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w700,
+                                                    color:
+                                                        selectedFromDate != null
+                                                        ? AppColors.ink
+                                                        : AppColors.inkFaded,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'TO DATE (OPTIONAL)',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.inkSoft,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      InkWell(
+                                        onTap: () async {
+                                          final initial =
+                                              selectedToDate ??
+                                              selectedFromDate ??
+                                              firstDate;
+                                          final fDate =
+                                              selectedFromDate ?? firstDate;
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate: initial.isBefore(fDate)
+                                                ? fDate
+                                                : initial,
+                                            firstDate: fDate,
+                                            lastDate: lastDate,
+                                          );
+                                          if (picked != null) {
+                                            setSheetState(
+                                              () => selectedToDate = picked,
+                                            );
+                                          }
+                                        },
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 11,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.paper,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: selectedToDate != null
+                                                  ? AppColors.brandDark
+                                                  : AppColors.paperLine,
+                                              width: selectedToDate != null
+                                                  ? 1.5
+                                                  : 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.date_range_rounded,
+                                                size: 16,
+                                                color: AppColors.inkFaded,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  formatDateLabel(
+                                                    selectedToDate,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w700,
+                                                    color:
+                                                        selectedToDate != null
+                                                        ? AppColors.ink
+                                                        : AppColors.inkFaded,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              if (selectedToDate != null)
+                                                GestureDetector(
+                                                  onTap: () => setSheetState(
+                                                    () => selectedToDate = null,
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.close_rounded,
+                                                    size: 16,
+                                                    color: AppColors.inkFaded,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+
+                            // --- QUICK PRESETS CHIPS ---
+                            const Text(
+                              'QUICK PRESETS',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  ActionChip(
+                                    label: const Text('Today'),
+                                    avatar: const Icon(
+                                      Icons.today_rounded,
+                                      size: 14,
+                                    ),
+                                    onPressed: () {
+                                      final now = DateTime.now();
+                                      if (now.month == data.month &&
+                                          now.year == data.year) {
+                                        setSheetState(() {
+                                          selectedFromDate = DateTime(
+                                            data.year,
+                                            data.month,
+                                            now.day,
+                                          );
+                                          selectedToDate = null;
+                                        });
+                                      } else {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Current day is not in this month schedule',
+                                            ),
+                                          ),
+                                        );
                                       }
-                                    });
-                                  }
-                                },
-                                borderRadius: BorderRadius.circular(14),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 12,
+                                    },
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.paper,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: AppColors.paperLine,
+                                  const SizedBox(width: 8),
+                                  ActionChip(
+                                    label: const Text('Tomorrow'),
+                                    avatar: const Icon(
+                                      Icons.fast_forward_rounded,
+                                      size: 14,
                                     ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_today_rounded,
-                                        size: 16,
-                                        color: AppColors.brandDark,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          formatDateLabel(selectedFromDate),
-                                          style: TextStyle(
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w800,
-                                            color: selectedFromDate != null
-                                                ? AppColors.ink
-                                                : AppColors.inkFaded,
+                                    onPressed: () {
+                                      final tomorrow = DateTime.now().add(
+                                        const Duration(days: 1),
+                                      );
+                                      if (tomorrow.month == data.month &&
+                                          tomorrow.year == data.year) {
+                                        setSheetState(() {
+                                          selectedFromDate = DateTime(
+                                            data.year,
+                                            data.month,
+                                            tomorrow.day,
+                                          );
+                                          selectedToDate = null;
+                                        });
+                                      } else {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Tomorrow is outside this schedule month',
+                                            ),
                                           ),
-                                          overflow: TextOverflow.ellipsis,
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ActionChip(
+                                    label: const Text('Next 3 Days'),
+                                    avatar: const Icon(
+                                      Icons.date_range_rounded,
+                                      size: 14,
+                                    ),
+                                    onPressed: () {
+                                      final base =
+                                          selectedFromDate ??
+                                          (DateTime.now().month == data.month
+                                              ? DateTime(
+                                                  data.year,
+                                                  data.month,
+                                                  DateTime.now().day,
+                                                )
+                                              : firstDate);
+                                      final toDayNum = (base.day + 2).clamp(
+                                        1,
+                                        data.daysInMonth,
+                                      );
+                                      setSheetState(() {
+                                        selectedFromDate = base;
+                                        selectedToDate = DateTime(
+                                          data.year,
+                                          data.month,
+                                          toDayNum,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ActionChip(
+                                    label: const Text('Whole Week (7d)'),
+                                    avatar: const Icon(
+                                      Icons.view_week_rounded,
+                                      size: 14,
+                                    ),
+                                    onPressed: () {
+                                      final base =
+                                          selectedFromDate ??
+                                          (DateTime.now().month == data.month
+                                              ? DateTime(
+                                                  data.year,
+                                                  data.month,
+                                                  DateTime.now().day,
+                                                )
+                                              : firstDate);
+                                      final toDayNum = (base.day + 6).clamp(
+                                        1,
+                                        data.daysInMonth,
+                                      );
+                                      setSheetState(() {
+                                        selectedFromDate = base;
+                                        selectedToDate = DateTime(
+                                          data.year,
+                                          data.month,
+                                          toDayNum,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // --- ASSIGNEE (MEMBER / STAFF) ---
+                            const Text(
+                              'SELECT MESS MEMBER',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<int?>(
+                              initialValue: selectedMemberId,
+                              decoration: const InputDecoration(
+                                hintText: 'Choose mess member...',
+                                prefixIcon: Icon(
+                                  Icons.person_rounded,
+                                  size: 20,
+                                  color: AppColors.inkFaded,
+                                ),
+                              ),
+                              items: [
+                                const DropdownMenuItem<int?>(
+                                  value: null,
+                                  child: Text(
+                                    '— None (Use Staff Name Below) —',
+                                  ),
+                                ),
+                                ...data.members.map(
+                                  (m) => DropdownMenuItem<int?>(
+                                    value: m.id,
+                                    child: Text('${m.name} (${m.role})'),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (val) {
+                                setSheetState(() {
+                                  selectedMemberId = val;
+                                  if (val != null) {
+                                    staffController.clear();
+                                  }
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 12),
+
+                            // --- OR STAFF NAME ---
+                            const Text(
+                              'OR CUSTOM STAFF / BUYER NAME',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: staffController,
+                              decoration: const InputDecoration(
+                                hintText: 'e.g. Bua, Cook Abdul, Manager',
+                                prefixIcon: Icon(
+                                  Icons.badge_rounded,
+                                  size: 20,
+                                  color: AppColors.inkFaded,
+                                ),
+                              ),
+                              onChanged: (text) {
+                                if (text.isNotEmpty &&
+                                    selectedMemberId != null) {
+                                  setSheetState(() => selectedMemberId = null);
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 14),
+
+                            // --- NOTE / INSTRUCTIONS ---
+                            const Text(
+                              'DUTY NOTE / SHOPPING LIST (OPTIONAL)',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: noteController,
+                              decoration: const InputDecoration(
+                                hintText:
+                                    'e.g. Buy fish, vegetables, and 5kg Miniket rice',
+                                prefixIcon: Icon(
+                                  Icons.notes_rounded,
+                                  size: 20,
+                                  color: AppColors.inkFaded,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // SUBMIT BUTTON
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed: () {
+                                  if (selectedFromDate == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Please select From Date',
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'TO DATE (OPTIONAL)',
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.inkSoft,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              InkWell(
-                                onTap: () async {
-                                  final picked = await showDatePicker(
-                                    context: context,
-                                    initialDate:
-                                        selectedToDate ??
-                                        selectedFromDate ??
-                                        firstDate,
-                                    firstDate: selectedFromDate ?? firstDate,
-                                    lastDate: lastDate,
-                                  );
-                                  if (picked != null) {
-                                    setSheetState(
-                                      () => selectedToDate = picked,
                                     );
+                                    return;
                                   }
+                                  final fromDay = selectedFromDate!.day;
+                                  final toDay = selectedToDate?.day;
+                                  final staff = staffController.text.trim();
+
+                                  if (selectedMemberId == null &&
+                                      staff.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Select a member or enter staff name',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  Navigator.pop(ctx);
+                                  context
+                                      .read<BazarScheduleCubit>()
+                                      .assignSchedule(
+                                        fromDay: fromDay,
+                                        toDay: toDay,
+                                        messMemberId: selectedMemberId,
+                                        staffName: staff,
+                                        note: noteController.text.trim(),
+                                      );
                                 },
-                                borderRadius: BorderRadius.circular(14),
-                                child: Container(
+                                icon: Icon(
+                                  prefilledSchedule != null
+                                      ? Icons.check_circle_outline_rounded
+                                      : Icons.add_task_rounded,
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  prefilledSchedule != null
+                                      ? 'Save Changes'
+                                      : 'Add Assignment',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.brandDark,
+                                  foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 12,
+                                    vertical: 14,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.paper,
+                                  shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: AppColors.paperLine,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_month_outlined,
-                                        size: 16,
-                                        color: AppColors.inkFaded,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          selectedToDate != null
-                                              ? formatDateLabel(selectedToDate)
-                                              : 'Single day',
-                                          style: TextStyle(
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w800,
-                                            color: selectedToDate != null
-                                                ? AppColors.ink
-                                                : AppColors.inkFaded,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      if (selectedToDate != null)
-                                        GestureDetector(
-                                          onTap: () => setSheetState(
-                                            () => selectedToDate = null,
-                                          ),
-                                          child: const Icon(
-                                            Icons.close_rounded,
-                                            size: 14,
-                                            color: AppColors.inkFaded,
-                                          ),
-                                        ),
-                                    ],
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-
-                    // MEMBER DROPDOWN
-                    const Text(
-                      'MEMBER *',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<int>(
-                      initialValue: selectedMemberId,
-                      hint: const Text('— pick member —'),
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 14),
-                      ),
-                      items: [
-                        const DropdownMenuItem<int>(
-                          value: null,
-                          child: Text('— pick member —'),
-                        ),
-                        ...data.members.map((m) {
-                          final dayBadge = m.bazarDay != null
-                              ? ' (${m.bazarDay})'
-                              : '';
-                          return DropdownMenuItem<int>(
-                            value: m.id,
-                            child: Text('${m.name} — ${m.role}$dayBadge'),
-                          );
-                        }),
-                      ],
-                      onChanged: (val) =>
-                          setSheetState(() => selectedMemberId = val),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // OR STAFF INPUT
-                    const Text(
-                      'OR STAFF (OUTSIDE)',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: staffController,
-                      decoration: const InputDecoration(
-                        hintText: 'e.g. Cook Karim / Bua',
-                        prefixIcon: Icon(
-                          Icons.person_outline_rounded,
-                          size: 20,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // NOTE INPUT
-                    const Text(
-                      'NOTE / SHOPPING INSTRUCTIONS',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: noteController,
-                      decoration: const InputDecoration(
-                        hintText:
-                            'e.g. Buy fish, vegetables, and 5kg Miniket rice',
-                        prefixIcon: Icon(
-                          Icons.notes_rounded,
-                          size: 20,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // SUBMIT BUTTON
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          if (selectedFromDate == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Please select From Date'),
-                              ),
-                            );
-                            return;
-                          }
-                          final fromDay = selectedFromDate!.day;
-                          final toDay = selectedToDate?.day;
-                          final staff = staffController.text.trim();
-
-                          if (selectedMemberId == null && staff.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Select a member or enter staff name',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          Navigator.pop(ctx);
-                          context.read<BazarScheduleCubit>().assignSchedule(
-                            fromDay: fromDay,
-                            toDay: toDay,
-                            messMemberId: selectedMemberId,
-                            staffName: staff,
-                            note: noteController.text.trim(),
-                          );
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.brandDark,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          prefilledSchedule != null
-                              ? 'Save Changes'
-                              : 'Add Assignment',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -477,172 +726,221 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
     final emailController = TextEditingController(text: defaultEmail);
     bool isSendingNotify = false;
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      barrierDismissible: true,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            return Container(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                16,
-                20,
-                MediaQuery.of(context).viewInsets.bottom + 24,
+            return Dialog(
+              backgroundColor: AppColors.paperRaised,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
               ),
-              decoration: const BoxDecoration(
-                color: AppColors.paperRaised,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+                side: const BorderSide(color: AppColors.paperLine),
               ),
-              child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 480,
+                  maxHeight: MediaQuery.of(context).size.height * 0.88,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: Container(
-                        width: 36,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppColors.paperLine,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.brandSoft,
-                            borderRadius: BorderRadius.circular(10),
+                    // Header Row
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 14, 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.mark_email_read_rounded,
+                              color: AppColors.brandDark,
+                              size: 20,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.mark_email_read_rounded,
-                            color: AppColors.brandDark,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          'Notify Assignee via Email',
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.ink,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Send SMTP duty notification for ${item.dateLabel} (${item.displayName})',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    const Text(
-                      'RECIPIENT EMAIL *',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        hintText: 'member@example.com',
-                        prefixIcon: Icon(
-                          Icons.email_outlined,
-                          size: 20,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    const Text(
-                      'ADDITIONAL NOTES / INSTRUCTIONS',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: notesController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        hintText:
-                            'e.g. Please bring 5kg Ruhi fish, onions, and oil',
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: isSendingNotify
-                            ? null
-                            : () async {
-                                final email = emailController.text.trim();
-                                if (email.isEmpty || !email.contains('@')) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Please enter a valid email address',
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-                                setSheetState(() => isSendingNotify = true);
-                                try {
-                                  await context
-                                      .read<BazarScheduleCubit>()
-                                      .notifyAssignee(
-                                        day: item.day,
-                                        notes: notesController.text.trim(),
-                                        emailOverride: email,
-                                      );
-                                  if (context.mounted) Navigator.pop(ctx);
-                                } finally {}
-                              },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.brandDark,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: isSendingNotify
-                            ? const Center(
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: Colors.white,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Notify Assignee via Email',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.ink,
                                   ),
                                 ),
-                              )
-                            : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.send_rounded, size: 18),
-                                  SizedBox(width: 8),
-                                  Text('Send SMTP Notification'),
-                                ],
+                                const SizedBox(height: 1),
+                                Text(
+                                  '${item.dateLabel} (${item.displayName})',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.pop(ctx),
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 16,
+                                    color: AppColors.inkSoft,
+                                  ),
+                                ),
                               ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1, color: AppColors.paperLine),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'RECIPIENT EMAIL *',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: const InputDecoration(
+                                hintText: 'member@example.com',
+                                prefixIcon: Icon(
+                                  Icons.email_outlined,
+                                  size: 20,
+                                  color: AppColors.inkFaded,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            const Text(
+                              'ADDITIONAL NOTES / INSTRUCTIONS',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: notesController,
+                              maxLines: 3,
+                              decoration: const InputDecoration(
+                                hintText:
+                                    'e.g. Please bring 5kg Ruhi fish, onions, and oil',
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed: isSendingNotify
+                                    ? null
+                                    : () async {
+                                        final email = emailController.text
+                                            .trim();
+                                        if (email.isEmpty ||
+                                            !email.contains('@')) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Please enter a valid email address',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        setSheetState(
+                                          () => isSendingNotify = true,
+                                        );
+                                        try {
+                                          await context
+                                              .read<BazarScheduleCubit>()
+                                              .notifyAssignee(
+                                                day: item.day,
+                                                notes: notesController.text
+                                                    .trim(),
+                                                emailOverride: email,
+                                              );
+                                          if (context.mounted) {
+                                            Navigator.pop(ctx);
+                                          }
+                                        } finally {}
+                                      },
+                                icon: isSendingNotify
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Icon(Icons.send_rounded, size: 18),
+                                label: Text(
+                                  isSendingNotify
+                                      ? 'Sending...'
+                                      : 'Send SMTP Notification',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.brandDark,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -658,15 +956,16 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.paper,
+      drawer: const MessDrawer(activeSection: 'bazar_schedule'),
       appBar: AppBar(
         backgroundColor: AppColors.paperRaised,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.ink),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: AppMenuButton(
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: BlocBuilder<BazarScheduleCubit, BazarScheduleState>(
           builder: (context, state) {
@@ -697,11 +996,35 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.ink),
-            onPressed: () => context.read<BazarScheduleCubit>().loadSchedule(),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () =>
+                      context.read<BazarScheduleCubit>().loadSchedule(),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.paper,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.paperLine),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.refresh_rounded,
+                        color: AppColors.ink,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(
@@ -1071,32 +1394,19 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           if (assignedRows.isNotEmpty) ...[
             const SizedBox(width: 8),
             IconButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (dCtx) => AlertDialog(
-                    title: const Text('Clear Entire Month?'),
-                    content: Text(
-                      'Are you sure you want to remove all assignments for ${data.monthLabel}?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(dCtx),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(dCtx);
-                          context.read<BazarScheduleCubit>().clearMonth();
-                        },
-                        child: const Text(
-                          'Clear Month',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
-                  ),
+              onPressed: () async {
+                final confirm = await ConfirmDeleteDialog.show(
+                  context,
+                  title: 'Clear Entire Month?',
+                  itemName: data.monthLabel,
+                  message:
+                      'Are you sure you want to remove all bazar duties and assignments for ${data.monthLabel}? This cannot be undone.',
+                  confirmLabel: 'Clear Month',
+                  icon: Icons.delete_sweep_outlined,
                 );
+                if (confirm == true && context.mounted) {
+                  context.read<BazarScheduleCubit>().clearMonth();
+                }
               },
               icon: const Icon(
                 Icons.delete_sweep_outlined,
@@ -1303,11 +1613,23 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                         size: 20,
                         color: AppColors.inkFaded,
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         if (item.id != null) {
-                          context.read<BazarScheduleCubit>().deleteAssignment(
-                            item.id!,
+                          final confirm = await ConfirmDeleteDialog.show(
+                            context,
+                            title: 'Remove Bazar Duty?',
+                            itemName:
+                                member?.name ?? item.memberName ?? 'Member',
+                            message:
+                                'Are you sure you want to remove this assigned duty on day ${item.day}?',
+                            confirmLabel: 'Remove Duty',
+                            icon: Icons.assignment_late_outlined,
                           );
+                          if (confirm == true && context.mounted) {
+                            context.read<BazarScheduleCubit>().deleteAssignment(
+                              item.id!,
+                            );
+                          }
                         }
                       },
                     ),
@@ -1326,8 +1648,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                         width: 40,
                         height: 40,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _memberCircleAvatarFallback(
-                            item, member),
+                        errorBuilder: (context, error, stackTrace) =>
+                            _memberCircleAvatarFallback(item, member),
                       )
                     : _memberCircleAvatarFallback(item, member),
               ),
@@ -1455,169 +1777,220 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
     final messageController = TextEditingController();
     bool isSendingBroadcast = false;
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      barrierDismissible: true,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            return Container(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                16,
-                20,
-                MediaQuery.of(context).viewInsets.bottom + 24,
+            return Dialog(
+              backgroundColor: AppColors.paperRaised,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
               ),
-              decoration: const BoxDecoration(
-                color: AppColors.paperRaised,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+                side: const BorderSide(color: AppColors.paperLine),
               ),
-              child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 480,
+                  maxHeight: MediaQuery.of(context).size.height * 0.88,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: Container(
-                        width: 36,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppColors.paperLine,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.brandSoft,
-                            borderRadius: BorderRadius.circular(10),
+                    // Header Row
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 14, 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.campaign_rounded,
+                              color: AppColors.brandDark,
+                              size: 22,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.campaign_rounded,
-                            color: AppColors.brandDark,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          'Broadcast Announcement',
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.ink,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Sends an SMTP broadcast email to all ${data.members.length} members',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    const Text(
-                      'EMAIL SUBJECT',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: subjectController,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(
-                          Icons.title_rounded,
-                          size: 20,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    const Text(
-                      'ANNOUNCEMENT MESSAGE *',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.inkSoft,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: messageController,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        hintText:
-                            'Write important mess announcement for all members...',
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: isSendingBroadcast
-                            ? null
-                            : () async {
-                                final msg = messageController.text.trim();
-                                if (msg.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Please write an announcement message',
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-                                setSheetState(() => isSendingBroadcast = true);
-                                try {
-                                  await context
-                                      .read<BazarScheduleCubit>()
-                                      .broadcastAnnouncement(
-                                        subject: subjectController.text.trim(),
-                                        message: msg,
-                                      );
-                                  if (context.mounted) Navigator.pop(ctx);
-                                } finally {}
-                              },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.brandDark,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: isSendingBroadcast
-                            ? const Center(
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: Colors.white,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Broadcast Announcement',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.ink,
                                   ),
                                 ),
-                              )
-                            : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.send_rounded, size: 18),
-                                  SizedBox(width: 8),
-                                  Text('Send Broadcast to All Members'),
-                                ],
+                                const SizedBox(height: 1),
+                                Text(
+                                  'SMTP broadcast to all ${data.members.length} members',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.pop(ctx),
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 16,
+                                    color: AppColors.inkSoft,
+                                  ),
+                                ),
                               ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1, color: AppColors.paperLine),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'EMAIL SUBJECT',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: subjectController,
+                              decoration: const InputDecoration(
+                                prefixIcon: Icon(
+                                  Icons.title_rounded,
+                                  size: 20,
+                                  color: AppColors.inkFaded,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            const Text(
+                              'ANNOUNCEMENT MESSAGE *',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: messageController,
+                              maxLines: 4,
+                              decoration: const InputDecoration(
+                                hintText:
+                                    'Write important mess announcement for all members...',
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed: isSendingBroadcast
+                                    ? null
+                                    : () async {
+                                        final msg = messageController.text
+                                            .trim();
+                                        if (msg.isEmpty) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Please write an announcement message',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        setSheetState(
+                                          () => isSendingBroadcast = true,
+                                        );
+                                        try {
+                                          await context
+                                              .read<BazarScheduleCubit>()
+                                              .broadcastAnnouncement(
+                                                subject: subjectController.text
+                                                    .trim(),
+                                                message: msg,
+                                              );
+                                          if (context.mounted) {
+                                            Navigator.pop(ctx);
+                                          }
+                                        } finally {}
+                                      },
+                                icon: isSendingBroadcast
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.campaign_rounded,
+                                        size: 18,
+                                      ),
+                                label: Text(
+                                  isSendingBroadcast
+                                      ? 'Broadcasting...'
+                                      : 'Send Broadcast to All Members',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.brandDark,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -1829,7 +2202,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
   }
 
   Widget _memberCircleAvatarFallback(
-      BazarDayItemModel item, BazarMemberModel? member) {
+    BazarDayItemModel item,
+    BazarMemberModel? member,
+  ) {
     return Container(
       width: 40,
       height: 40,

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/push_notification_service.dart';
 import 'package:messmax_app/features/welcome/presentation/screens/welcome_screen.dart';
 import '../cubit/splash_cubit.dart';
 import '../cubit/splash_state.dart';
@@ -104,6 +105,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _onReady(BuildContext context, SplashDestination destination) {
+    // Request native notification permission on app first install/open right as splash completes
+    PushNotificationService.requestPermissionAndSync();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final target = destination == SplashDestination.dashboard

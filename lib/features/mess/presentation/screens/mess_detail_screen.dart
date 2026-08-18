@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/confirm_delete_dialog.dart';
 import '../../data/models/mess_model.dart';
 import '../../data/repositories/mess_repository.dart';
 import '../cubit/mess_cubit.dart';
@@ -36,14 +38,12 @@ class _MessDetailView extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0.5,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.ink, size: 20),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        leading: const AppBackButton(),
         title: BlocBuilder<MessCubit, MessState>(
           builder: (context, state) {
-            final name =
-                state is MessDetailLoaded ? state.detail.mess.name : 'Mess Details';
+            final name = state is MessDetailLoaded
+                ? state.detail.mess.name
+                : 'Mess Details';
             return Text(
               name,
               style: const TextStyle(
@@ -55,10 +55,33 @@ class _MessDetailView extends StatelessWidget {
           },
         ),
         actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.ink, size: 20),
-            onPressed: () => context.read<MessCubit>().loadMess(messId),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => context.read<MessCubit>().loadMess(messId),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.paper,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.paperLine),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.refresh_rounded,
+                        color: AppColors.ink,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -74,7 +97,10 @@ class _MessDetailView extends StatelessWidget {
           builder: (context, state) {
             if (state is MessLoading) {
               return const Center(
-                child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.brandDark),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.brandDark,
+                ),
               );
             }
             if (state is MessError) {
@@ -93,16 +119,21 @@ class _MessDetailView extends StatelessWidget {
                       Text(
                         state.message,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.inkFaded, fontSize: 13),
+                        style: const TextStyle(
+                          color: AppColors.inkFaded,
+                          fontSize: 13,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
-                        onPressed: () => context.read<MessCubit>().loadMess(messId),
+                        onPressed: () =>
+                            context.read<MessCubit>().loadMess(messId),
                         icon: const Icon(Icons.refresh_rounded, size: 15),
                         label: const Text('Try Again'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.brandDark,
                           side: const BorderSide(color: AppColors.paperLine),
+                          minimumSize: const Size(120, 38),
                         ),
                       ),
                     ],
@@ -119,26 +150,33 @@ class _MessDetailView extends StatelessWidget {
 
               return RefreshIndicator(
                 color: AppColors.brandDark,
-                onRefresh: () => context.read<MessCubit>().loadMess(messId),
+                onRefresh: () async =>
+                    context.read<MessCubit>().loadMess(messId),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Header Summary Card
-                      _buildHeaderCard(context, mess, canManage),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 720),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // 1. Header Summary Card
+                          _buildHeaderCard(context, mess, canManage),
 
-                      const SizedBox(height: 24),
+                          const SizedBox(height: 18),
 
-                      // Monthly Sheets Section
-                      _buildSheetsSection(context, months, canManage),
+                          // 2. Active Month Sheet Card
+                          _buildSheetsSection(context, months, canManage),
 
-                      const SizedBox(height: 24),
+                          const SizedBox(height: 20),
 
-                      // Member Settlement Section (Matches Web Table)
-                      _buildMemberSettlementsSection(d),
-                    ],
+                          // 3. Member Settlement Section
+                          _buildMemberSettlementsSection(d),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               );
@@ -150,14 +188,27 @@ class _MessDetailView extends StatelessWidget {
     );
   }
 
-  // --- Header Hero Summary Card ---
-  Widget _buildHeaderCard(BuildContext context, MessModel mess, bool canManage) {
+  // ==========================================
+  // 1. HEADER CARD (Minimal & Clean)
+  // ==========================================
+  Widget _buildHeaderCard(
+    BuildContext context,
+    MessModel mess,
+    bool canManage,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.paperLine),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +276,9 @@ class _MessDetailView extends StatelessWidget {
                   color: canManage ? AppColors.brandDark : AppColors.paper,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: canManage ? AppColors.brandDark : AppColors.paperLine,
+                    color: canManage
+                        ? AppColors.brandDark
+                        : AppColors.paperLine,
                   ),
                 ),
                 child: Text(
@@ -241,21 +294,31 @@ class _MessDetailView extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: AppColors.paperLine),
           const SizedBox(height: 12),
+          const Divider(height: 1, color: AppColors.paperLine),
+          const SizedBox(height: 10),
 
-          // Meta Info Items
+          // Meta Info Row
           Row(
             children: [
-              _buildMetaItem(Icons.people_outline_rounded, '${mess.membersCount} members'),
+              _buildMetaItem(
+                Icons.people_outline_rounded,
+                '${mess.membersCount} members',
+              ),
               _buildDotDivider(),
-              _buildMetaItem(Icons.calendar_month_outlined, '${mess.monthsCount} sheets'),
+              _buildMetaItem(
+                Icons.calendar_month_outlined,
+                '${mess.monthsCount} sheets',
+              ),
               _buildDotDivider(),
-              _buildMetaItem(Icons.public_outlined, mess.timezone),
+              _buildMetaItem(
+                Icons.schedule_rounded,
+                'Day ${mess.billingStartDay} Cycle',
+              ),
             ],
           ),
 
+          // Manager Action Buttons
           if (canManage || mess.isOwner) ...[
             const SizedBox(height: 12),
             Row(
@@ -264,7 +327,7 @@ class _MessDetailView extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () async {
-                        final ok = await MessFormScreen.showAsBottomSheet(
+                        final ok = await MessFormScreen.showAsDialog(
                           context,
                           mess: mess,
                           cubit: context.read<MessCubit>(),
@@ -274,10 +337,19 @@ class _MessDetailView extends StatelessWidget {
                         }
                       },
                       icon: const Icon(Icons.edit_outlined, size: 13),
-                      label: const Text('Edit Details', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                      label: const Text(
+                        'Edit Details',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.ink,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         minimumSize: const Size(0, 32),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         side: const BorderSide(color: AppColors.paperLine),
@@ -288,26 +360,59 @@ class _MessDetailView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                ],
-                if (mess.isOwner)
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => _confirmDeleteMess(context, mess),
-                      icon: const Icon(Icons.delete_outline_rounded, size: 13),
-                      label: const Text('Delete Mess', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                      onPressed: () => _showInviteMemberModal(context, messId),
+                      icon: const Icon(
+                        Icons.person_add_alt_1_outlined,
+                        size: 13,
+                      ),
+                      label: const Text(
+                        'Invite Member',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.danger,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        foregroundColor: AppColors.brandDark,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         minimumSize: const Size(0, 32),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        side: const BorderSide(color: AppColors.dangerSoft),
-                        backgroundColor: AppColors.dangerSoft.withValues(alpha: 0.3),
+                        side: const BorderSide(color: AppColors.paperLine),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
                   ),
+                ],
+                if (mess.isOwner) ...[
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () => _confirmDeleteMess(context, mess),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.dangerSoft.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.dangerSoft),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        size: 16,
+                        color: AppColors.danger,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ],
@@ -321,7 +426,7 @@ class _MessDetailView extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppColors.inkFaded),
+          Icon(icon, size: 13, color: AppColors.brandDark),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
@@ -343,12 +448,24 @@ class _MessDetailView extends StatelessWidget {
   Widget _buildDotDivider() {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 4),
-      child: Text('·', style: TextStyle(color: AppColors.paperLine, fontWeight: FontWeight.bold)),
+      child: Text(
+        '·',
+        style: TextStyle(
+          color: AppColors.paperLine,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
-  // --- Monthly Sheets Section (Focused Hero Card) ---
-  Widget _buildSheetsSection(BuildContext context, List<MessMonthLite> months, bool canManage) {
+  // ==========================================
+  // 2. ACTIVE MONTHLY SHEET SECTION
+  // ==========================================
+  Widget _buildSheetsSection(
+    BuildContext context,
+    List<MessMonthLite> months,
+    bool canManage,
+  ) {
     if (months.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -367,13 +484,17 @@ class _MessDetailView extends StatelessWidget {
               ),
               if (canManage)
                 InkWell(
-                  onTap: () => _showCreateMonth(context, messId),
+                  onTap: () => _showCreateMonthModal(context, messId),
                   borderRadius: BorderRadius.circular(6),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     child: Row(
-                      children: const [
-                        Icon(Icons.add_rounded, size: 14, color: AppColors.brandDark),
+                      children: [
+                        Icon(
+                          Icons.add_rounded,
+                          size: 14,
+                          color: AppColors.brandDark,
+                        ),
                         SizedBox(width: 2),
                         Text(
                           'Open Month',
@@ -419,20 +540,30 @@ class _MessDetailView extends StatelessWidget {
                       ? 'Open a month sheet to start tracking daily meals.'
                       : 'Waiting for manager to open a month sheet.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 11.5, color: AppColors.inkFaded),
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.inkFaded,
+                  ),
                 ),
                 if (canManage) ...[
                   const SizedBox(height: 12),
                   FilledButton(
-                    onPressed: () => _showCreateMonth(context, messId),
+                    onPressed: () => _showCreateMonthModal(context, messId),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.brandDark,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      minimumSize: const Size(0, 36),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Open First Month', style: TextStyle(fontSize: 12)),
+                    child: const Text(
+                      'Open First Month',
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
                 ],
               ],
@@ -462,13 +593,17 @@ class _MessDetailView extends StatelessWidget {
             ),
             if (canManage)
               InkWell(
-                onTap: () => _showCreateMonth(context, messId),
+                onTap: () => _showCreateMonthModal(context, messId),
                 borderRadius: BorderRadius.circular(6),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Row(
-                    children: const [
-                      Icon(Icons.add_rounded, size: 14, color: AppColors.brandDark),
+                    children: [
+                      Icon(
+                        Icons.add_rounded,
+                        size: 14,
+                        color: AppColors.brandDark,
+                      ),
                       SizedBox(width: 2),
                       Text(
                         'New Month',
@@ -484,20 +619,20 @@ class _MessDetailView extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
         // Featured Active Sheet Card
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.paperRaised,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.paperLine),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -529,13 +664,16 @@ class _MessDetailView extends StatelessWidget {
                               activeMonth.label,
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w800,
                                 color: AppColors.ink,
                               ),
                             ),
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.emeraldSoft,
                                 borderRadius: BorderRadius.circular(6),
@@ -556,7 +694,7 @@ class _MessDetailView extends StatelessWidget {
                         Text(
                           activeMonth.cycleLabel.isNotEmpty
                               ? activeMonth.cycleLabel
-                              : '${activeMonth.daysInMonth} Days · Daily Meal & Expense Matrix',
+                              : '${activeMonth.daysInMonth} Days cycle',
                           style: const TextStyle(
                             fontSize: 11.5,
                             color: AppColors.inkFaded,
@@ -589,6 +727,7 @@ class _MessDetailView extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.brandDark,
                     padding: const EdgeInsets.symmetric(vertical: 10),
+                    minimumSize: const Size(0, 40),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -599,8 +738,9 @@ class _MessDetailView extends StatelessWidget {
           ),
         ),
 
+        // Past Sheets Accordion
         if (pastMonths.isNotEmpty) ...[
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
             title: Text(
@@ -622,7 +762,8 @@ class _MessDetailView extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: pastMonths.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.paperLine),
+                  separatorBuilder: (_, _) =>
+                      const Divider(height: 1, color: AppColors.paperLine),
                   itemBuilder: (context, i) {
                     final m = pastMonths[i];
                     return ListTile(
@@ -636,16 +777,33 @@ class _MessDetailView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      leading: const Icon(Icons.history_rounded, size: 18, color: AppColors.inkFaded),
+                      leading: const Icon(
+                        Icons.history_rounded,
+                        size: 18,
+                        color: AppColors.inkFaded,
+                      ),
                       title: Text(
                         m.label,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
+                        ),
                       ),
                       subtitle: Text(
-                        m.cycleLabel.isNotEmpty ? m.cycleLabel : '${m.daysInMonth} days',
-                        style: const TextStyle(fontSize: 11, color: AppColors.inkFaded),
+                        m.cycleLabel.isNotEmpty
+                            ? m.cycleLabel
+                            : '${m.daysInMonth} days',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.inkFaded,
+                        ),
                       ),
-                      trailing: const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkFaded),
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 18,
+                        color: AppColors.inkFaded,
+                      ),
                     );
                   },
                 ),
@@ -657,10 +815,14 @@ class _MessDetailView extends StatelessWidget {
     );
   }
 
-  // --- Member Settlement Section (Full-size Cards) ---
+  // ==========================================
+  // 3. MEMBER SETTLEMENT SECTION (Clean Cards)
+  // ==========================================
   Widget _buildMemberSettlementsSection(MessDetailModel d) {
     final settlements = d.memberSettlements;
-    final monthLabel = d.currentMonthLabel.isNotEmpty ? d.currentMonthLabel : 'Active Month';
+    final monthLabel = d.currentMonthLabel.isNotEmpty
+        ? d.currentMonthLabel
+        : 'Active Month';
 
     if (settlements.isEmpty) {
       return _buildFallbackMembersSection(d.members);
@@ -696,7 +858,7 @@ class _MessDetailView extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: settlements.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 12),
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
           itemBuilder: (context, i) {
             final s = settlements[i];
             return _buildMemberSettlementCard(s);
@@ -708,68 +870,56 @@ class _MessDetailView extends StatelessWidget {
 
   Widget _buildMemberSettlementCard(MemberSettlementModel s) {
     final isPositive = s.balance >= 0;
-    final isManager = s.role == 'manager';
+    final isManager = s.role == 'manager' || s.role == 'owner';
     final mealsStr = s.meals % 1 == 0
         ? s.meals.toInt().toString()
         : s.meals.toStringAsFixed(1);
-    final spendStr = '${s.spend.toStringAsFixed(2)} ৳';
+    final spendStr = '${s.spend.toStringAsFixed(0)} ৳';
     final givenStr = '${s.given.toStringAsFixed(0)} ৳';
-    final balanceValStr = '${s.balance.abs().toStringAsFixed(2)} ৳';
+    final balanceValStr = '${s.balance.abs().toStringAsFixed(0)} ৳';
     final balancePrefix = isPositive ? '+' : '-';
     final avatarColor = _hexColor(s.color);
 
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           children: [
-            // Top Accent Bar with Member Color
             Container(height: 3, color: avatarColor),
-
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Row: Avatar + Name/Email/Role + Balance Pill
+                  // Top Row: Avatar, Name/Role, Balance
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Avatar with ring
-                      Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: avatarColor.withValues(alpha: 0.3), width: 2),
-                        ),
-                        child: CircleAvatar(
-                          radius: 20,
-                          backgroundColor: avatarColor,
-                          child: Text(
-                            s.name.isNotEmpty ? s.name[0].toUpperCase() : 'M',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15,
-                            ),
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: avatarColor,
+                        child: Text(
+                          s.name.isNotEmpty ? s.name[0].toUpperCase() : 'M',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-
-                      // Member Info
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -780,10 +930,9 @@ class _MessDetailView extends StatelessWidget {
                                   child: Text(
                                     s.name,
                                     style: const TextStyle(
-                                      fontSize: 15.5,
+                                      fontSize: 14.5,
                                       fontWeight: FontWeight.w800,
                                       color: AppColors.ink,
-                                      height: 1.2,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -791,67 +940,67 @@ class _MessDetailView extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 1.5,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: isManager ? AppColors.brandSoft : AppColors.paper,
-                                    borderRadius: BorderRadius.circular(6),
+                                    color: isManager
+                                        ? AppColors.brandSoft
+                                        : AppColors.paper,
+                                    borderRadius: BorderRadius.circular(5),
                                     border: Border.all(
                                       color: isManager
-                                          ? AppColors.brandDark.withValues(alpha: 0.2)
+                                          ? AppColors.brandDark.withValues(
+                                              alpha: 0.2,
+                                            )
                                           : AppColors.paperLine,
                                     ),
                                   ),
                                   child: Text(
                                     s.role.toUpperCase(),
                                     style: TextStyle(
-                                      fontSize: 8.5,
+                                      fontSize: 8,
                                       fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.5,
-                                      color: isManager ? AppColors.brandDark : AppColors.inkFaded,
+                                      color: isManager
+                                          ? AppColors.brandDark
+                                          : AppColors.inkFaded,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 3),
-                            if (s.email.isNotEmpty)
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.alternate_email_rounded,
-                                    size: 11,
-                                    color: AppColors.inkFaded,
-                                  ),
-                                  const SizedBox(width: 3),
-                                  Expanded(
-                                    child: Text(
-                                      s.email,
-                                      style: const TextStyle(
-                                        fontSize: 11.5,
-                                        color: AppColors.inkFaded,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                            if (s.email.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                s.email,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.inkFaded,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
+                            ],
                           ],
                         ),
                       ),
-
                       const SizedBox(width: 8),
-
                       // Balance Pill
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
-                          color: isPositive ? AppColors.emeraldSoft : AppColors.dangerSoft,
-                          borderRadius: BorderRadius.circular(12),
+                          color: isPositive
+                              ? AppColors.emeraldSoft
+                              : AppColors.dangerSoft,
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isPositive
-                                ? AppColors.emerald.withValues(alpha: 0.3)
-                                : AppColors.danger.withValues(alpha: 0.3),
+                                ? AppColors.emerald.withValues(alpha: 0.25)
+                                : AppColors.danger.withValues(alpha: 0.25),
                           ),
                         ),
                         child: Column(
@@ -860,19 +1009,23 @@ class _MessDetailView extends StatelessWidget {
                             Text(
                               isPositive ? 'SURPLUS' : 'DUE',
                               style: TextStyle(
-                                fontSize: 8.5,
+                                fontSize: 7.5,
                                 fontWeight: FontWeight.w800,
-                                letterSpacing: 0.6,
-                                color: isPositive ? AppColors.emerald : AppColors.danger,
+                                letterSpacing: 0.5,
+                                color: isPositive
+                                    ? AppColors.emerald
+                                    : AppColors.danger,
                               ),
                             ),
                             const SizedBox(height: 1),
                             Text(
                               '$balancePrefix$balanceValStr',
                               style: TextStyle(
-                                fontSize: 13.5,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w900,
-                                color: isPositive ? AppColors.emerald : AppColors.danger,
+                                color: isPositive
+                                    ? AppColors.emerald
+                                    : AppColors.danger,
                               ),
                             ),
                           ],
@@ -881,14 +1034,17 @@ class _MessDetailView extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
 
                   // Stat Tiles (Meals, Spend, Given)
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.paper,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: AppColors.paperLine),
                     ),
                     child: Row(
@@ -901,7 +1057,11 @@ class _MessDetailView extends StatelessWidget {
                             value: mealsStr,
                           ),
                         ),
-                        Container(width: 1, height: 28, color: AppColors.paperLine),
+                        Container(
+                          width: 1,
+                          height: 24,
+                          color: AppColors.paperLine,
+                        ),
                         Expanded(
                           child: _buildTileStat(
                             icon: Icons.shopping_bag_outlined,
@@ -910,7 +1070,11 @@ class _MessDetailView extends StatelessWidget {
                             value: spendStr,
                           ),
                         ),
-                        Container(width: 1, height: 28, color: AppColors.paperLine),
+                        Container(
+                          width: 1,
+                          height: 24,
+                          color: AppColors.paperLine,
+                        ),
                         Expanded(
                           child: _buildTileStat(
                             icon: Icons.payments_outlined,
@@ -942,12 +1106,12 @@ class _MessDetailView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 12, color: iconColor),
-            const SizedBox(width: 4),
+            Icon(icon, size: 11, color: iconColor),
+            const SizedBox(width: 3),
             Text(
               label.toUpperCase(),
               style: const TextStyle(
-                fontSize: 9,
+                fontSize: 8.5,
                 fontWeight: FontWeight.w800,
                 color: AppColors.inkFaded,
                 letterSpacing: 0.5,
@@ -955,11 +1119,11 @@ class _MessDetailView extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 12.5,
+            fontSize: 12,
             fontWeight: FontWeight.w800,
             color: AppColors.ink,
           ),
@@ -970,7 +1134,9 @@ class _MessDetailView extends StatelessWidget {
     );
   }
 
-  // --- Fallback Members Section (when no active month sheet) ---
+  // ==========================================
+  // FALLBACK MEMBERS SECTION
+  // ==========================================
   Widget _buildFallbackMembersSection(List<MessMemberLite> members) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1008,19 +1174,27 @@ class _MessDetailView extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: members.length,
-            separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.paperLine),
+            separatorBuilder: (_, _) =>
+                const Divider(height: 1, color: AppColors.paperLine),
             itemBuilder: (context, i) {
               final member = members[i];
-              final isManager = member.memberRole == 'manager';
+              final isManager =
+                  member.memberRole == 'manager' ||
+                  member.memberRole == 'owner';
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
                     CircleAvatar(
-                      radius: 17,
+                      radius: 16,
                       backgroundColor: _hexColor(member.color),
                       child: Text(
-                        member.name.isNotEmpty ? member.name[0].toUpperCase() : 'M',
+                        member.name.isNotEmpty
+                            ? member.name[0].toUpperCase()
+                            : 'M',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
@@ -1055,7 +1229,10 @@ class _MessDetailView extends StatelessWidget {
                             const SizedBox(height: 1),
                             Text(
                               member.email,
-                              style: const TextStyle(fontSize: 11, color: AppColors.inkFaded),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.inkFaded,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1065,12 +1242,19 @@ class _MessDetailView extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: isManager ? AppColors.brandSoft : AppColors.paper,
+                        color: isManager
+                            ? AppColors.brandSoft
+                            : AppColors.paper,
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                          color: isManager ? AppColors.brandDark.withValues(alpha: 0.15) : AppColors.paperLine,
+                          color: isManager
+                              ? AppColors.brandDark.withValues(alpha: 0.15)
+                              : AppColors.paperLine,
                         ),
                       ),
                       child: Text(
@@ -1078,7 +1262,9 @@ class _MessDetailView extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 8.5,
                           fontWeight: FontWeight.w800,
-                          color: isManager ? AppColors.brandDark : AppColors.inkFaded,
+                          color: isManager
+                              ? AppColors.brandDark
+                              : AppColors.inkFaded,
                         ),
                       ),
                     ),
@@ -1096,22 +1282,6 @@ class _MessDetailView extends StatelessWidget {
     final raw = m.defaultDisplay;
     if (raw.isEmpty || raw == '—') return const SizedBox.shrink();
 
-    final isBld = raw.contains('·');
-    if (!isBld) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-        decoration: BoxDecoration(
-          color: AppColors.paper,
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: AppColors.paperLine),
-        ),
-        child: Text(
-          raw,
-          style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: AppColors.inkSoft),
-        ),
-      );
-    }
-
     final parts = raw.split('·').map((e) => e.trim()).toList();
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -1120,7 +1290,11 @@ class _MessDetailView extends StatelessWidget {
           if (i > 0)
             const Text(
               '·',
-              style: TextStyle(fontSize: 9, color: AppColors.inkFaded, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 9,
+                color: AppColors.inkFaded,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
@@ -1129,7 +1303,9 @@ class _MessDetailView extends StatelessWidget {
               color: parts[i] == '0' ? AppColors.dangerSoft : AppColors.paper,
               borderRadius: BorderRadius.circular(3),
               border: Border.all(
-                color: parts[i] == '0' ? AppColors.danger.withValues(alpha: 0.3) : AppColors.paperLine,
+                color: parts[i] == '0'
+                    ? AppColors.danger.withValues(alpha: 0.3)
+                    : AppColors.paperLine,
               ),
             ),
             child: Text(
@@ -1146,25 +1322,858 @@ class _MessDetailView extends StatelessWidget {
     );
   }
 
-  void _confirmDeleteMess(BuildContext context, MessModel mess) async {
-    final confirm = await showDialog<bool>(
+  // ==========================================
+  // MODALS: OPEN MONTH SHEET
+  // ==========================================
+  void _showCreateMonthModal(BuildContext context, int messId) {
+    final yearCtrl = TextEditingController(text: '${DateTime.now().year}');
+    int selectedMonth = DateTime.now().month;
+
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Mess?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-        content: Text('Are you sure you want to delete "${mess.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+      barrierDismissible: true,
+      builder: (ctx) {
+        bool saving = false;
+        return StatefulBuilder(
+          builder: (ctx2, setS) {
+            final now = DateTime.now();
+            final nextMonthDate = DateTime(now.year, now.month + 1, 1);
+
+            return Dialog(
+              backgroundColor: AppColors.paperRaised,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+                side: const BorderSide(color: AppColors.paperLine),
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 460),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Row
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 14, 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.calendar_month_rounded,
+                              color: AppColors.brandDark,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Open New Monthly Sheet',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                                SizedBox(height: 1),
+                                Text(
+                                  'Create 1–31 daily roster & ledger matrix',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.pop(ctx2),
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(color: AppColors.paperLine),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 16,
+                                    color: AppColors.inkSoft,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1, color: AppColors.paperLine),
+
+                    Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Quick Preset Chips
+                          Row(
+                            children: [
+                              ActionChip(
+                                label: Text(
+                                  'Current: ${monthNames[now.month - 1]} ${now.year}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: selectedMonth == now.month &&
+                                            yearCtrl.text == '${now.year}'
+                                        ? Colors.white
+                                        : AppColors.ink,
+                                  ),
+                                ),
+                                backgroundColor: selectedMonth == now.month &&
+                                        yearCtrl.text == '${now.year}'
+                                    ? AppColors.brandDark
+                                    : AppColors.paper,
+                                side: BorderSide(
+                                  color: selectedMonth == now.month &&
+                                          yearCtrl.text == '${now.year}'
+                                      ? AppColors.brandDark
+                                      : AppColors.paperLine,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                onPressed: () {
+                                  setS(() {
+                                    selectedMonth = now.month;
+                                    yearCtrl.text = '${now.year}';
+                                  });
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                              ActionChip(
+                                label: Text(
+                                  'Next: ${monthNames[nextMonthDate.month - 1]} ${nextMonthDate.year}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: selectedMonth ==
+                                                nextMonthDate.month &&
+                                            yearCtrl.text ==
+                                                '${nextMonthDate.year}'
+                                        ? Colors.white
+                                        : AppColors.ink,
+                                  ),
+                                ),
+                                backgroundColor: selectedMonth ==
+                                            nextMonthDate.month &&
+                                        yearCtrl.text == '${nextMonthDate.year}'
+                                    ? AppColors.brandDark
+                                    : AppColors.paper,
+                                side: BorderSide(
+                                  color: selectedMonth ==
+                                              nextMonthDate.month &&
+                                          yearCtrl.text ==
+                                              '${nextMonthDate.year}'
+                                      ? AppColors.brandDark
+                                      : AppColors.paperLine,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                onPressed: () {
+                                  setS(() {
+                                    selectedMonth = nextMonthDate.month;
+                                    yearCtrl.text = '${nextMonthDate.year}';
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Month Dropdown & Year Input
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: DropdownButtonFormField<int>(
+                                  initialValue: selectedMonth,
+                                  decoration: InputDecoration(
+                                    labelText: 'Month',
+                                    filled: true,
+                                    fillColor: AppColors.paper,
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 12,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.paperLine,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.paperLine,
+                                      ),
+                                    ),
+                                  ),
+                                  items: List.generate(12, (index) {
+                                    return DropdownMenuItem<int>(
+                                      value: index + 1,
+                                      child: Text(
+                                        monthNames[index],
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setS(() => selectedMonth = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 2,
+                                child: TextField(
+                                  controller: yearCtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    labelText: 'Year',
+                                    filled: true,
+                                    fillColor: AppColors.paper,
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 12,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.paperLine,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.paperLine,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: saving
+                                  ? null
+                                  : () async {
+                                      setS(() => saving = true);
+                                      try {
+                                        await MessRepository()
+                                            .createMonth(messId, {
+                                          'year':
+                                              int.tryParse(yearCtrl.text) ??
+                                              DateTime.now().year,
+                                          'month': selectedMonth,
+                                        });
+                                        if (context.mounted) {
+                                          Navigator.pop(ctx2);
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Monthly sheet opened successfully',
+                                              ),
+                                            ),
+                                          );
+                                          context
+                                              .read<MessCubit>()
+                                              .loadMess(messId);
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                e.toString().replaceAll(
+                                                      'Exception: ',
+                                                      '',
+                                                    ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        setS(() => saving = false);
+                                      }
+                                    },
+                              icon: saving
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.add_task_rounded,
+                                      size: 18,
+                                    ),
+                              label: Text(
+                                saving
+                                    ? 'Opening...'
+                                    : 'Create Monthly Sheet',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.brandDark,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ==========================================
+  // MODALS: INVITE MEMBER (Modern & Polished)
+  // ==========================================
+  // ==========================================
+  // MODALS: INVITE MEMBER (Centered Dialog Modal)
+  // ==========================================
+  void _showInviteMemberModal(BuildContext context, int messId) {
+    final emailCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
+    String selectedRole = 'member';
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        bool saving = false;
+        return StatefulBuilder(
+          builder: (context, setS) {
+            return Dialog(
+              backgroundColor: AppColors.paperRaised,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 24,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: AppColors.paperLine),
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Row
+                      Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.person_add_rounded,
+                              color: AppColors.brandDark,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Invite New Member',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Send an invite to join this mess group.',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.pop(ctx),
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 16,
+                                    color: AppColors.inkSoft,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Email Input Field
+                      const Text(
+                        'EMAIL ADDRESS',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.inkFaded,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: emailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.ink,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'member@example.com',
+                          hintStyle: const TextStyle(
+                            fontSize: 12.5,
+                            color: AppColors.inkFaded,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.alternate_email_rounded,
+                            size: 16,
+                            color: AppColors.brandDark,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.paper,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.paperLine,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.paperLine,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.brandDark,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Display Name Field
+                      const Text(
+                        'DISPLAY NAME (OPTIONAL)',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.inkFaded,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: nameCtrl,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.ink,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'e.g. Alex Johnson',
+                          hintStyle: const TextStyle(
+                            fontSize: 12.5,
+                            color: AppColors.inkFaded,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.badge_outlined,
+                            size: 16,
+                            color: AppColors.inkFaded,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.paper,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.paperLine,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.paperLine,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.brandDark,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Role Selector Cards
+                      const Text(
+                        'ASSIGN ROLE',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.inkFaded,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildRoleSelectCard(
+                              title: 'Member',
+                              subtitle: 'Regular tracker',
+                              icon: Icons.person_outline_rounded,
+                              isSelected: selectedRole == 'member',
+                              onTap: () => setS(() => selectedRole = 'member'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildRoleSelectCard(
+                              title: 'Manager',
+                              subtitle: 'Admin access',
+                              icon: Icons.shield_outlined,
+                              isSelected: selectedRole == 'manager',
+                              onTap: () => setS(() => selectedRole = 'manager'),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Action Buttons Row
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.ink,
+                                side: const BorderSide(
+                                  color: AppColors.paperLine,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
+                                minimumSize: const Size(0, 38),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 3,
+                            child: FilledButton.icon(
+                              onPressed: saving
+                                  ? null
+                                  : () async {
+                                      final email = emailCtrl.text.trim();
+                                      if (email.isEmpty) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Please enter an email address',
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      setS(() => saving = true);
+                                      try {
+                                        await MessRepository().storeInvite(
+                                          messId,
+                                          email,
+                                          selectedRole,
+                                          memberName:
+                                              nameCtrl.text.trim().isNotEmpty
+                                              ? nameCtrl.text.trim()
+                                              : null,
+                                        );
+                                        if (context.mounted) {
+                                          Navigator.pop(ctx);
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Invitation sent successfully',
+                                              ),
+                                            ),
+                                          );
+                                          context.read<MessCubit>().loadMess(
+                                            messId,
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                e.toString().replaceAll(
+                                                  'Exception: ',
+                                                  '',
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        setS(() => saving = false);
+                                      }
+                                    },
+                              icon: saving
+                                  ? const SizedBox.shrink()
+                                  : const Icon(Icons.send_rounded, size: 14),
+                              label: saving
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Send Invite',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 12.5,
+                                      ),
+                                    ),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.brandDark,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
+                                minimumSize: const Size(0, 38),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildRoleSelectCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandSoft : AppColors.paper,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.brandDark : AppColors.paperLine,
+            width: isSelected ? 1.6 : 1.0,
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
-          ),
-        ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.brandDark : AppColors.inkFaded,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected ? AppColors.brandDark : AppColors.ink,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.inkFaded,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 16,
+                color: AppColors.brandDark,
+              ),
+          ],
+        ),
       ),
+    );
+  }
+
+  // ==========================================
+  // CONFIRM DELETE MESS
+  // ==========================================
+  void _confirmDeleteMess(BuildContext context, MessModel mess) async {
+    final confirm = await ConfirmDeleteDialog.show(
+      context,
+      title: 'Delete Mess?',
+      itemName: mess.name,
+      message:
+          'Are you sure you want to delete this mess? All data, member accounts, sheets, and bazar records will be permanently removed. This action cannot be undone.',
+      confirmLabel: 'Delete Mess',
+      icon: Icons.apartment_rounded,
     );
 
     if (confirm == true && context.mounted) {
@@ -1185,166 +2194,5 @@ class _MessDetailView extends StatelessWidget {
     } catch (_) {
       return AppColors.brandDark;
     }
-  }
-
-  void _showCreateMonth(BuildContext context, int messId) {
-    final yearCtrl = TextEditingController(text: '${DateTime.now().year}');
-    int selectedMonth = DateTime.now().month;
-
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
-    showModalBottomSheet(
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      context: context,
-      builder: (ctx) {
-        bool saving = false;
-        return StatefulBuilder(
-          builder: (context, setS) {
-            return Container(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                16,
-                20,
-                MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              decoration: const BoxDecoration(
-                color: AppColors.paperRaised,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 32,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.paperLine,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Open New Monthly Sheet',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                      color: AppColors.ink,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Select month and year to create the 1–31 daily meal sheet.',
-                    style: TextStyle(fontSize: 12, color: AppColors.inkFaded),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: DropdownButtonFormField<int>(
-                          initialValue: selectedMonth,
-                          decoration: const InputDecoration(
-                            labelText: 'Month',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          ),
-                          items: List.generate(12, (index) {
-                            return DropdownMenuItem<int>(
-                              value: index + 1,
-                              child: Text(monthNames[index]),
-                            );
-                          }),
-                          onChanged: (val) {
-                            if (val != null) setS(() => selectedMonth = val);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: TextField(
-                          controller: yearCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Year',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: saving
-                          ? null
-                          : () async {
-                              setS(() => saving = true);
-                              try {
-                                await MessRepository().createMonth(messId, {
-                                  'year':
-                                      int.tryParse(yearCtrl.text) ??
-                                      DateTime.now().year,
-                                  'month': selectedMonth,
-                                });
-                                if (context.mounted) {
-                                  Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Monthly sheet opened successfully'),
-                                    ),
-                                  );
-                                  context.read<MessCubit>().loadMess(messId);
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        e.toString().replaceAll(
-                                          'Exception: ',
-                                          '',
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              } finally {
-                                setS(() => saving = false);
-                              }
-                            },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.brandDark,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: saving
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('Create Month Sheet'),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 }

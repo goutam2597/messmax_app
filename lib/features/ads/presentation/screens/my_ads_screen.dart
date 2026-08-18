@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_menu_button.dart';
+import '../../../../core/widgets/confirm_delete_dialog.dart';
+import '../../../dashboard/presentation/widgets/mess_drawer.dart';
 import '../../../../core/widgets/network_image_cover.dart';
 import '../../data/models/ad_model.dart';
 import '../../data/repositories/user_ad_repository.dart';
@@ -15,6 +18,7 @@ class MyAdsScreen extends StatefulWidget {
 }
 
 class _MyAdsScreenState extends State<MyAdsScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final UserAdRepository _repository = UserAdRepository();
   List<AdModel> _ads = [];
   bool _isLoading = true;
@@ -39,24 +43,14 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
   }
 
   Future<void> _deleteAd(AdModel ad) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Delete Seat Ad', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-        content: Text('Are you sure you want to delete "${ad.title}"? This cannot be undone.', style: const TextStyle(fontSize: 13, color: AppColors.inkFaded)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.inkFaded)),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+    final confirm = await ConfirmDeleteDialog.show(
+      context,
+      title: 'Delete Seat Ad?',
+      itemName: ad.title,
+      message:
+          'Are you sure you want to delete this seat listing? It will no longer be visible to prospective members.',
+      confirmLabel: 'Delete Ad',
+      icon: Icons.campaign_rounded,
     );
 
     if (confirm != true || !mounted) return;
@@ -90,14 +84,15 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.paper,
+      drawer: const MessDrawer(activeSection: 'my_ads'),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.ink),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: AppMenuButton(
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: const Text(
           'My Posted Seat Ads',

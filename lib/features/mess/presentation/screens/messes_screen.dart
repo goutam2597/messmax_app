@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_menu_button.dart';
 import '../../../dashboard/presentation/widgets/mess_drawer.dart';
 import '../cubit/mess_cubit.dart';
 import '../cubit/mess_state.dart';
@@ -39,8 +40,7 @@ class _MessesViewState extends State<_MessesView> {
         backgroundColor: AppColors.paperRaised,
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.menu_rounded, color: AppColors.ink),
+        leading: AppMenuButton(
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: const Column(
@@ -65,11 +65,30 @@ class _MessesViewState extends State<_MessesView> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.ink),
-            onPressed: () => context.read<MessCubit>().loadMesses(),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => context.read<MessCubit>().loadMesses(),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.paper,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.paperLine),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.refresh_rounded, color: AppColors.ink, size: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 4),
         ],
       ),
       body: SafeArea(

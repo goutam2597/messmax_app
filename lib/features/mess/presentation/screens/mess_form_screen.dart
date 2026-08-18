@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../data/models/mess_model.dart';
 import '../cubit/mess_cubit.dart';
 
@@ -8,60 +9,55 @@ class MessFormScreen extends StatefulWidget {
   final MessCubit cubit;
   final bool isBottomSheet;
 
+  final bool isDialog;
+
   const MessFormScreen({
     super.key,
     this.mess,
     required this.cubit,
     this.isBottomSheet = false,
+    this.isDialog = false,
   });
+
+  static Future<bool?> showAsDialog(
+    BuildContext context, {
+    MessModel? mess,
+    required MessCubit cubit,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.paperRaised,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 24,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(color: AppColors.paperLine),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 480,
+            maxHeight: MediaQuery.of(ctx).size.height * 0.88,
+          ),
+          child: MessFormScreen(
+            mess: mess,
+            cubit: cubit,
+            isDialog: true,
+          ),
+        ),
+      ),
+    );
+  }
 
   static Future<bool?> showAsBottomSheet(
     BuildContext context, {
     MessModel? mess,
     required MessCubit cubit,
   }) {
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom,
-        ),
-        child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(ctx).size.height * 0.85,
-          ),
-          decoration: const BoxDecoration(
-            color: AppColors.paper,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.paperLine,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: MessFormScreen(
-                    mess: mess,
-                    cubit: cubit,
-                    isBottomSheet: true,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return showAsDialog(context, mess: mess, cubit: cubit);
   }
 
   @override
@@ -128,206 +124,270 @@ class _MessFormScreenState extends State<MessFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.mess != null;
+    final isModal = widget.isDialog || widget.isBottomSheet;
 
-    final content = SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.isBottomSheet) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    isEdit ? 'Edit Mess Details' : 'Create New Mess',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.ink,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded, size: 20, color: AppColors.inkFaded),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ],
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.paperRaised,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.paperLine),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'BASIC INFORMATION',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'MESS NAME *',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.inkFaded,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: _name,
-                    validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Name required'
-                        : null,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Green View Hostel',
-                      prefixIcon: Icon(
-                        Icons.apartment_rounded,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'LOCATION / CITY',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.inkFaded,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: _location,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Mirpur 10, Dhaka',
-                      prefixIcon: Icon(
-                        Icons.location_on_outlined,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+    final formFields = Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.paperRaised,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.paperLine),
             ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.paperRaised,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.paperLine),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'BILLING & TIMEZONE',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'TIMEZONE *',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.inkFaded,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: _timezone,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.public_rounded,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Asia/Dhaka',
-                        child: Text('Asia/Dhaka (GMT+6)'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Asia/Kolkata',
-                        child: Text('Asia/Kolkata (GMT+5:30)'),
-                      ),
-                      DropdownMenuItem(value: 'UTC', child: Text('UTC')),
-                    ],
-                    onChanged: (v) =>
-                        setState(() => _timezone = v ?? 'Asia/Dhaka'),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'BILLING CYCLE START DAY (1..28)',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.inkFaded,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: _billingDay,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(hintText: '1'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _saving ? null : _submit,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.brandDark,
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'BASIC INFORMATION',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.inkFaded,
                   ),
                 ),
-                child: _saving
-                    ? const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        ),
-                      )
-                    : Text(
-                        isEdit ? 'Save Changes' : 'Create Mess',
-                        style: const TextStyle(fontWeight: FontWeight.w800),
+                const SizedBox(height: 12),
+                const Text(
+                  'MESS NAME *',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.inkFaded,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _name,
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? 'Name required' : null,
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. Green View Hostel',
+                    prefixIcon: Icon(
+                      Icons.apartment_rounded,
+                      color: AppColors.inkFaded,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'LOCATION / CITY',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.inkFaded,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _location,
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. Mirpur 10, Dhaka',
+                    prefixIcon: Icon(
+                      Icons.location_on_outlined,
+                      color: AppColors.inkFaded,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.paperRaised,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.paperLine),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'BILLING & TIMEZONE',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.inkFaded,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'TIMEZONE *',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.inkFaded,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  initialValue: _timezone,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(
+                      Icons.public_rounded,
+                      color: AppColors.inkFaded,
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'Asia/Dhaka',
+                      child: Text('Asia/Dhaka (GMT+6)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'Asia/Kolkata',
+                      child: Text('Asia/Kolkata (GMT+5:30)'),
+                    ),
+                    DropdownMenuItem(value: 'UTC', child: Text('UTC')),
+                  ],
+                  onChanged: (v) =>
+                      setState(() => _timezone = v ?? 'Asia/Dhaka'),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'BILLING CYCLE START DAY (1..28)',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.inkFaded,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _billingDay,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(hintText: '1'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _saving ? null : _submit,
+              icon: _saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
                       ),
+                    )
+                  : Icon(
+                      isEdit ? Icons.check_circle_outline_rounded : Icons.add_rounded,
+                      size: 18,
+                    ),
+              label: Text(
+                _saving
+                    ? (isEdit ? 'Saving...' : 'Creating...')
+                    : (isEdit ? 'Save Changes' : 'Create Mess'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.brandDark,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
 
-    if (widget.isBottomSheet) {
-      return content;
+    if (isModal) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 14, 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isEdit ? Icons.edit_note_rounded : Icons.domain_rounded,
+                    color: AppColors.brandDark,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isEdit ? 'Edit Mess Details' : 'Create New Mess',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        isEdit
+                            ? 'Update name, location & billing cycle'
+                            : 'Setup a new shared mess ledger',
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.paper,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.paperLine),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 16,
+                          color: AppColors.inkSoft,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.paperLine),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(18),
+              child: formFields,
+            ),
+          ),
+        ],
+      );
     }
 
     return Scaffold(
@@ -335,6 +395,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.paperRaised,
         elevation: 0,
+        leading: const AppBackButton(),
         title: Text(
           isEdit ? 'Edit Mess' : 'Create Mess',
           style: const TextStyle(
@@ -343,7 +404,12 @@ class _MessFormScreenState extends State<MessFormScreen> {
           ),
         ),
       ),
-      body: SafeArea(child: content),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: formFields,
+        ),
+      ),
     );
   }
 }

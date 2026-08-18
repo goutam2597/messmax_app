@@ -9,6 +9,8 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../data/models/account_response_model.dart';
 import '../../data/repositories/account_repository.dart';
+import '../../../../core/widgets/app_menu_button.dart';
+import '../../../dashboard/presentation/widgets/mess_drawer.dart';
 import '../../../../features/dashboard/data/models/dashboard_model.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -19,6 +21,7 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final AccountRepository _repository = AccountRepository();
   AccountResponseModel? _accountData;
   bool _isLoading = true;
@@ -183,14 +186,15 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.paper,
+      drawer: const MessDrawer(activeSection: 'account'),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.ink),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: AppMenuButton(
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: const Text(
           'My Account',

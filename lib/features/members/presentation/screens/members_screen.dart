@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_menu_button.dart';
+import '../../../../core/widgets/confirm_delete_dialog.dart';
 import '../../data/models/member_model.dart';
 import '../cubit/member_cubit.dart';
 import '../cubit/member_state.dart';
@@ -30,38 +32,26 @@ class _MembersView extends StatefulWidget {
 class _MembersViewState extends State<_MembersView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  void _confirmDelete(BuildContext context, MemberModel member) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Remove Member?'),
-        content: Text(
-          'Are you sure you want to remove ${member.name} from the mess roster?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final cubit = context.read<MemberCubit>();
-              final ok = await cubit.deleteMember(member.id);
-              if (ok && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${member.name} removed.')),
-                );
-              }
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFA02626),
-            ),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
+  void _confirmDelete(BuildContext context, MemberModel member) async {
+    final confirm = await ConfirmDeleteDialog.show(
+      context,
+      title: 'Remove Member?',
+      itemName: member.name,
+      message:
+          'Are you sure you want to remove ${member.name} from the active mess roster? All active associations will be removed.',
+      confirmLabel: 'Remove Member',
+      icon: Icons.person_remove_rounded,
     );
+
+    if (confirm == true && context.mounted) {
+      final cubit = context.read<MemberCubit>();
+      final ok = await cubit.deleteMember(member.id);
+      if (ok && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${member.name} removed successfully.')),
+        );
+      }
+    }
   }
 
   @override
@@ -77,43 +67,64 @@ class _MembersViewState extends State<_MembersView> {
         backgroundColor: AppColors.paperRaised,
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.menu_rounded, color: AppColors.ink, size: 24),
+        leading: AppMenuButton(
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: BlocBuilder<MemberCubit, MemberState>(
           builder: (context, state) {
             final messName = state is MemberLoaded
                 ? state.response.messName
-                : 'Mess Members';
+                : '';
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  messName,
-                  style: const TextStyle(
-                    fontSize: 16,
+                const Text(
+                  'Mess Members',
+                  style: TextStyle(
+                    fontSize: 17,
                     fontWeight: FontWeight.w900,
                     color: AppColors.ink,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const Text(
-                  'Member List & Meal Defaults',
-                  style: TextStyle(
+                Text(
+                  messName.isNotEmpty
+                      ? '$messName • Member List'
+                      : 'Member List & Meal Defaults',
+                  style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.inkFaded,
                     fontWeight: FontWeight.w600,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             );
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.ink),
-            onPressed: () => context.read<MemberCubit>().loadMembers(),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => context.read<MemberCubit>().loadMembers(),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.paper,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.paperLine),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.refresh_rounded, color: AppColors.ink, size: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

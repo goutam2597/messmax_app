@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../data/models/ad_model.dart';
 import '../../data/repositories/user_ad_repository.dart';
 
@@ -592,10 +593,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
         elevation: 0,
         scrolledUnderElevation: 0.5,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.ink),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: const AppBackButton(),
         title: Text(
           isEdit ? 'Edit Seat Listing' : 'Post New Seat Listing',
           style: const TextStyle(

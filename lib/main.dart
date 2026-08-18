@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'core/logger/app_logger.dart';
 import 'core/network/dio_client.dart';
+import 'core/services/push_notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +49,7 @@ Future<void> main() async {
   }
 
   await DioClient.hydrateAuth();
+  await PushNotificationService.initialize();
   runApp(const MessMaxApp());
 }
 

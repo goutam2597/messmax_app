@@ -14,6 +14,7 @@ import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../../data/models/home_data_model.dart';
 import '../widgets/home_filter_dialog.dart';
+import 'public_notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -228,10 +229,15 @@ class _HomeScreenState extends State<HomeScreen> {
       leading: const BrandMark(),
       actions: [
         LocationChip(label: cityLabel),
-        const AppBarActionButton(
+        AppBarActionButton(
           icon: Icons.notifications_none_rounded,
           svgAsset: 'assets/icons/bell.svg',
           showDot: true,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const PublicNotificationsScreen(),
+            ),
+          ),
         ),
       ],
     );

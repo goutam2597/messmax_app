@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -164,10 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.ink),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        leading: const AppBackButton(),
       ),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
@@ -435,11 +433,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   child: Row(
                     children: [
-                      IconButton(
+                      AppBackButton(
                         onPressed: () => setState(() => _step = 1),
-                        icon: const Icon(Icons.arrow_back_rounded, size: 18, color: AppColors.ink),
-                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                        padding: EdgeInsets.zero,
+                        size: 32,
+                        iconSize: 16,
                       ),
                       const SizedBox(width: 8),
                       Expanded(

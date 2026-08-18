@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/network_image_cover.dart';
 import '../../data/models/blog_model.dart';
 
@@ -568,21 +569,7 @@ class BlogDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.paper,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.paperLine),
-              ),
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: AppColors.ink,
-                  size: 20,
-                ),
-              ),
-            ),
+            const AppBackButton(),
           ],
         ),
       ),

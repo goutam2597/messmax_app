@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_menu_button.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
 import '../../data/models/dashboard_model.dart';
@@ -10,7 +11,11 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
+import '../../../mess/presentation/screens/mess_detail_screen.dart';
 import '../widgets/mess_drawer.dart';
+import 'dashboard_notifications_screen.dart';
+import '../cubit/notification_cubit.dart';
+import '../cubit/notification_state.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -35,421 +40,6 @@ class _DashboardViewState extends State<_DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _activeSection = 'dashboard';
 
-  // --- NOTIFICATION & ACTIVITY BOTTOM SHEET ---
-  void _showNotificationsSheet(BuildContext context, DashboardModel dashboard) {
-    final pending = dashboard.pendingRequests;
-    final items = dashboard.pendingItems;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-        decoration: const BoxDecoration(
-          color: AppColors.paperRaised,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.paperLine,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: SvgPicture.asset(
-                    'assets/icons/bell.svg',
-                    width: 22,
-                    height: 22,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.brandDark,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Activity & Notifications',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                      Text(
-                        pending.total > 0
-                            ? '${pending.total} pending item(s) awaiting your action'
-                            : 'All caught up! No pending requests',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (pending.total > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFA02626),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${pending.total} NEW',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            const Divider(color: AppColors.paperLine),
-            const SizedBox(height: 14),
-
-            if (items.isEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.check_circle_outline_rounded,
-                        size: 42,
-                        color: Colors.green.shade600,
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'No Pending Notifications',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'All meal off and guest meal requests are approved.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ] else ...[
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.45,
-                ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: items.length,
-                  separatorBuilder: (_, _) =>
-                      const Divider(height: 1, color: AppColors.paperLine),
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    final isGuest = item.type == 'guest_meal';
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: isGuest
-                                  ? AppColors.brandSoft
-                                  : const Color(0xFFFDF2F2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              isGuest
-                                  ? Icons.person_add_outlined
-                                  : Icons.event_busy_outlined,
-                              size: 20,
-                              color: isGuest
-                                  ? AppColors.brandDark
-                                  : const Color(0xFFA02626),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.title,
-                                  style: const TextStyle(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.ink,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  item.subtitle,
-                                  style: const TextStyle(
-                                    fontSize: 11.5,
-                                    color: AppColors.inkFaded,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isGuest
-                                  ? AppColors.brandDark
-                                  : const Color(0xFFA02626),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              item.status.toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.brandDark,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: const Text(
-                  'Dismiss',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- MESS DETAILS MODAL SHEET ---
-  void _showMessDetailsModal(BuildContext context, ActiveMessModel activeMess) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-        decoration: const BoxDecoration(
-          color: AppColors.paperRaised,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.paperLine,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(
-                    Icons.apartment_rounded,
-                    color: AppColors.brandDark,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        activeMess.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Join Code: ${activeMess.code}',
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.brandDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandDark,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    activeMess.displayRole.toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Divider(color: AppColors.paperLine),
-            const SizedBox(height: 14),
-            _modalDetailRow(
-              Icons.map_rounded,
-              'Location',
-              activeMess.location.isNotEmpty ? activeMess.location : 'Dhaka',
-            ),
-            const SizedBox(height: 12),
-            _modalDetailRow(
-              Icons.group_rounded,
-              'Total Members',
-              '${activeMess.membersCount} Active Members',
-            ),
-            const SizedBox(height: 12),
-            _modalDetailRow(
-              Icons.event_seat_rounded,
-              'Open Seat Ads',
-              '${activeMess.seatsAvailable} Seats Available',
-            ),
-            const SizedBox(height: 12),
-            _modalDetailRow(
-              Icons.verified_user_rounded,
-              'Manager Permissions',
-              activeMess.isManager
-                  ? 'Full Manager & Ledger Access'
-                  : 'Member View-Only Access',
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.brandDark,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: const Text('Close'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _modalDetailRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.brandSoft,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, size: 18, color: AppColors.brandDark),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: AppColors.inkFaded,
-              ),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w800,
-                color: AppColors.ink,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -466,8 +56,7 @@ class _DashboardViewState extends State<_DashboardView> {
         elevation: 0,
         scrolledUnderElevation: 0.5,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(Icons.menu_rounded, color: AppColors.ink, size: 24),
+        leading: AppMenuButton(
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: BlocBuilder<DashboardCubit, DashboardState>(
@@ -500,205 +89,164 @@ class _DashboardViewState extends State<_DashboardView> {
           },
         ),
         actions: [
-          // --- CUSTOM SVG NOTIFICATION ICON WITH BADGE ---
-          BlocBuilder<DashboardCubit, DashboardState>(
-            builder: (context, state) {
-              final pendingCount = state is DashboardLoaded
-                  ? state.dashboard.pendingRequests.total
-                  : 0;
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              child: BlocBuilder<NotificationCubit, NotificationState>(
+                builder: (context, notifState) {
+                  return BlocBuilder<DashboardCubit, DashboardState>(
+                    builder: (context, state) {
+                      final notifUnread = notifState is NotificationLoaded
+                          ? notifState.unreadCount
+                          : 0;
+                      final pendingCount = state is DashboardLoaded
+                          ? state.dashboard.pendingRequests.total
+                          : 0;
+                      final badgeCount = notifUnread > 0
+                          ? notifUnread
+                          : pendingCount;
 
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  IconButton(
-                    tooltip: 'Activity Notifications',
-                    icon: SvgPicture.asset(
-                      'assets/icons/bell.svg',
-                      width: 22,
-                      height: 22,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.ink,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    onPressed: () {
-                      if (state is DashboardLoaded) {
-                        _showNotificationsSheet(context, state.dashboard);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Dashboard is loading...'),
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const DashboardNotificationsScreen(),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    'assets/icons/bell.svg',
+                                    width: 18,
+                                    height: 18,
+                                    colorFilter: const ColorFilter.mode(
+                                      AppColors.ink,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        );
-                      }
+                          if (badgeCount > 0)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(3.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFA02626),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.paperRaised,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 15,
+                                  minHeight: 15,
+                                ),
+                                child: Text(
+                                  '$badgeCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
                     },
-                  ),
-                  if (pendingCount > 0)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFA02626),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.paperRaised,
-                            width: 1.5,
-                          ),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          '$pendingCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.w900,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
+                  );
+                },
+              ),
+            ),
           ),
-          const SizedBox(width: 4),
         ],
       ),
       body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, authState) {
           if (authState is AuthLoading) {
-            return const SafeArea(child: Center(child: CircularProgressIndicator(color: AppColors.brandDark)));
+            return const SafeArea(
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.brandDark),
+              ),
+            );
           }
           if (authState is! AuthAuthenticated) {
             return SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(color: AppColors.paperRaised, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.paperLine), boxShadow: [BoxShadow(color: Color(0x0A000000), blurRadius: 16, offset: Offset(0, 6))]),
-                    child: Column(children: [
-                      Container(width: 72, height: 72, decoration: BoxDecoration(color: AppColors.brandSoft, shape: BoxShape.circle, border: Border.all(color: AppColors.brandDark.withValues(alpha: 0.12))), child: const Icon(Icons.lock_rounded, color: AppColors.brandDark, size: 36)),
-                      const SizedBox(height: 16),
-                      const Text('Sign in required', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.ink)),
-                      const SizedBox(height: 8),
-                      const Text('Your mess dashboard is only available after you sign in. No guest data is shown.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: AppColors.inkFaded, height: 1.4)),
-                      const SizedBox(height: 20),
-                      SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () { Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen())); }, icon: const Icon(Icons.login_rounded, size: 18), label: const Text('Go to Login', style: TextStyle(fontWeight: FontWeight.w800)), style: FilledButton.styleFrom(backgroundColor: AppColors.brandDark, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))))),
-                    ]),
-                  ),
-                  const SizedBox(height: 20),
-                  Center(child: TextButton(onPressed: () { Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const MainShellScreen(initialTab: 0)), (_) => false); }, child: const Text('Back to Home', style: TextStyle(color: AppColors.brandDark, fontWeight: FontWeight.w700)))),
-                ]),
-              ),
-            );
-          }
-          return SafeArea(
-            child: BlocBuilder<DashboardCubit, DashboardState>(
-              builder: (context, state) {
-                if (state is DashboardLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.brandDark),
-              );
-            }
-
-            if (state is DashboardError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: const BoxDecoration(
-                          color: AppColors.accentSoft,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.wifi_off_rounded,
-                          color: AppColors.accentDark,
-                          size: 36,
-                        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(28),
+                      decoration: BoxDecoration(
+                        color: AppColors.paperRaised,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.paperLine),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 16,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Unable to load dashboard',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        state.message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      FilledButton.icon(
-                        onPressed: () =>
-                            context.read<DashboardCubit>().loadDashboard(),
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('Try Again'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.brandDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            if (state is DashboardLoaded) {
-              final dashboard = state.dashboard;
-
-              if (!dashboard.hasMess) {
-                return RefreshIndicator(
-                  color: AppColors.brandDark,
-                  onRefresh: () =>
-                      context.read<DashboardCubit>().loadDashboard(),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
-                    child: Center(
                       child: Column(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(20),
+                            width: 72,
+                            height: 72,
                             decoration: BoxDecoration(
                               color: AppColors.brandSoft,
-                              borderRadius: BorderRadius.circular(24),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.brandDark.withValues(
+                                  alpha: 0.12,
+                                ),
+                              ),
                             ),
                             child: const Icon(
-                              Icons.apartment_rounded,
+                              Icons.lock_rounded,
                               color: AppColors.brandDark,
-                              size: 48,
+                              size: 36,
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
                           const Text(
-                            'No Mess Joined Yet',
+                            'Sign in required',
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.w900,
                               color: AppColors.ink,
                             ),
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'Create your first mess or ask your manager for an invite link to start tracking daily meals and expenses.',
+                            'Your mess dashboard is only available after you sign in. No guest data is shown.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
@@ -706,17 +254,116 @@ class _DashboardViewState extends State<_DashboardView> {
                               height: 1.4,
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          FilledButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Create Mess coming soon'),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginScreen(),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.login_rounded, size: 18),
+                              label: const Text(
+                                'Go to Login',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.brandDark,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.add_rounded, size: 20),
-                            label: const Text('Create New Mess'),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const MainShellScreen(initialTab: 0),
+                            ),
+                            (_) => false,
+                          );
+                        },
+                        child: const Text(
+                          'Back to Home',
+                          style: TextStyle(
+                            color: AppColors.brandDark,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          return SafeArea(
+            child: BlocBuilder<DashboardCubit, DashboardState>(
+              builder: (context, state) {
+                if (state is DashboardLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.brandDark,
+                    ),
+                  );
+                }
+
+                if (state is DashboardError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: const BoxDecoration(
+                              color: AppColors.accentSoft,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.wifi_off_rounded,
+                              color: AppColors.accentDark,
+                              size: 36,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Unable to load dashboard',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            state.message,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.inkFaded,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          FilledButton.icon(
+                            onPressed: () =>
+                                context.read<DashboardCubit>().loadDashboard(),
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            label: const Text('Try Again'),
                             style: FilledButton.styleFrom(
                               backgroundColor: AppColors.brandDark,
                             ),
@@ -724,97 +371,166 @@ class _DashboardViewState extends State<_DashboardView> {
                         ],
                       ),
                     ),
-                  ),
-                );
-              }
+                  );
+                }
 
-              final activeMess = dashboard.activeMess;
-              final summary = dashboard.summaryStats;
-              final stats = dashboard.ledgerStats;
-              final pending = dashboard.pendingRequests;
+                if (state is DashboardLoaded) {
+                  final dashboard = state.dashboard;
 
-              return RefreshIndicator(
-                color: AppColors.brandDark,
-                onRefresh: () => context.read<DashboardCubit>().loadDashboard(),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // --- 1. HERO OVERVIEW BANNER CARD ---
-                      _buildHeroOverviewCard(context, summary, activeMess),
-                      const SizedBox(height: 20),
-
-                      // --- 2. MONTHLY LEDGER STATS ---
-                      _buildSectionHeader(
-                        Icons.insights_rounded,
-                        'MONTHLY LEDGER STATS',
+                  if (!dashboard.hasMess) {
+                    return RefreshIndicator(
+                      color: AppColors.brandDark,
+                      onRefresh: () =>
+                          context.read<DashboardCubit>().loadDashboard(),
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: AppColors.brandSoft,
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: const Icon(
+                                  Icons.apartment_rounded,
+                                  color: AppColors.brandDark,
+                                  size: 48,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'No Mess Joined Yet',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.ink,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Create your first mess or ask your manager for an invite link to start tracking daily meals and expenses.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.inkFaded,
+                                  height: 1.4,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Create Mess coming soon'),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.add_rounded, size: 20),
+                                label: const Text('Create New Mess'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.brandDark,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 10),
-                      _buildLedgerGrid(stats),
-                      const SizedBox(height: 22),
+                    );
+                  }
 
-                      // --- 3. PENDING REQUESTS ALERT BANNER & LIST ---
-                      if (pending.total > 0) ...[
-                        _buildPendingApprovalBanner(pending),
-                        const SizedBox(height: 14),
-                      ],
+                  final activeMess = dashboard.activeMess;
+                  final summary = dashboard.summaryStats;
+                  final stats = dashboard.ledgerStats;
+                  final pending = dashboard.pendingRequests;
 
-                      if (dashboard.pendingItems.isNotEmpty) ...[
-                        _buildSectionHeader(
-                          Icons.pending_actions_rounded,
-                          'PENDING MEAL & GUEST REQUESTS',
-                          iconColor: AppColors.accentDark,
-                        ),
-                        const SizedBox(height: 10),
-                        _buildPendingItemsCard(dashboard.pendingItems),
-                        const SizedBox(height: 22),
-                      ],
+                  return RefreshIndicator(
+                    color: AppColors.brandDark,
+                    onRefresh: () =>
+                        context.read<DashboardCubit>().loadDashboard(),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // --- 1. HERO OVERVIEW BANNER CARD ---
+                          _buildHeroOverviewCard(context, summary, activeMess),
+                          const SizedBox(height: 20),
 
-                      // --- 4. BAZAR SHOPPING DUTY SCHEDULE ---
-                      if (dashboard.bazarDuties.isNotEmpty) ...[
-                        _buildSectionHeader(
-                          Icons.shopping_basket_outlined,
-                          'BAZAR SHOPPING DUTY SCHEDULE',
-                          iconColor: const Color(0xFF0F9F59),
-                        ),
-                        const SizedBox(height: 10),
-                        _buildBazarDutyCard(dashboard.bazarDuties),
-                        const SizedBox(height: 22),
-                      ],
+                          // --- 2. MONTHLY LEDGER STATS ---
+                          _buildSectionHeader(
+                            Icons.insights_rounded,
+                            'MONTHLY LEDGER STATS',
+                          ),
+                          const SizedBox(height: 10),
+                          _buildLedgerGrid(stats),
+                          const SizedBox(height: 22),
 
-                      // --- 5. TODAY'S MEAL SHEET TEASER ---
-                      if (dashboard.dailySheetTeaser.isNotEmpty) ...[
-                        _buildSectionHeader(
-                          Icons.calendar_view_day_rounded,
-                          'TODAY\'S MEAL SHEET TEASER',
-                        ),
-                        const SizedBox(height: 10),
-                        _buildDailyMealSheetCard(dashboard.dailySheetTeaser),
-                        const SizedBox(height: 22),
-                      ],
+                          // --- 3. PENDING REQUESTS ALERT BANNER & LIST ---
+                          if (pending.total > 0) ...[
+                            _buildPendingApprovalBanner(pending),
+                            const SizedBox(height: 14),
+                          ],
 
-                      // --- 6. MANAGED & MEMBER MESSES GRID ---
-                      if (dashboard.myMesses.isNotEmpty) ...[
-                        _buildSectionHeader(
-                          Icons.apartment_rounded,
-                          'YOUR MANAGED & MEMBER MESSES (${dashboard.myMesses.length})',
-                        ),
-                        const SizedBox(height: 10),
-                        _buildMyMessesGrid(
-                          context,
-                          dashboard.myMesses,
-                          activeMess,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-            }
+                          if (dashboard.pendingItems.isNotEmpty) ...[
+                            _buildSectionHeader(
+                              Icons.pending_actions_rounded,
+                              'PENDING MEAL & GUEST REQUESTS',
+                              iconColor: AppColors.accentDark,
+                            ),
+                            const SizedBox(height: 10),
+                            _buildPendingItemsCard(dashboard.pendingItems),
+                            const SizedBox(height: 22),
+                          ],
 
-            return const SizedBox.shrink();
+                          // --- 4. BAZAR SHOPPING DUTY SCHEDULE ---
+                          if (dashboard.bazarDuties.isNotEmpty) ...[
+                            _buildSectionHeader(
+                              Icons.shopping_basket_outlined,
+                              'BAZAR SHOPPING DUTY SCHEDULE',
+                              iconColor: const Color(0xFF0F9F59),
+                            ),
+                            const SizedBox(height: 10),
+                            _buildBazarDutyCard(dashboard.bazarDuties),
+                            const SizedBox(height: 22),
+                          ],
+
+                          // --- 5. TODAY'S MEAL SHEET TEASER ---
+                          if (dashboard.dailySheetTeaser.isNotEmpty) ...[
+                            _buildSectionHeader(
+                              Icons.calendar_view_day_rounded,
+                              'TODAY\'S MEAL SHEET TEASER',
+                            ),
+                            const SizedBox(height: 10),
+                            _buildDailyMealSheetCard(
+                              dashboard.dailySheetTeaser,
+                            ),
+                            const SizedBox(height: 22),
+                          ],
+
+                          // --- 6. MANAGED & MEMBER MESSES GRID ---
+                          if (dashboard.myMesses.isNotEmpty) ...[
+                            _buildSectionHeader(
+                              Icons.apartment_rounded,
+                              'YOUR MANAGED & MEMBER MESSES (${dashboard.myMesses.length})',
+                            ),
+                            const SizedBox(height: 10),
+                            _buildMyMessesGrid(
+                              context,
+                              dashboard.myMesses,
+                              activeMess,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return const SizedBox.shrink();
               },
             ),
           );
@@ -878,7 +594,11 @@ class _DashboardViewState extends State<_DashboardView> {
         color: Colors.transparent,
         child: InkWell(
           onTap: activeMess != null
-              ? () => _showMessDetailsModal(context, activeMess)
+              ? () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => MessDetailScreen(messId: activeMess.id),
+                  ),
+                )
               : null,
           borderRadius: BorderRadius.circular(22),
           child: Padding(
@@ -941,7 +661,7 @@ class _DashboardViewState extends State<_DashboardView> {
                               Text(
                                 activeMess?.location.isNotEmpty == true
                                     ? activeMess!.location
-                                    : 'Dhaka Roster Roster Console',
+                                    : 'Dhaka',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: Colors.white70,
@@ -954,37 +674,48 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.25),
+                    InkWell(
+                      onTap: activeMess != null
+                          ? () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    MessDetailScreen(messId: activeMess.id),
+                              ),
+                            )
+                          : null,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            ((activeMess?.displayRole ?? 'manager'))
-                                .toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.5,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              'Open Sheet',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.3,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                        ],
+                            SizedBox(width: 4),
+                            Icon(
+                              Icons.view_comfortable_outlined,
+                              size: 13,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -1620,179 +1351,190 @@ class _DashboardViewState extends State<_DashboardView> {
       children: [
         for (int i = 0; i < messes.length; i++) ...[
           if (i > 0) const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.paperRaised,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: messes[i].id == activeMess?.id
-                    ? AppColors.brandDark
-                    : AppColors.paperLine,
-                width: messes[i].id == activeMess?.id ? 2 : 1,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MessDetailScreen(messId: messes[i].id),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.paperRaised,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: messes[i].id == activeMess?.id
+                        ? AppColors.brandDark
+                        : AppColors.paperLine,
+                    width: messes[i].id == activeMess?.id ? 2 : 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'NO. ${strPad(i + 1)}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.inkFaded,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'NO. ${strPad(i + 1)}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.paper,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.paperLine),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.people_outline_rounded,
+                                size: 13,
+                                color: AppColors.inkSoft,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${messes[i].membersCount} Members',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.inkSoft,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.paper,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.paperLine),
-                      ),
-                      child: Row(
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            messes[i].name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: messes[i].isManager
+                                ? AppColors.brandDark
+                                : AppColors.paperLine,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            messes[i].displayRoleLabel.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                              color: messes[i].isManager
+                                  ? Colors.white
+                                  : AppColors.inkSoft,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (messes[i].location.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
                         children: [
                           const Icon(
-                            Icons.people_outline_rounded,
-                            size: 13,
-                            color: AppColors.inkSoft,
+                            Icons.location_on_outlined,
+                            size: 14,
+                            color: AppColors.brandDark,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${messes[i].membersCount} Members',
+                            messes[i].location,
                             style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.inkSoft,
+                              fontSize: 12,
+                              color: AppColors.inkFaded,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        messes[i].name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.ink,
+                    ],
+                    if (messes[i].activeMonthLabel != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.paper,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.paperLine),
                         ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: messes[i].isManager
-                            ? AppColors.brandDark
-                            : AppColors.paperLine,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        messes[i].displayRoleLabel.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w900,
-                          color: messes[i].isManager
-                              ? Colors.white
-                              : AppColors.inkSoft,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (messes[i].location.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 14,
-                        color: AppColors.brandDark,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        messes[i].location,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.inkFaded,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Active Month',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                                Text(
+                                  messes[i].activeMonthLabel!,
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Bazar / Meals',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                                Text(
+                                  '৳${messes[i].activeMonthBazar.toInt()} • ${messes[i].activeMonthMeals.toInt()} meals',
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.brandDark,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                ],
-                if (messes[i].activeMonthLabel != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.paper,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.paperLine),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Active Month',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                            Text(
-                              messes[i].activeMonthLabel!,
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.ink,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text(
-                              'Bazar / Meals',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                            Text(
-                              '৳${messes[i].activeMonthBazar.toInt()} • ${messes[i].activeMonthMeals.toInt()} meals',
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.brandDark,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
+                  ],
+                ),
+              ),
             ),
           ),
         ],
