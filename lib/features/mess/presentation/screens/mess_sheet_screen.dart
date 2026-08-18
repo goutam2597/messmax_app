@@ -13,11 +13,13 @@ class MessSheetScreen extends StatelessWidget {
   final int messId;
   final int monthId;
   final String monthLabel;
+  final int initialTab;
   const MessSheetScreen({
     super.key,
     required this.messId,
     required this.monthId,
     this.monthLabel = '',
+    this.initialTab = 0,
   });
 
   @override
@@ -28,6 +30,7 @@ class MessSheetScreen extends StatelessWidget {
         messId: messId,
         monthId: monthId,
         monthLabel: monthLabel,
+        initialTab: initialTab,
       ),
     );
   }
@@ -37,10 +40,12 @@ class _SheetView extends StatefulWidget {
   final int messId;
   final int monthId;
   final String monthLabel;
+  final int initialTab;
   const _SheetView({
     required this.messId,
     required this.monthId,
     required this.monthLabel,
+    this.initialTab = 0,
   });
 
   @override
@@ -59,7 +64,11 @@ class _SheetViewState extends State<_SheetView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: widget.initialTab.clamp(0, 3),
+    );
   }
 
   @override

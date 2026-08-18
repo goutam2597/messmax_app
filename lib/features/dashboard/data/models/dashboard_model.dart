@@ -128,6 +128,8 @@ class ActiveMessModel extends Equatable {
   final int seatsAvailable;
   final bool isManager;
   final String role;
+  final int? currentMonthId;
+  final String currentMonthLabel;
 
   const ActiveMessModel({
     required this.id,
@@ -139,6 +141,8 @@ class ActiveMessModel extends Equatable {
     required this.seatsAvailable,
     required this.isManager,
     required this.role,
+    this.currentMonthId,
+    this.currentMonthLabel = '',
   });
 
   /// Display role: individuals never see "owner" — normalize that orphan owner to manager/member
@@ -159,11 +163,13 @@ class ActiveMessModel extends Equatable {
       seatsAvailable: json['seats_available'] as int? ?? 0,
       isManager: json['is_manager'] as bool? ?? false,
       role: json['role'] as String? ?? 'member',
+      currentMonthId: (json['current_month_id'] as num?)?.toInt(),
+      currentMonthLabel: json['current_month_label'] as String? ?? '',
     );
   }
 
   @override
-  List<Object?> get props => [id, name, slug, code, membersCount];
+  List<Object?> get props => [id, name, slug, code, membersCount, currentMonthId];
 }
 
 class LedgerStatsModel extends Equatable {

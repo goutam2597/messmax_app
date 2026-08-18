@@ -12,6 +12,7 @@ import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
 import '../../../mess/presentation/screens/mess_detail_screen.dart';
+import '../../../mess/presentation/screens/mess_sheet_screen.dart';
 import '../widgets/mess_drawer.dart';
 import 'dashboard_notifications_screen.dart';
 import '../cubit/notification_cubit.dart';
@@ -464,14 +465,26 @@ class _DashboardViewState extends State<_DashboardView> {
                           _buildSectionHeader(
                             Icons.insights_rounded,
                             'MONTHLY LEDGER STATS',
+                            actionLabel: activeMess?.currentMonthId != null ? 'View Sheet' : null,
+                            onActionTap: activeMess?.currentMonthId != null
+                                ? () => Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => MessSheetScreen(
+                                          messId: activeMess!.id,
+                                          monthId: activeMess.currentMonthId!,
+                                          initialTab: 1,
+                                        ),
+                                      ),
+                                    )
+                                : null,
                           ),
                           const SizedBox(height: 10),
-                          _buildLedgerGrid(stats),
+                          _buildLedgerGrid(context, stats, activeMess),
                           const SizedBox(height: 22),
 
                           // --- 3. PENDING REQUESTS ALERT BANNER & LIST ---
                           if (pending.total > 0) ...[
-                            _buildPendingApprovalBanner(pending),
+                            _buildPendingApprovalBanner(context, pending),
                             const SizedBox(height: 14),
                           ],
 
@@ -480,9 +493,15 @@ class _DashboardViewState extends State<_DashboardView> {
                               Icons.pending_actions_rounded,
                               'PENDING MEAL & GUEST REQUESTS',
                               iconColor: AppColors.accentDark,
+                              actionLabel: 'Review All',
+                              onActionTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const DashboardNotificationsScreen(),
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 10),
-                            _buildPendingItemsCard(dashboard.pendingItems),
+                            _buildPendingItemsCard(context, dashboard.pendingItems),
                             const SizedBox(height: 22),
                           ],
 
@@ -492,9 +511,21 @@ class _DashboardViewState extends State<_DashboardView> {
                               Icons.shopping_basket_outlined,
                               'BAZAR SHOPPING DUTY SCHEDULE',
                               iconColor: const Color(0xFF0F9F59),
+                              actionLabel: activeMess?.currentMonthId != null ? 'Full Schedule' : null,
+                              onActionTap: activeMess?.currentMonthId != null
+                                  ? () => Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => MessSheetScreen(
+                                            messId: activeMess!.id,
+                                            monthId: activeMess.currentMonthId!,
+                                            initialTab: 0,
+                                          ),
+                                        ),
+                                      )
+                                  : null,
                             ),
                             const SizedBox(height: 10),
-                            _buildBazarDutyCard(dashboard.bazarDuties),
+                            _buildBazarDutyCard(context, dashboard.bazarDuties, activeMess),
                             const SizedBox(height: 22),
                           ],
 
@@ -503,10 +534,24 @@ class _DashboardViewState extends State<_DashboardView> {
                             _buildSectionHeader(
                               Icons.calendar_view_day_rounded,
                               'TODAY\'S MEAL SHEET TEASER',
+                              actionLabel: activeMess?.currentMonthId != null ? 'Full Sheet' : null,
+                              onActionTap: activeMess?.currentMonthId != null
+                                  ? () => Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => MessSheetScreen(
+                                            messId: activeMess!.id,
+                                            monthId: activeMess.currentMonthId!,
+                                            initialTab: 0,
+                                          ),
+                                        ),
+                                      )
+                                  : null,
                             ),
                             const SizedBox(height: 10),
                             _buildDailyMealSheetCard(
+                              context,
                               dashboard.dailySheetTeaser,
+                              activeMess,
                             ),
                             const SizedBox(height: 22),
                           ],
@@ -543,27 +588,57 @@ class _DashboardViewState extends State<_DashboardView> {
     IconData icon,
     String title, {
     Color iconColor = AppColors.brandDark,
+    String? actionLabel,
+    VoidCallback? onActionTap,
   }) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 15, color: iconColor),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 15, color: iconColor),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w900,
+                color: AppColors.inkFaded,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w900,
-            color: AppColors.inkFaded,
-            letterSpacing: 0.8,
+        if (actionLabel != null && onActionTap != null)
+          InkWell(
+            onTap: onActionTap,
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    actionLabel,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: iconColor,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 10, color: iconColor),
+                ],
+              ),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -675,14 +750,23 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                     const SizedBox(width: 8),
                     InkWell(
-                      onTap: activeMess != null
+                      onTap: activeMess != null && activeMess.currentMonthId != null
                           ? () => Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    MessDetailScreen(messId: activeMess.id),
+                                builder: (_) => MessSheetScreen(
+                                  messId: activeMess.id,
+                                  monthId: activeMess.currentMonthId!,
+                                  initialTab: 0,
+                                ),
                               ),
                             )
-                          : null,
+                          : (activeMess != null
+                              ? () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => MessDetailScreen(messId: activeMess.id),
+                                  ),
+                                )
+                              : null),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -737,6 +821,13 @@ class _DashboardViewState extends State<_DashboardView> {
                           label: 'MESSES',
                           val: '${summary.totalMesses}',
                           sub: '${summary.ownedMesses} owned',
+                          onTap: activeMess != null
+                              ? () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => MessDetailScreen(messId: activeMess.id),
+                                    ),
+                                  )
+                              : null,
                         ),
                       ),
                       Container(
@@ -749,6 +840,13 @@ class _DashboardViewState extends State<_DashboardView> {
                           label: 'MEMBERS',
                           val: '${summary.totalMembers}',
                           sub: 'Active',
+                          onTap: activeMess != null
+                              ? () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => MessDetailScreen(messId: activeMess.id),
+                                    ),
+                                  )
+                              : null,
                         ),
                       ),
                       Container(
@@ -761,6 +859,17 @@ class _DashboardViewState extends State<_DashboardView> {
                           label: 'CURRENT BAZAR',
                           val: '৳${summary.currentBazar.toInt()}',
                           sub: 'Spent',
+                          onTap: activeMess != null && activeMess.currentMonthId != null
+                              ? () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => MessSheetScreen(
+                                        messId: activeMess.id,
+                                        monthId: activeMess.currentMonthId!,
+                                        initialTab: 0,
+                                      ),
+                                    ),
+                                  )
+                              : null,
                         ),
                       ),
                       Container(
@@ -773,6 +882,17 @@ class _DashboardViewState extends State<_DashboardView> {
                           label: 'MEALS',
                           val: '${summary.currentMeals.toInt()}',
                           sub: 'Total',
+                          onTap: activeMess != null && activeMess.currentMonthId != null
+                              ? () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => MessSheetScreen(
+                                        messId: activeMess.id,
+                                        monthId: activeMess.currentMonthId!,
+                                        initialTab: 0,
+                                      ),
+                                    ),
+                                  )
+                              : null,
                         ),
                       ),
                     ],
@@ -790,8 +910,9 @@ class _DashboardViewState extends State<_DashboardView> {
     required String label,
     required String val,
     required String sub,
+    VoidCallback? onTap,
   }) {
-    return Column(
+    final content = Column(
       children: [
         Text(
           label,
@@ -827,10 +948,28 @@ class _DashboardViewState extends State<_DashboardView> {
         ),
       ],
     );
+
+    if (onTap == null) return content;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: content,
+        ),
+      ),
+    );
   }
 
   // --- 2. LEDGER GRID STATS ---
-  Widget _buildLedgerGrid(LedgerStatsModel stats) {
+  Widget _buildLedgerGrid(
+    BuildContext context,
+    LedgerStatsModel stats,
+    ActiveMessModel? activeMess,
+  ) {
     final totalMeals = stats.totalMeals.toInt();
     final totalBazar = stats.totalBazar.toInt();
     final mealRate = stats.mealRate;
@@ -853,6 +992,17 @@ class _DashboardViewState extends State<_DashboardView> {
           title: 'Total Meals',
           value: '$totalMeals',
           subtitle: 'Today: ${stats.todayMeals} meals',
+          onTap: activeMess?.currentMonthId != null
+              ? () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => MessSheetScreen(
+                        messId: activeMess!.id,
+                        monthId: activeMess.currentMonthId!,
+                        initialTab: 0,
+                      ),
+                    ),
+                  )
+              : null,
         ),
         _statTile(
           icon: Icons.shopping_bag_rounded,
@@ -861,6 +1011,17 @@ class _DashboardViewState extends State<_DashboardView> {
           title: 'Total Bazar',
           value: '$totalBazar ৳',
           subtitle: 'Current month spend',
+          onTap: activeMess?.currentMonthId != null
+              ? () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => MessSheetScreen(
+                        messId: activeMess!.id,
+                        monthId: activeMess.currentMonthId!,
+                        initialTab: 0,
+                      ),
+                    ),
+                  )
+              : null,
         ),
         _statTile(
           icon: Icons.analytics_rounded,
@@ -869,6 +1030,17 @@ class _DashboardViewState extends State<_DashboardView> {
           title: 'Current Rate',
           value: '$mealRate ৳',
           subtitle: 'Calculated per meal',
+          onTap: activeMess?.currentMonthId != null
+              ? () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => MessSheetScreen(
+                        messId: activeMess!.id,
+                        monthId: activeMess.currentMonthId!,
+                        initialTab: 1,
+                      ),
+                    ),
+                  )
+              : null,
         ),
         _statTile(
           icon: Icons.account_balance_wallet_rounded,
@@ -877,6 +1049,17 @@ class _DashboardViewState extends State<_DashboardView> {
           title: 'Cash Deposit',
           value: '$totalDeposits ৳',
           subtitle: 'Rest: +$restMoney ৳',
+          onTap: activeMess?.currentMonthId != null
+              ? () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => MessSheetScreen(
+                        messId: activeMess!.id,
+                        monthId: activeMess.currentMonthId!,
+                        initialTab: 2,
+                      ),
+                    ),
+                  )
+              : null,
         ),
       ],
     );
@@ -889,9 +1072,9 @@ class _DashboardViewState extends State<_DashboardView> {
     required String title,
     required String value,
     required String subtitle,
+    VoidCallback? onTap,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
         borderRadius: BorderRadius.circular(16),
@@ -904,112 +1087,161 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(icon, size: 18, color: iconColor),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                        if (onTap != null) ...[
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 9,
+                            color: AppColors.inkFaded,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
                 ),
-                child: Icon(icon, size: 18, color: iconColor),
-              ),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.inkFaded,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.ink,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.inkFaded,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                  letterSpacing: -0.4,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.inkFaded,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
 
   // --- 3. PENDING REQUESTS ALERT BANNER ---
-  Widget _buildPendingApprovalBanner(PendingRequestsModel pending) {
+  Widget _buildPendingApprovalBanner(
+    BuildContext context,
+    PendingRequestsModel pending,
+  ) {
     return Container(
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8F2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.pending_actions_rounded,
-              color: AppColors.accentDark,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const DashboardNotificationsScreen(),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
               children: [
-                Text(
-                  '${pending.total} Pending Requests Awaiting Review',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.ink,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.pending_actions_rounded,
+                    color: AppColors.accentDark,
+                    size: 22,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '${pending.mealOffCount} Meal Off & ${pending.guestCount} Guest requests awaiting manager approval',
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color: AppColors.inkFaded,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${pending.total} Pending Requests Awaiting Review',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${pending.mealOffCount} Meal Off & ${pending.guestCount} Guest requests awaiting manager approval',
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 13,
+                  color: AppColors.accentDark,
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildPendingItemsCard(List<PendingItemModel> items) {
+  Widget _buildPendingItemsCard(
+    BuildContext context,
+    List<PendingItemModel> items,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
@@ -1020,74 +1252,97 @@ class _DashboardViewState extends State<_DashboardView> {
         children: [
           for (int i = 0; i < items.length; i++) ...[
             if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: items[i].type == 'guest_meal'
-                          ? AppColors.brandSoft
-                          : const Color(0xFFFDF2F2),
-                      borderRadius: BorderRadius.circular(10),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const DashboardNotificationsScreen(),
                     ),
-                    child: Icon(
-                      items[i].type == 'guest_meal'
-                          ? Icons.person_add_outlined
-                          : Icons.event_busy_outlined,
-                      size: 20,
-                      color: items[i].type == 'guest_meal'
-                          ? AppColors.brandDark
-                          : const Color(0xFFA02626),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          items[i].title,
-                          style: const TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.ink,
-                          ),
+                  );
+                },
+                borderRadius: i == 0
+                    ? const BorderRadius.vertical(top: Radius.circular(18))
+                    : i == items.length - 1
+                        ? const BorderRadius.vertical(bottom: Radius.circular(18))
+                        : BorderRadius.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: items[i].type == 'guest_meal'
+                              ? AppColors.brandSoft
+                              : const Color(0xFFFDF2F2),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          items[i].subtitle,
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.inkFaded,
-                          ),
+                        child: Icon(
+                          items[i].type == 'guest_meal'
+                              ? Icons.person_add_outlined
+                              : Icons.event_busy_outlined,
+                          size: 20,
+                          color: items[i].type == 'guest_meal'
+                              ? AppColors.brandDark
+                              : const Color(0xFFA02626),
                         ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: items[i].type == 'guest_meal'
-                          ? AppColors.brandDark
-                          : const Color(0xFFA02626),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      items[i].status.toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              items[i].title,
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.ink,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              items[i].subtitle,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: AppColors.inkFaded,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: items[i].type == 'guest_meal'
+                              ? AppColors.brandDark
+                              : const Color(0xFFA02626),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          items[i].status.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 11,
+                        color: AppColors.inkFaded,
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ],
@@ -1097,7 +1352,11 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   // --- 4. BAZAR DUTY SCHEDULE LIST CARD ---
-  Widget _buildBazarDutyCard(List<BazarDutyItemModel> duties) {
+  Widget _buildBazarDutyCard(
+    BuildContext context,
+    List<BazarDutyItemModel> duties,
+    ActiveMessModel? activeMess,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
@@ -1108,92 +1367,119 @@ class _DashboardViewState extends State<_DashboardView> {
         children: [
           for (int i = 0; i < duties.length; i++) ...[
             if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: duties[i].isToday
-                          ? const Color(0xFFE6F4EA)
-                          : AppColors.paper,
-                      borderRadius: BorderRadius.circular(10),
-                      border: duties[i].isToday
-                          ? null
-                          : Border.all(color: AppColors.paperLine),
-                    ),
-                    child: Icon(
-                      Icons.shopping_basket_outlined,
-                      size: 20,
-                      color: duties[i].isToday
-                          ? const Color(0xFF0F9F59)
-                          : AppColors.inkSoft,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: activeMess?.currentMonthId != null
+                    ? () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => MessSheetScreen(
+                              messId: activeMess!.id,
+                              monthId: activeMess.currentMonthId!,
+                              initialTab: 0,
+                            ),
+                          ),
+                        )
+                    : null,
+                borderRadius: i == 0
+                    ? const BorderRadius.vertical(top: Radius.circular(18))
+                    : i == duties.length - 1
+                        ? const BorderRadius.vertical(bottom: Radius.circular(18))
+                        : BorderRadius.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: duties[i].isToday
+                              ? const Color(0xFFE6F4EA)
+                              : AppColors.paper,
+                          borderRadius: BorderRadius.circular(10),
+                          border: duties[i].isToday
+                              ? null
+                              : Border.all(color: AppColors.paperLine),
+                        ),
+                        child: Icon(
+                          Icons.shopping_basket_outlined,
+                          size: 20,
+                          color: duties[i].isToday
+                              ? const Color(0xFF0F9F59)
+                              : AppColors.inkSoft,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                Text(
+                                  duties[i].memberName,
+                                  style: const TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                                if (duties[i].isToday) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF0F9F59),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 2),
                             Text(
-                              duties[i].memberName,
+                              '${duties[i].messName} • Day ${duties[i].day}',
                               style: const TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.ink,
+                                fontSize: 11.5,
+                                color: AppColors.inkFaded,
                               ),
                             ),
-                            if (duties[i].isToday) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF0F9F59),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ],
                           ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${duties[i].messName} • Day ${duties[i].day}',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.inkFaded,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: duties[i].isToday
+                              ? const Color(0xFF0F9F59)
+                              : AppColors.paperLine,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          duties[i].dateLabel,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: duties[i].isToday
+                                ? Colors.white
+                                : AppColors.inkSoft,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: duties[i].isToday
-                          ? const Color(0xFF0F9F59)
-                          : AppColors.paperLine,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      duties[i].dateLabel,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: duties[i].isToday
-                            ? Colors.white
-                            : AppColors.inkSoft,
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 11,
+                        color: AppColors.inkFaded,
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ],
@@ -1203,7 +1489,11 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   // --- 5. TODAY'S MEAL SHEET TEASER CARD ---
-  Widget _buildDailyMealSheetCard(List<DailyMemberMealModel> teaser) {
+  Widget _buildDailyMealSheetCard(
+    BuildContext context,
+    List<DailyMemberMealModel> teaser,
+    ActiveMessModel? activeMess,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
@@ -1217,49 +1507,66 @@ class _DashboardViewState extends State<_DashboardView> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.paperLine)),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'MEMBER NAME',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.inkFaded,
-                  ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: activeMess?.currentMonthId != null
+              ? () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => MessSheetScreen(
+                        messId: activeMess!.id,
+                        monthId: activeMess.currentMonthId!,
+                        initialTab: 0,
+                      ),
+                    ),
+                  )
+              : null,
+          borderRadius: BorderRadius.circular(18),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: AppColors.paperLine)),
                 ),
-                Text(
-                  'B  /  L  /  D',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.inkFaded,
-                    letterSpacing: 1,
-                  ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'MEMBER NAME',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.inkFaded,
+                      ),
+                    ),
+                    Text(
+                      'B  /  L  /  D',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.inkFaded,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    Text(
+                      'TOTAL',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.inkFaded,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  'TOTAL',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.inkFaded,
-                  ),
-                ),
+              ),
+              for (var i = 0; i < teaser.length; i++) ...[
+                if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
+                _memberMealRow(teaser[i]),
               ],
-            ),
+            ],
           ),
-          for (var i = 0; i < teaser.length; i++) ...[
-            if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
-            _memberMealRow(teaser[i]),
-          ],
-        ],
+        ),
       ),
     );
   }
