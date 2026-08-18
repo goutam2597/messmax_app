@@ -50,18 +50,47 @@ class MessDrawer extends StatelessWidget {
         ? dashboardState.dashboard
         : null;
     var activeMess = dashboard?.activeMess;
-    final myMesses = dashboard?.myMesses ?? [];
+    var drawerMesses = dashboard?.myMesses != null
+        ? <MyMessModel>[...dashboard!.myMesses]
+        : <MyMessModel>[];
 
-    // Fallback for standalone routes: synthesize activeMess from whatever cubit is available
-    // so the "Green View" card / header doesn't disappear (the bug you reported with screenshot).
-    String? fallbackMessName;
-    if (activeMess == null) {
+    // Fallback: if drawerMesses is empty on standalone routes like MessesScreen, read from MessCubit
+    if (drawerMesses.isEmpty) {
       try {
-        final ms = context.watch<MemberCubit>().state;
-        if (ms is MemberLoaded) {
-          fallbackMessName = ms.response.messName;
+        final ms = context.watch<MessCubit>().state;
+        if (ms is MessListLoaded) {
+          drawerMesses = ms.messes
+              .map(
+                (m) => MyMessModel(
+                  id: m.id,
+                  name: m.name,
+                  slug: m.slug,
+                  code: '#MX-${m.id.toString().padLeft(4, '0')}',
+                  location: m.location,
+                  membersCount: m.membersCount,
+                  role: m.myRole ?? 'owner',
+                  roleLabel: m.myRoleLabel ?? 'Owner',
+                ),
+              )
+              .toList();
         }
       } catch (_) {}
+    }
+
+    // Fallback for standalone routes: synthesize activeMess from whatever cubit is available
+    String? fallbackMessName;
+    if (activeMess == null) {
+      if (drawerMesses.isNotEmpty) {
+        fallbackMessName = drawerMesses.first.name;
+      }
+      if (fallbackMessName == null || fallbackMessName.isEmpty) {
+        try {
+          final ms = context.watch<MemberCubit>().state;
+          if (ms is MemberLoaded) {
+            fallbackMessName = ms.response.messName;
+          }
+        } catch (_) {}
+      }
       if (fallbackMessName == null || fallbackMessName.isEmpty) {
         try {
           final ms = context.watch<MessCubit>().state;
@@ -87,7 +116,7 @@ class MessDrawer extends StatelessWidget {
     final managesAny =
         (user?.isHostelOwner ?? false) ||
         (activeMess?.isManager ?? false) ||
-        myMesses.any((m) => m.isManager);
+        drawerMesses.any((m) => m.isManager);
     final isMemberOnly = !isIndividual && !managesAny;
 
     return Drawer(
@@ -166,7 +195,7 @@ class MessDrawer extends StatelessWidget {
                     context: context,
                   ),
                 ]
-                // --- CASE 2: HOSTEL OWNER / MULTI-MESS MANAGER ---
+                // --- CASE 2: HOSTEL OWNER / MULTI-MESS OWNER ---
                 else if (managesAny) ...[
                   _drawerTile(
                     id: 'dashboard',
@@ -179,8 +208,8 @@ class MessDrawer extends StatelessWidget {
                     id: 'messes',
                     icon: Icons.archive_rounded,
                     title: 'Messes',
-                    subtitle: myMesses.length > 1
-                        ? 'All managed messes (${myMesses.length})'
+                    subtitle: drawerMesses.isNotEmpty
+                        ? 'All managed messes (${drawerMesses.length})'
                         : 'All managed messes',
                     context: context,
                   ),
@@ -199,36 +228,17 @@ class MessDrawer extends StatelessWidget {
                     context: context,
                   ),
 
-                  // If multi-mess owner: show both/all messes so owner can switch or view each mess
-                  if (myMesses.length > 1) ...[
+                  // Messes list: on mess selected, open that specific mess details screen
+                  if (drawerMesses.isNotEmpty) ...[
                     const SizedBox(height: 14),
-                    _buildSectionLabel('YOUR MESSES (${myMesses.length})'),
-                    for (final m in myMesses) ...[
-                      _buildMessSelectTile(
+                    _buildSectionLabel('YOUR MESSES (${drawerMesses.length})'),
+                    for (final m in drawerMesses) ...[
+                      _buildMessDetailTile(
                         context: context,
                         mess: m,
                         isSelected: activeMess?.id == m.id,
                       ),
                     ],
-                  ],
-
-                  if (activeMess != null) ...[
-                    const SizedBox(height: 14),
-                    _buildSectionLabel('CURRENT ACTIVE MESS'),
-                    _drawerTile(
-                      id: 'current_mess',
-                      icon: Icons.grid_view_rounded,
-                      title: activeMess.name,
-                      subtitle: 'Monthly sheet & daily meals',
-                      context: context,
-                    ),
-                    _drawerTile(
-                      id: 'mess_bazar',
-                      icon: Icons.shopping_basket_rounded,
-                      title: 'Bazar Schedule',
-                      subtitle: '${activeMess.name} duty',
-                      context: context,
-                    ),
                   ],
 
                   const SizedBox(height: 14),
@@ -273,35 +283,16 @@ class MessDrawer extends StatelessWidget {
                       context: context,
                     ),
 
-                  if (myMesses.length > 1) ...[
+                  if (drawerMesses.isNotEmpty) ...[
                     const SizedBox(height: 14),
-                    _buildSectionLabel('JOINED MESSES (${myMesses.length})'),
-                    for (final m in myMesses) ...[
-                      _buildMessSelectTile(
+                    _buildSectionLabel('JOINED MESSES (${drawerMesses.length})'),
+                    for (final m in drawerMesses) ...[
+                      _buildMessDetailTile(
                         context: context,
                         mess: m,
                         isSelected: activeMess?.id == m.id,
                       ),
                     ],
-                  ],
-
-                  if (activeMess != null) ...[
-                    const SizedBox(height: 14),
-                    _buildSectionLabel('CURRENT MESS'),
-                    _drawerTile(
-                      id: 'current_mess',
-                      icon: Icons.grid_view_rounded,
-                      title: activeMess.name,
-                      subtitle: 'Monthly sheet & daily meals',
-                      context: context,
-                    ),
-                    _drawerTile(
-                      id: 'mess_bazar',
-                      icon: Icons.shopping_basket_rounded,
-                      title: 'Bazar Schedule',
-                      subtitle: '${activeMess.name} duty',
-                      context: context,
-                    ),
                   ],
 
                   const SizedBox(height: 14),
@@ -338,7 +329,7 @@ class MessDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildMessSelectTile({
+  Widget _buildMessDetailTile({
     required BuildContext context,
     required MyMessModel mess,
     required bool isSelected,
@@ -361,15 +352,11 @@ class MessDrawer extends StatelessWidget {
         child: InkWell(
           onTap: () {
             Navigator.pop(context); // close drawer
-            try {
-              context.read<DashboardCubit>().loadDashboard(messId: mess.id);
-            } catch (_) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => MessDetailScreen(messId: mess.id),
-                ),
-              );
-            }
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MessDetailScreen(messId: mess.id),
+              ),
+            );
           },
           borderRadius: BorderRadius.circular(12),
           child: Padding(
@@ -415,29 +402,11 @@ class MessDrawer extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (isSelected)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE6F4EA),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'ACTIVE',
-                      style: TextStyle(
-                        fontSize: 8.5,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF0F9F59),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  )
-                else
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 16,
-                    color: AppColors.inkFaded,
-                  ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 16,
+                  color: AppColors.inkFaded,
+                ),
               ],
             ),
           ),
@@ -465,12 +434,38 @@ class MessDrawer extends StatelessWidget {
     final activeMess = dashboardState is DashboardLoaded
         ? (dashboardState).dashboard.activeMess
         : null;
-    final myMesses = dashboardState is DashboardLoaded
-        ? (dashboardState).dashboard.myMesses
+    var headerMesses = dashboardState is DashboardLoaded
+        ? dashboardState.dashboard.myMesses
         : <MyMessModel>[];
+
+    if (headerMesses.isEmpty) {
+      try {
+        final ms = context.watch<MessCubit>().state;
+        if (ms is MessListLoaded) {
+          headerMesses = ms.messes
+              .map(
+                (m) => MyMessModel(
+                  id: m.id,
+                  name: m.name,
+                  slug: m.slug,
+                  code: '#MX-${m.id.toString().padLeft(4, '0')}',
+                  location: m.location,
+                  membersCount: m.membersCount,
+                  role: m.myRole ?? 'owner',
+                  roleLabel: m.myRoleLabel ?? 'Owner',
+                ),
+              )
+              .toList();
+        }
+      } catch (_) {}
+    }
 
     String headerMessName = activeMess?.name ?? '';
     String headerMessCode = activeMess?.code ?? '';
+    if (headerMessName.isEmpty && headerMesses.isNotEmpty) {
+      headerMessName = headerMesses.first.name;
+      headerMessCode = headerMesses.first.code;
+    }
     if (headerMessName.isEmpty) {
       try {
         final memberCubitState = context.watch<MemberCubit>().state;
@@ -515,7 +510,7 @@ class MessDrawer extends StatelessWidget {
         } catch (_) {}
       }
     }
-    // Final fallback — never hide the header completely (that's the bug you reported)
+    // Final fallback — never hide the header completely
     if (headerMessName.isEmpty) headerMessName = 'MessMax';
     if (headerMessCode.isEmpty) headerMessCode = '—';
     final messName = headerMessName;
@@ -524,7 +519,7 @@ class MessDrawer extends StatelessWidget {
         ? 'MY MESS'
         : (isMemberOnly ? 'MEMBER' : 'CONSOLE');
 
-    final isMultiMess = !isIndividual && myMesses.length > 1;
+    final isMultiMess = !isIndividual && headerMesses.length > 1;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -589,7 +584,7 @@ class MessDrawer extends StatelessWidget {
               ),
               if (isMultiMess)
                 PopupMenuButton<MyMessModel>(
-                  tooltip: 'Switch Mess (${myMesses.length})',
+                  tooltip: 'Switch Mess (${headerMesses.length})',
                   color: AppColors.paperRaised,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -611,7 +606,7 @@ class MessDrawer extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${myMesses.length}',
+                          '${headerMesses.length}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 11,
@@ -632,9 +627,15 @@ class MessDrawer extends StatelessWidget {
                       context.read<DashboardCubit>().loadDashboard(
                             messId: selected.id,
                           );
-                    } catch (_) {}
+                    } catch (_) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => MessDetailScreen(messId: selected.id),
+                        ),
+                      );
+                    }
                   },
-                  itemBuilder: (ctx) => myMesses.map((m) {
+                  itemBuilder: (ctx) => headerMesses.map((m) {
                     final isCurrent = m.id == activeMess?.id;
                     return PopupMenuItem<MyMessModel>(
                       value: m,
