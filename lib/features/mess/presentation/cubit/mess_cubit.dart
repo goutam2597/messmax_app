@@ -4,14 +4,18 @@ import 'mess_state.dart';
 
 class MessCubit extends Cubit<MessState> {
   final MessRepository _repo;
-  MessCubit({MessRepository? repo}) : _repo = repo ?? MessRepository(), super(MessInitial());
+  MessCubit({MessRepository? repo})
+    : _repo = repo ?? MessRepository(),
+      super(MessInitial());
 
   Future<void> loadMesses() async {
     emit(MessLoading());
     try {
       final messes = await _repo.fetchMesses();
       // fetch canCreate/isIndividual from last detail? use repo directly
-      emit(MessListLoaded(messes: messes, canCreate: true, isIndividual: false));
+      emit(
+        MessListLoaded(messes: messes, canCreate: true, isIndividual: false),
+      );
     } catch (e) {
       emit(MessError(e.toString().replaceAll('Exception: ', '')));
     }
@@ -45,8 +49,16 @@ class MessCubit extends Cubit<MessState> {
       return true;
     } catch (e) {
       final msg = e.toString().replaceAll('Exception: ', '');
-      if (state is MessDetailLoaded) emit(MessDetailLoaded((state as MessDetailLoaded).detail, message: 'Error: $msg'));
-      else emit(MessError(msg));
+      if (state is MessDetailLoaded) {
+        emit(
+          MessDetailLoaded(
+            (state as MessDetailLoaded).detail,
+            message: 'Error: $msg',
+          ),
+        );
+      } else {
+        emit(MessError(msg));
+      }
       return false;
     }
   }

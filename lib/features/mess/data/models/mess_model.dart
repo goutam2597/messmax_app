@@ -206,6 +206,74 @@ class MessDetailModel extends Equatable {
     );
   }
 
+  List<MemberSettlementModel> get memberSettlements {
+    if (sheetSummary == null) return [];
+    final summaryList = sheetSummary!['summary'] as List<dynamic>?;
+    if (summaryList == null) return [];
+    return summaryList
+        .map((e) => MemberSettlementModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  String get currentMonthLabel {
+    if (sheetSummary == null) return '';
+    final m = sheetSummary!['month'] as Map<String, dynamic>?;
+    return m?['label'] as String? ?? '';
+  }
+
   @override
   List<Object?> get props => [mess, myRole, canManage, members, months];
+}
+
+class MemberSettlementModel extends Equatable {
+  final int memberId;
+  final String name;
+  final String email;
+  final String color;
+  final String role;
+  final String defaultDisplay;
+  final double meals;
+  final double spend;
+  final double given;
+  final double balance;
+
+  const MemberSettlementModel({
+    required this.memberId,
+    required this.name,
+    this.email = '',
+    this.color = '#3b82f6',
+    this.role = 'member',
+    this.defaultDisplay = '',
+    this.meals = 0.0,
+    this.spend = 0.0,
+    this.given = 0.0,
+    this.balance = 0.0,
+  });
+
+  factory MemberSettlementModel.fromJson(Map<String, dynamic> json) {
+    final memberObj = json['member'] is Map<String, dynamic>
+        ? json['member'] as Map<String, dynamic>
+        : json;
+
+    return MemberSettlementModel(
+      memberId: (memberObj['id'] ?? json['member_id'] as num?)?.toInt() ?? 0,
+      name: memberObj['name'] as String? ?? json['name'] as String? ?? '',
+      email: memberObj['email'] as String? ?? json['email'] as String? ?? '',
+      color: memberObj['color'] as String? ?? json['color'] as String? ?? '#3b82f6',
+      role: memberObj['member_role'] as String? ??
+          memberObj['role'] as String? ??
+          json['role'] as String? ??
+          'member',
+      defaultDisplay: memberObj['default_display'] as String? ??
+          json['default_display'] as String? ??
+          '',
+      meals: (json['meals'] as num?)?.toDouble() ?? 0.0,
+      spend: (json['spend'] as num?)?.toDouble() ?? 0.0,
+      given: (json['given'] as num?)?.toDouble() ?? 0.0,
+      balance: (json['balance'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  @override
+  List<Object?> get props => [memberId, name, meals, spend, given, balance];
 }

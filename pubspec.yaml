@@ -27,14 +27,14 @@ dependencies:
   flutter_secure_storage: ^11.0.0
 
   # Firebase — Google sign-in (same project pushtest-kd as web)
-  firebase_core: ^4.3.0
-  firebase_auth: ^6.1.2
+  firebase_core: ^4.13.0
+  firebase_auth: ^6.5.7
 
   # SVG icons
   flutter_svg: ^2.3.0
 
   # Image picker
-  image_picker: ^1.1.2
+  image_picker: ^1.2.3
 
   # Carousel slider
   carousel_slider: ^5.1.2
@@ -44,6 +44,7 @@ dependencies:
 
   # Fullscreen zoomable photo viewer
   photo_view: ^0.15.0
+  google_sign_in: ^7.2.0
 
 dev_dependencies:
   flutter_test:

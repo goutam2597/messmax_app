@@ -443,6 +443,11 @@ class MessRepository {
     }
   }
 
+  Future<void> removeGuestMeal(int messId, int monthId, int guestId) async {
+    final res = await _dio.delete('${ApiEndpoints.messes}/$messId/months/$monthId/guest-meals/$guestId');
+    if ((res.data as Map)['success'] != true) throw Exception((res.data as Map)['message'] ?? 'Failed');
+  }
+
   Future<void> storeInvite(
     int messId,
     String email,

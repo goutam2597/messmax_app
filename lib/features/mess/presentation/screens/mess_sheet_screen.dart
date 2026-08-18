@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../data/repositories/mess_repository.dart';
 import '../cubit/mess_cubit.dart';
 import '../cubit/mess_state.dart';
-import '../../data/repositories/mess_repository.dart';
 
 class MessSheetScreen extends StatelessWidget {
   final int messId;
@@ -45,9 +45,43 @@ class _SheetView extends StatefulWidget {
 
 class _SheetViewState extends State<_SheetView> {
   final _repo = MessRepository();
+  bool _expandPassedDays = false;
 
   void _refresh() =>
       context.read<MessCubit>().loadSheet(widget.messId, widget.monthId);
+  double _toD(dynamic v) {
+    if (v == null) return 0;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? 0;
+    return 0;
+  }
+
+  int _toI(dynamic v) {
+    if (v == null) return 0;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v) ?? 0;
+    return 0;
+  }
+
+  // Keys from PHP json are always strings ("15","9") — handle both
+  dynamic _byDay(Map? m, int day) {
+    if (m == null) return null;
+    if (m.containsKey(day)) return m[day];
+    final s = day.toString();
+    if (m.containsKey(s)) return m[s];
+    return null;
+  }
+
+  Map _asMap(dynamic v) => v is Map ? v : <dynamic, dynamic>{};
+
+  Color _hex(String h) {
+    try {
+      final v = h.replaceAll('#', '');
+      return Color(int.parse('FF$v', radix: 16));
+    } catch (_) {
+      return AppColors.brandDark;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +90,7 @@ class _SheetViewState extends State<_SheetView> {
       appBar: AppBar(
         backgroundColor: AppColors.paperRaised,
         elevation: 0,
+        scrolledUnderElevation: 0.5,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -70,30 +105,37 @@ class _SheetViewState extends State<_SheetView> {
               ),
             ),
             const Text(
-              '31-day ledger • role-gated actions',
+              'Daily Entries — Ledger Matrix',
               style: TextStyle(fontSize: 11, color: AppColors.inkFaded),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.ink),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppColors.ink,
+              size: 20,
+            ),
             onPressed: _refresh,
           ),
         ],
       ),
       body: BlocConsumer<MessCubit, MessState>(
-        listener: (context, state) {
-          if (state is MessSheetLoaded && state.message != null) {
+        listener: (c, s) {
+          if (s is MessSheetLoaded && s.message != null) {
             ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message!)));
+              c,
+            ).showSnackBar(SnackBar(content: Text(s.message!)));
           }
         },
         builder: (context, state) {
           if (state is MessLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: AppColors.brandDark),
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.brandDark,
+              ),
             );
           }
           if (state is MessError) {
@@ -105,512 +147,1265 @@ class _SheetViewState extends State<_SheetView> {
                   children: [
                     const Icon(
                       Icons.error_outline_rounded,
-                      size: 42,
+                      size: 40,
                       color: AppColors.danger,
                     ),
                     const SizedBox(height: 12),
                     Text(
                       state.message,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppColors.inkFaded),
+                      style: const TextStyle(
+                        color: AppColors.inkFaded,
+                        fontSize: 13,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    FilledButton(
+                    OutlinedButton.icon(
                       onPressed: _refresh,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.brandDark,
-                      ),
-                      child: const Text('Try Again'),
+                      icon: const Icon(Icons.refresh_rounded, size: 15),
+                      label: const Text('Try Again'),
                     ),
                   ],
                 ),
               ),
             );
           }
-          if (state is MessSheetLoaded) {
-            final s = state.sheet;
-            double toDouble(dynamic v) {
-              if (v == null) return 0;
-              if (v is num) return v.toDouble();
-              if (v is String) return double.tryParse(v) ?? 0;
-              return 0;
-            }
+          if (state is! MessSheetLoaded) return const SizedBox.shrink();
+          final s = state.sheet;
+          final canEdit = s['canEdit'] as bool? ?? false;
+          final canManage = s['canManage'] as bool? ?? false;
+          final canAddBazar = s['canAddBazar'] as bool? ?? false;
+          final members = (s['members'] as List<dynamic>? ?? []);
+          final summary = (s['summary'] as List<dynamic>? ?? []);
+          final deposits = (s['deposits'] as List<dynamic>? ?? []);
+          final monthRaw = _asMap(s['month']);
+          final days = _toI(monthRaw['days']) > 0 ? _toI(monthRaw['days']) : 31;
+          final startDay = _toI(monthRaw['start_day']) > 0
+              ? _toI(monthRaw['start_day'])
+              : 1;
+          final passedDays = _toI(s['passedDays']) > 0
+              ? _toI(s['passedDays'])
+              : _toI(monthRaw['passed_days']);
 
-            int toInt(dynamic v) {
-              if (v == null) return 0;
-              if (v is num) return v.toInt();
-              if (v is String) return int.tryParse(v) ?? 0;
-              return 0;
-            }
+          final mealRate = _toD(s['mealRate']);
+          final totalGiven = _toD(s['totalGiven']);
+          final restMoney = _toD(s['restMoney']);
+          final totalMeals = _toD(s['totalMeals']);
+          final extraCost = _toD(s['extraCost'] ?? monthRaw['extra_cost']);
 
-            final canEdit = s['canEdit'] as bool? ?? false;
-            final canManage = s['canManage'] as bool? ?? false;
-            final canAddBazar = s['canAddBazar'] as bool? ?? false;
-            final members = (s['members'] as List<dynamic>? ?? []);
-            final summary = s['summary'] as List<dynamic>? ?? [];
-            final totalBazar = toDouble(s['totalBazar']);
-            final totalMeals = toDouble(s['totalMeals']);
-            final mealRate = toDouble(s['mealRate']);
-            final restMoney = toDouble(s['restMoney']);
-            final days = toInt(s['month']?['days']);
-            final passedDays = toInt(s['passedDays']);
-            final meals = s['meals'] as Map<String, dynamic>? ?? {};
-            final rowTotals = s['rowTotals'] as Map<String, dynamic>? ?? {};
-            final deposits = s['deposits'] as List<dynamic>? ?? [];
+          return RefreshIndicator(
+            color: AppColors.brandDark,
+            onRefresh: () async => _refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1) STAT CARDS — 2x2 like web (web has 5, we show 4; extra cost inside member area note)
+                  _statRow(
+                    mealRate: mealRate,
+                    totalGiven: totalGiven,
+                    restMoney: restMoney,
+                    totalMeals: totalMeals,
+                  ),
 
-            return RefreshIndicator(
-              color: AppColors.brandDark,
-              onRefresh: () async => _refresh(),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // stat pills
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _pill('Meals', '$totalMeals', AppColors.brandDark),
-                          const SizedBox(width: 8),
-                          _pill(
-                            'Bazar',
-                            '৳${totalBazar.toStringAsFixed(0)}',
-                            AppColors.emerald,
-                          ),
-                          const SizedBox(width: 8),
-                          _pill(
-                            'Rate',
-                            '৳${mealRate.toStringAsFixed(2)}',
-                            AppColors.amber,
-                          ),
-                          const SizedBox(width: 8),
-                          _pill(
-                            'Rest',
-                            '৳${restMoney.toStringAsFixed(0)}',
-                            restMoney >= 0
-                                ? AppColors.emerald
-                                : AppColors.danger,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 14),
+                  const SizedBox(height: 18),
 
-                    // role-gated action bar — wrap to avoid infinite-width inside SingleChildScrollView
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        if (canManage) ...[
-                          FilledButton.icon(
-                            onPressed: () => _autofill(context),
-                            icon: const Icon(
-                              Icons.auto_fix_high_rounded,
-                              size: 16,
-                            ),
-                            label: const Text('Autofill Defaults'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.brandDark,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                          ),
-                          OutlinedButton.icon(
-                            onPressed: () => _addNextDay(context),
-                            icon: const Icon(Icons.add_rounded, size: 16),
-                            label: const Text('Next Day'),
-                          ),
-                          OutlinedButton.icon(
-                            onPressed: () =>
-                                _showDepositSheet(context, members),
-                            icon: const Icon(
-                              Icons.account_balance_wallet_outlined,
-                              size: 16,
-                            ),
-                            label: const Text('Deposit'),
-                          ),
-                        ],
-                        if (!canManage) ...[
-                          FilledButton.icon(
-                            onPressed: () =>
-                                _showMealOffRequest(context, passedDays),
-                            icon: const Icon(
-                              Icons.event_busy_rounded,
-                              size: 16,
-                            ),
-                            label: const Text('Request Meal Off'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.brandDark,
-                            ),
-                          ),
-                          OutlinedButton.icon(
-                            onPressed: () =>
-                                _showGuestRequest(context, passedDays),
-                            icon: const Icon(
-                              Icons.person_add_rounded,
-                              size: 16,
-                            ),
-                            label: const Text('Guest Meal'),
-                          ),
-                        ],
-                        if (canManage)
-                          OutlinedButton.icon(
-                            onPressed: () => _showGuestDirectSheet(
-                              context,
-                              members,
-                              passedDays,
-                            ),
-                            icon: const Icon(
-                              Icons.person_add_alt_1_rounded,
-                              size: 16,
-                            ),
-                            label: const Text('Add Guest'),
-                          ),
-                        if (canAddBazar)
-                          OutlinedButton.icon(
-                            onPressed: () =>
-                                _showBazarSheet(context, passedDays),
-                            icon: const Icon(
-                              Icons.shopping_basket_rounded,
-                              size: 16,
-                            ),
-                            label: const Text('Bazar'),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
+                  // 2) MEMBER SUMMARY — each member card with edit button (manager only)
+                  _memberSummary(
+                    members: members,
+                    summary: summary,
+                    canManage: canManage,
+                    extraCost: extraCost,
+                    sheet: s,
+                  ),
 
-                    // pending requests (manager sees approve/deny)
-                    if (canManage)
-                      _PendingSection(
-                        messId: widget.messId,
-                        monthId: widget.monthId,
-                        sheet: s,
-                        onHandled: _refresh,
-                      ),
-
-                    // 31-day grid (read for members, editable via tap for managers)
-                    const SizedBox(height: 14),
-                    const Text(
-                      'DAILY MEALS GRID',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.inkFaded,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.paperRaised,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.paperLine),
-                      ),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          headingRowColor: WidgetStateProperty.all(
-                            AppColors.paper,
-                          ),
-                          columns: [
-                            const DataColumn(
-                              label: Text(
-                                'Day',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                            for (final m in members)
-                              DataColumn(
-                                label: Text(
-                                  (m['name'] as String? ?? 'M')
-                                      .split(' ')
-                                      .first,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ),
-                            const DataColumn(
-                              label: Text(
-                                'Total',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows: _buildMealRows(
-                            days,
-                            members,
-                            meals,
-                            rowTotals,
-                            passedDays,
-                            canEdit,
-                            context,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // settlement summary
-                    const Text(
-                      'SETTLEMENT',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.inkFaded,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.paperRaised,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.paperLine),
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(color: AppColors.paperLine),
-                              ),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'MEMBER',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.inkFaded,
-                                  ),
-                                ),
-                                Text(
-                                  'MEALS / SPEND / BALANCE',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.inkFaded,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          for (final row in summary)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 10,
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      (row['member']?['name'] ??
-                                              row['member_name'] ??
-                                              'Member')
-                                          .toString(),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    '${toDouble(row['meals']).toStringAsFixed(1)} • ৳${toDouble(row['spend']).toStringAsFixed(0)} • ',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.inkFaded,
-                                    ),
-                                  ),
-                                  Text(
-                                    '৳${toDouble(row['balance']).toStringAsFixed(0)}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w900,
-                                      color: toDouble(row['balance']) >= 0
-                                          ? AppColors.emerald
-                                          : AppColors.danger,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // deposits
-                    if (deposits.isNotEmpty) ...[
-                      const Text(
-                        'DEPOSITS',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.inkFaded,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.paperRaised,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.paperLine),
-                        ),
-                        child: Column(
-                          children: [
-                            for (final dep in deposits)
-                              ListTile(
-                                dense: true,
-                                title: Text(
-                                  '৳${toDouble(dep['amount']).toStringAsFixed(0)} — ${dep['member']?['name'] ?? ''}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  '${dep['note'] as String? ?? ''} • ${dep['deposit_date']?.toString() ?? ''}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.inkFaded,
-                                  ),
-                                ),
-                                trailing: canManage
-                                    ? IconButton(
-                                        icon: const Icon(
-                                          Icons.close_rounded,
-                                          size: 18,
-                                          color: AppColors.inkFaded,
-                                        ),
-                                        onPressed: () async {
-                                          await _repo.deleteDeposit(
-                                            widget.messId,
-                                            widget.monthId,
-                                            dep['id'] as int,
-                                          );
-                                          _refresh();
-                                        },
-                                      )
-                                    : null,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  // 3) DEPOSIT CHITS
+                  if (deposits.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _depositChits(deposits, canEdit),
                   ],
-                ),
+
+                  const SizedBox(height: 18),
+
+                  // 4) DAILY ENTRIES header — hidden start notice + duplicate/add-guest buttons
+                  _dailyEntriesHeader(
+                    sheet: s,
+                    canEdit: canEdit,
+                    canManage: canManage,
+                    startDay: startDay,
+                    passedDays: passedDays,
+                    members: members,
+                  ),
+
+                  // 5) Pending manager approvals
+                  if (canManage)
+                    _PendingSection(
+                      messId: widget.messId,
+                      monthId: widget.monthId,
+                      sheet: s,
+                      onHandled: _refresh,
+                    ),
+
+                  const SizedBox(height: 10),
+
+                  // 6) Collapsed passed-days cards — manager can Edit, member sees lock
+                  _dailyCards(
+                    context: context,
+                    startDay: startDay,
+                    passedDays: passedDays,
+                    days: days,
+                    sheet: s,
+                    canEdit: canEdit,
+                    canAddBazar: canAddBazar,
+                    members: members,
+                  ),
+                ],
               ),
-            );
-          }
-          return const SizedBox.shrink();
+            ),
+          );
         },
       ),
     );
   }
 
-  List<DataRow> _buildMealRows(
-    int days,
-    List<dynamic> members,
-    Map<String, dynamic> meals,
-    Map<String, dynamic> rowTotals,
-    int passedDays,
-    bool canEdit,
-    BuildContext context,
-  ) {
-    return [
-      for (var d = 1; d <= days; d++)
-        DataRow(
-          cells: [
-            DataCell(
+  Widget _statRow({
+    required double mealRate,
+    required double totalGiven,
+    required double restMoney,
+    required double totalMeals,
+  }) {
+    Widget card(String label, String value, String sub, Color color) =>
+        Container(
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(
+            color: AppColors.paperRaised,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.paperLine),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                '$d',
-                style: TextStyle(
-                  fontWeight: d == passedDays
-                      ? FontWeight.w900
-                      : FontWeight.w600,
-                  color: d == passedDays ? AppColors.emerald : AppColors.ink,
+                label,
+                style: const TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.inkFaded,
+                  letterSpacing: 0.6,
                 ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                sub,
+                style: const TextStyle(fontSize: 10, color: AppColors.inkFaded),
+              ),
+            ],
+          ),
+        );
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: card(
+                'MEAL RATE',
+                '${mealRate.toStringAsFixed(2)} ৳',
+                'SUM(Bazar)/SUM(Meals)',
+                AppColors.ink,
               ),
             ),
-            for (final m in members)
-              DataCell(
-                Text(
-                  _mealCell(meals, m['id'], d),
-                  style: const TextStyle(fontSize: 12),
-                ),
-                onTap: canEdit ? () => _editMealCell(context, m, d) : null,
-              ),
-            DataCell(
-              Text(
-                (rowTotals['$d'] ?? 0).toString(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 12,
-                ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: card(
+                'TOTAL MONEY',
+                '${totalGiven.toStringAsFixed(0)} ৳',
+                'SUM(Given)',
+                AppColors.ink,
               ),
             ),
           ],
         ),
-    ];
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: card(
+                'REST MONEY',
+                '${restMoney.toStringAsFixed(0)} ৳',
+                'Given − Bazar',
+                restMoney >= 0 ? AppColors.emerald : AppColors.danger,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: card(
+                'TOTAL MEALS',
+                totalMeals % 1 == 0
+                    ? totalMeals.toInt().toString()
+                    : totalMeals.toStringAsFixed(1),
+                'Σ meals (passed)',
+                AppColors.ink,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
-  String _mealCell(Map<String, dynamic> meals, dynamic memberId, int day) {
-    final byMember =
-        meals['$memberId'] ?? meals[memberId] ?? meals[memberId.toString()];
-    if (byMember is Map) {
-      final v = byMember['$day'] ?? byMember[day] ?? byMember[day.toString()];
-      if (v != null) return v.toString();
+  Widget _memberSummary({
+    required List<dynamic> members,
+    required List<dynamic> summary,
+    required bool canManage,
+    required double extraCost,
+    required Map sheet,
+  }) {
+    final memberById = {for (final m in members) (m['id'].toString()): m};
+    String fmtBld(dynamic v) {
+      if (v == null) return '—';
+      final d = _toD(v);
+      if (d == 0) return 'OFF';
+      return d % 1 == 0
+          ? d.toInt().toString()
+          : d.toStringAsFixed(2).replaceAll(RegExp(r'\.00$'), '');
     }
-    return '—';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'MEMBER SUMMARY — SPEND / GIVEN / REST',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkFaded,
+                letterSpacing: 0.6,
+              ),
+            ),
+            if (canManage)
+              InkWell(
+                onTap: () => _showAddDepositModal(members),
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandDark,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    '+ Add deposit',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.paperRaised,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.paperLine),
+          ),
+          child: Column(
+            children: [
+              for (int i = 0; i < summary.length; i++) ...[
+                Builder(
+                  builder: (_) {
+                    final row = summary[i] as Map;
+                    final mm = row['member'] is Map
+                        ? row['member'] as Map
+                        : row;
+                    final idStr = (mm['id'] ?? row['member_id'] ?? '')
+                        .toString();
+                    final memberRaw = memberById[idStr] ?? mm;
+                    final name = (memberRaw['name'] ?? mm['name'] ?? 'Member')
+                        .toString();
+                    final colorHex =
+                        (memberRaw['color'] ?? mm['color'] ?? '#3b82f6')
+                            .toString();
+                    final role =
+                        (memberRaw['member_role'] ??
+                                mm['member_role'] ??
+                                mm['role'] ??
+                                'member')
+                            .toString();
+                    final hasBld =
+                        memberRaw['default_breakfast'] != null ||
+                        memberRaw['default_lunch'] != null ||
+                        memberRaw['default_dinner'] != null;
+                    final meals = _toD(row['meals']);
+                    final extraShare = members.isEmpty
+                        ? 0
+                        : extraCost / members.length;
+                    final spend = _toD(row['spend']);
+                    final given = _toD(row['given']);
+                    final balance = _toD(row['balance']);
+                    final isPositive = balance >= 0;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        border: i == 0
+                            ? null
+                            : const Border(
+                                top: BorderSide(color: AppColors.paperLine),
+                              ),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundColor: _hex(colorHex),
+                            child: Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : 'M',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 9),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 12.5,
+                                          color: AppColors.ink,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 1,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: role == 'manager'
+                                            ? AppColors.brandSoft
+                                            : AppColors.paper,
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: role == 'manager'
+                                              ? AppColors.brandDark.withValues(
+                                                  alpha: 0.15,
+                                                )
+                                              : AppColors.paperLine,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        role.toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w800,
+                                          color: role == 'manager'
+                                              ? AppColors.brandDark
+                                              : AppColors.inkFaded,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                // web: Default B·L·D line + Meals | mealSpend | extra | SPEND | GIVEN | REST
+                                Wrap(
+                                  spacing: 8,
+                                  children: [
+                                    if (hasBld)
+                                      Text(
+                                        '${fmtBld(memberRaw['default_breakfast'])} · ${fmtBld(memberRaw['default_lunch'])} · ${fmtBld(memberRaw['default_dinner'])}',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w600,
+                                          color:
+                                              (fmtBld(
+                                                        memberRaw['default_breakfast'],
+                                                      ) ==
+                                                      'OFF' ||
+                                                  fmtBld(
+                                                        memberRaw['default_lunch'],
+                                                      ) ==
+                                                      'OFF' ||
+                                                  fmtBld(
+                                                        memberRaw['default_dinner'],
+                                                      ) ==
+                                                      'OFF')
+                                              ? AppColors.danger
+                                              : AppColors.inkFaded,
+                                        ),
+                                      ),
+                                    Text(
+                                      '${meals % 1 == 0 ? meals.toInt() : meals.toStringAsFixed(1)} meals',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.inkSoft,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Spend ${spend.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.ink,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Extra ${extraShare.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.inkFaded,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Given ${given.toStringAsFixed(0)} ৳',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.emerald,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${isPositive ? '+' : ''}${balance.toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w900,
+                                        color: isPositive
+                                            ? AppColors.emerald
+                                            : AppColors.danger,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          if (canManage)
+                            InkWell(
+                              onTap: () => _showEditMemberModal(memberRaw),
+                              borderRadius: BorderRadius.circular(7),
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  borderRadius: BorderRadius.circular(7),
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.edit_outlined,
+                                  size: 14,
+                                  color: AppColors.inkSoft,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget _pill(String label, String value, Color color) {
+  Widget _depositChits(List<dynamic> deposits, bool canEdit) {
+    double totalDeposits = 0;
+    for (final d in deposits) {
+      totalDeposits += _toD(d['amount']);
+    }
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        color: AppColors.paper,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.paperLine),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 16,
+                color: AppColors.brandDark,
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                'DEPOSIT CHITS',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.ink,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.emeraldSoft,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: AppColors.emerald.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  'Total: ৳${totalDeposits.toStringAsFixed(0)}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.emerald,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final d in deposits)
+                Container(
+                  padding: const EdgeInsets.fromLTRB(8, 5, 6, 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.paperRaised,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppColors.emerald.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 10,
+                        backgroundColor: _hex(
+                          (d['member']?['color'] ?? '#3b82f6').toString(),
+                        ),
+                        child: Text(
+                          ((d['member']?['name'] ?? 'M')
+                                  .toString()
+                                  .isNotEmpty
+                              ? (d['member']?['name'] ?? 'M')
+                                    .toString()[0]
+                                    .toUpperCase()
+                              : 'M'),
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        (d['member']?['name'] ?? 'Member').toString(),
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.emeraldSoft,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          '৳${_toD(d['amount']).toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.emerald,
+                          ),
+                        ),
+                      ),
+                      if (canEdit && d['id'] != null) ...[
+                        const SizedBox(width: 4),
+                        InkWell(
+                          onTap: () => _confirmDeleteDeposit(d['id'] as int),
+                          borderRadius: BorderRadius.circular(10),
+                          child: const Padding(
+                            padding: EdgeInsets.all(2),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 15,
+                              color: AppColors.inkFaded,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteDeposit(int depositId) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Delete deposit?'),
+        content: const Text('This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _repo.deleteDeposit(
+        widget.messId,
+        widget.monthId,
+        depositId,
+      );
+      _refresh();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Delete failed: $e')),
+        );
+      }
+    }
+  }
+
+  Widget _dailyEntriesHeader({
+    required Map sheet,
+    required bool canEdit,
+    required bool canManage,
+    required int startDay,
+    required int passedDays,
+    required List<dynamic> members,
+  }) {
+    final monthRaw = _asMap(sheet['month']);
+    final label = (monthRaw['label'] ?? '').toString();
+    final cycleLabel = (monthRaw['cycle_label'] ?? label).toString();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                'DAILY ENTRIES — $cycleLabel',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.ink,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (canManage)
+              OutlinedButton.icon(
+                onPressed: () async {
+                  try {
+                    await _repo.duplicateMonth(widget.messId, widget.monthId);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Next month duplicated')),
+                      );
+                    } 
+                    _refresh();
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Duplicate failed: $e')),
+                      );
+                    }
+                  }
+                },
+                icon: const Icon(Icons.file_copy_outlined, size: 14),
+                label: const Text(
+                  'Duplicate',
+                  style: TextStyle(fontSize: 11.5),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  minimumSize: const Size(0, 30),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+          ],
+        ),
+        if (startDay > 1) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.paperRaised,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.paperLine),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline_rounded,
+                  size: 14,
+                  color: AppColors.inkFaded,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Showing from day $startDay — ${startDay - 1} day${startDay > 2 ? 's' : ''} before start hidden.',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.inkSoft,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: 10),
+        // Role-gated buttons row — exactly like web
+        Row(
+          children: [
+            if (!canEdit) ...[
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => _showMealOffModal(sheet),
+                  icon: const Icon(Icons.event_busy_rounded, size: 16),
+                  label: const Text(
+                    'Request meal off',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.ink,
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => _showGuestRequestModal(sheet),
+                  icon: const Icon(Icons.person_add_rounded, size: 16),
+                  label: const Text(
+                    'Request guest',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.brandDark,
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                  ),
+                ),
+              ),
+            ] else ...[
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () =>
+                      _showAddGuestModal(members, passedDays, sheet),
+                  icon: const Icon(Icons.person_add_alt_1_rounded, size: 16),
+                  label: const Text(
+                    'Add guest meal',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.ink,
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _dailyCards({
+    required BuildContext context,
+    required int startDay,
+    required int passedDays,
+    required int days,
+    required Map sheet,
+    required bool canEdit,
+    required bool canAddBazar,
+    required List<dynamic> members,
+  }) {
+    final passedList = <int>[for (int d = startDay; d < passedDays; d++) d];
+    final todayDay = passedDays > 0 ? passedDays : startDay;
+    // All remaining days till 31 — no Add button needed
+    final futureDays = <int>[for (int d = passedDays + 1; d <= days; d++) d];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (passedList.isNotEmpty) ...[
+          Material(
+            color: AppColors.paperRaised,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: AppColors.paperLine),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
+                listTileTheme: const ListTileThemeData(
+                  tileColor: Colors.transparent,
+                  selectedTileColor: Colors.transparent,
+                ),
+              ),
+              child: ExpansionTile(
+                initiallyExpanded: _expandPassedDays,
+                onExpansionChanged: (v) =>
+                    setState(() => _expandPassedDays = v),
+                tilePadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 2,
+                ),
+                title: Text(
+                  'Passed · $startDay – ${passedDays - 1}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
+                ),
+                subtitle: Text(
+                  '${passedList.length} days · tap to expand',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.inkFaded,
+                  ),
+                ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                    child: Column(
+                      children: [
+                        for (final day in passedList)
+                          _dayCard(
+                            day: day,
+                            sheet: sheet,
+                            canEdit: canEdit,
+                            canAddBazar: canAddBazar,
+                            members: members,
+                            isToday: false,
+                            isPast: true,
+                            isFuture: false,
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        // Today's card (always)
+        _dayCard(
+          day: todayDay,
+          sheet: sheet,
+          canEdit: canEdit,
+          canAddBazar: canAddBazar,
+          members: members,
+          isToday: true,
+          isPast: false,
+          isFuture: false,
+        ),
+        // Future manually-added cards
+        for (final day in futureDays) ...[
+          const SizedBox(height: 12),
+          _dayCard(
+            day: day,
+            sheet: sheet,
+            canEdit: canEdit,
+            canAddBazar: canAddBazar,
+            members: members,
+            isToday: false,
+            isPast: false,
+            isFuture: true,
+          ),
+        ],
+        const SizedBox(height: 14),
+        // No Add next day — sheet renders all days till 31 (manager edits any day via Edit)
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            color: AppColors.paperRaised,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.paperLine),
+          ),
+          child: const Text(
+            'Each day has an Edit — change meals and bazar items together in one modal. Meals default from member settings · Bazar = Σ qty×price',
+            style: TextStyle(fontSize: 10.5, color: AppColors.inkFaded),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _dayCard({
+    required int day,
+    required Map sheet,
+    required bool canEdit,
+    required bool canAddBazar,
+    required List<dynamic> members,
+    required bool isToday,
+    required bool isPast,
+    required bool isFuture,
+  }) {
+    final monthRaw = _asMap(sheet['month']);
+    final year = _toI(monthRaw['year']) > 0
+        ? _toI(monthRaw['year'])
+        : DateTime.now().year;
+    final monthNum = _toI(monthRaw['month']) > 0
+        ? _toI(monthRaw['month'])
+        : DateTime.now().month;
+    DateTime date;
+    try {
+      date = DateTime(year, monthNum, day);
+    } catch (_) {
+      date = DateTime.now();
+    }
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final dateStr =
+        '${weekDays[date.weekday - 1]}, $day ${monthNames[date.month - 1]}';
+
+    final bazarTotal = _toD(
+      _byDay(_asMap(sheet['bazarTotalsByDay']), day) ??
+          _byDay(_asMap(sheet['bazars']), day),
+    );
+    final rawItems = _byDay(_asMap(sheet['bazarItemsByDay']), day);
+    final List<dynamic> items = rawItems is List ? rawItems : <dynamic>[];
+    final rawReceipts = _byDay(_asMap(sheet['bazarReceiptsMulti']), day);
+    final List<dynamic> receipts = rawReceipts is List
+        ? rawReceipts
+        : <dynamic>[];
+
+    final mealsMap = _asMap(sheet['meals']);
+    final mealsBMap = _asMap(sheet['mealsB']);
+    final mealsLMap = _asMap(sheet['mealsL']);
+    final mealsDMap = _asMap(sheet['mealsD']);
+    final dayTotal = _toD(_byDay(_asMap(sheet['rowTotals']), day));
+    final guestList = (_byDay(_asMap(sheet['guestByDay']), day) is List)
+        ? (_byDay(_asMap(sheet['guestByDay']), day) as List)
+        : <dynamic>[];
+
+    Color borderColor = AppColors.paperLine;
+    double borderW = 1;
+    Color headerBg = AppColors.paper;
+    if (isPast) headerBg = AppColors.paper.withValues(alpha: 0.75);
+    if (isToday) {
+      borderColor = AppColors.brandDark;
+      borderW = 1.5;
+      headerBg = AppColors.brandSoft.withValues(alpha: 0.35);
+    }
+    if (isFuture) {
+      borderColor = AppColors.brandDark.withValues(alpha: 0.35);
+      headerBg = AppColors.brandSoft.withValues(alpha: 0.18);
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.paperRaised,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor, width: borderW),
       ),
       child: Column(
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w900,
-              color: color,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: headerBg,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
+              border: const Border(
+                bottom: BorderSide(color: AppColors.paperLine),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: isToday
+                        ? AppColors.brandDark
+                        : (isFuture
+                              ? AppColors.brandDark.withValues(alpha: 0.85)
+                              : AppColors.paperRaised),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isToday || isFuture
+                          ? AppColors.brandDark
+                          : AppColors.paperLine,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$day',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        color: isToday || isFuture
+                            ? Colors.white
+                            : AppColors.ink,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            dateStr,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          if (isToday) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.emeraldSoft,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'TODAY',
+                                style: TextStyle(
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.emerald,
+                                ),
+                              ),
+                            ),
+                          ],
+                          if (isFuture) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.brandSoft,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: AppColors.brandDark.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                ),
+                              ),
+                              child: const Text(
+                                'FUTURE',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.brandDark,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        '${dayTotal % 1 == 0 ? dayTotal.toInt() : dayTotal.toStringAsFixed(1)} meals · ${members.length} members',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (canEdit)
+                  OutlinedButton.icon(
+                    onPressed: () => _openDayEdit(day, members, sheet),
+                    icon: const Icon(Icons.edit_outlined, size: 13),
+                    label: const Text('Edit', style: TextStyle(fontSize: 11.5)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.ink,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      minimumSize: const Size(0, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      side: const BorderSide(color: AppColors.paperLine),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  )
+                else if (canAddBazar && isToday)
+                  FilledButton.icon(
+                    onPressed: () =>
+                        _openDayEdit(day, members, sheet, bazarOnly: true),
+                    icon: const Icon(Icons.shopping_basket_outlined, size: 13),
+                    label: const Text(
+                      'Bazar',
+                      style: TextStyle(fontSize: 11.5),
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.brandDark,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      minimumSize: const Size(0, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  )
+                else
+                  Row(
+                    children: const [
+                      Icon(
+                        Icons.lock_outline_rounded,
+                        size: 12,
+                        color: AppColors.inkFaded,
+                      ),
+                      SizedBox(width: 3),
+                      Text(
+                        'View only',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              color: color,
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _dayBazarBox(
+                  day: day,
+                  bazarTotal: bazarTotal,
+                  items: items,
+                  receipts: receipts,
+                  canAddBazar: canAddBazar,
+                  isToday: isToday,
+                ),
+                const SizedBox(height: 10),
+                const Divider(height: 1, color: AppColors.paperLine),
+                const SizedBox(height: 10),
+                _dayMealsBox(
+                  day: day,
+                  members: members,
+                  mealsMap: mealsMap,
+                  mealsBMap: mealsBMap,
+                  mealsLMap: mealsLMap,
+                  mealsDMap: mealsDMap,
+                  guestList: guestList,
+                ),
+              ],
             ),
           ),
         ],
@@ -618,240 +1413,516 @@ class _SheetViewState extends State<_SheetView> {
     );
   }
 
-  void _editMealCell(BuildContext context, dynamic member, int day) {
-    final bCtrl = TextEditingController();
-    final lCtrl = TextEditingController();
-    final dCtrl = TextEditingController();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          16,
-          20,
-          MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        decoration: const BoxDecoration(
-          color: AppColors.paperRaised,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+  Widget _dayBazarBox({
+    required int day,
+    required double bazarTotal,
+    required List<dynamic> items,
+    required List<dynamic> receipts,
+    required bool canAddBazar,
+    required bool isToday,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Edit Meal (B / L / D)',
-              style: TextStyle(fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 12),
             Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: bCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Breakfast'),
-                  ),
+              children: const [
+                Icon(
+                  Icons.shopping_basket_outlined,
+                  size: 13,
+                  color: AppColors.brandDark,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: lCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Lunch'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: dCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Dinner'),
+                SizedBox(width: 4),
+                Text(
+                  'BAZAR',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.inkFaded,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () async {
-                  try {
-                    await _repo.saveMeal(
-                      messId: widget.messId,
-                      monthId: widget.monthId,
-                      memberId: member['id'] as int,
-                      day: day,
-                      breakfast: double.tryParse(bCtrl.text),
-                      lunch: double.tryParse(lCtrl.text),
-                      dinner: double.tryParse(dCtrl.text),
-                    );
-                    if (context.mounted) {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Meal saved')),
-                      );
-                      _refresh();
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            e.toString().replaceAll('Exception: ', ''),
+            if (bazarTotal > 0)
+              Text(
+                '${bazarTotal.toStringAsFixed(2)} ৳',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.ink,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        if (bazarTotal == 0 && items.isEmpty)
+          const Text(
+            'No bazar yet.',
+            style: TextStyle(
+              fontSize: 11.5,
+              color: AppColors.inkFaded,
+              fontStyle: FontStyle.italic,
+            ),
+          )
+        else ...[
+          for (final it in items)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      (it['name'] ?? 'Item').toString(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.inkSoft,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${(it['qty'] ?? '').toString()} × ${(it['price'] ?? '').toString()} = ${(_toD(it['qty']) * _toD(it['price'])).toStringAsFixed(2)} ৳',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.inkFaded,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (receipts.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final r in receipts)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandSoft.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: AppColors.brandDark.withValues(alpha: 0.15),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.receipt_long_outlined,
+                          size: 12,
+                          color: AppColors.brandDark,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          (r['name'] ?? r['original_name'] ?? 'Receipt')
+                              .toString(),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.brandDark,
                           ),
                         ),
-                      );
-                    }
-                  }
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.brandDark,
-                ),
-                child: const Text('Save'),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+
+  Widget _dayMealsBox({
+    required int day,
+    required List<dynamic> members,
+    required Map mealsMap,
+    required Map mealsBMap,
+    required Map mealsLMap,
+    required Map mealsDMap,
+    required List<dynamic> guestList,
+  }) {
+    String fmt(dynamic v) {
+      if (v == null) return '—';
+      final d = _toD(v);
+      if (d == 0) return '0';
+      return d % 1 == 0 ? d.toInt().toString() : d.toStringAsFixed(1);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: const [
+            Icon(
+              Icons.restaurant_menu_rounded,
+              size: 13,
+              color: AppColors.brandDark,
+            ),
+            SizedBox(width: 4),
+            Text(
+              'MEALS — B · L · D',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkFaded,
+                letterSpacing: 0.6,
               ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 6),
+        for (final m in members) ...[
+          Builder(
+            builder: (_) {
+              final mid = (m['id']).toString();
+              final name = (m['name'] ?? 'Member').toString();
+              final colorHex = (m['color'] ?? '#3b82f6').toString();
+              final count = _toD(
+                (mealsMap[mid] is Map
+                        ? (mealsMap[mid] as Map)[day.toString()] ??
+                              (mealsMap[mid] as Map)[day]
+                        : null) ??
+                    (mealsMap[mid.toString()] is Map
+                        ? (mealsMap[mid.toString()] as Map)[day.toString()]
+                        : null),
+              );
+              // B/L/D
+              dynamic bRaw, lRaw, dRaw;
+              if (mealsBMap[mid] is Map) {
+                bRaw =
+                    (mealsBMap[mid] as Map)[day.toString()] ??
+                    (mealsBMap[mid] as Map)[day];
+              }
+              if (mealsLMap[mid] is Map) {
+                lRaw =
+                    (mealsLMap[mid] as Map)[day.toString()] ??
+                    (mealsLMap[mid] as Map)[day];
+              }
+              if (mealsDMap[mid] is Map) {
+                dRaw =
+                    (mealsDMap[mid] as Map)[day.toString()] ??
+                    (mealsDMap[mid] as Map)[day];
+              }
+              final hasParts = bRaw != null || lRaw != null || dRaw != null;
+              final countStr = count % 1 == 0
+                  ? count.toInt().toString()
+                  : count.toStringAsFixed(1);
+              final isOff = count == 0 && hasParts;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 10,
+                      backgroundColor: _hex(colorHex),
+                      child: Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : 'M',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (isOff)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.dangerSoft,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: AppColors.danger.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: const Text(
+                          'OFF',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.danger,
+                          ),
+                        ),
+                      )
+                    else if (hasParts)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.paper,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppColors.paperLine),
+                        ),
+                        child: Text(
+                          '${fmt(bRaw)} · ${fmt(lRaw)} · ${fmt(dRaw)} = $countStr',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      )
+                    else
+                      Text(
+                        '$countStr meals',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+        if (guestList.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.brandSoft.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: AppColors.brandDark.withValues(alpha: 0.12),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.person_add_alt_1_rounded,
+                      size: 12,
+                      color: AppColors.brandDark,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'GUESTS (with host)',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.brandDark,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                for (final g in guestList)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${g['guest_name'] ?? 'Guest'} ×${g['guest_count'] ?? 1} · ${(g['slots'] as List?)?.join(' + ') ?? ''}',
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.inkSoft,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _toD(g['count']).toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 
-  void _autofill(BuildContext context) async {
-    try {
-      await _repo.autofillDefaults(widget.messId, widget.monthId);
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Defaults filled')));
-        _refresh();
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-        );
-      }
-    }
-  }
+  // --- Modals (web parity) ---
 
-  void _addNextDay(BuildContext context) async {
-    try {
-      await _repo.addNextDay(widget.messId, widget.monthId);
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Next day added')));
-        _refresh();
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-        );
-      }
-    }
-  }
-
-  void _showDepositSheet(BuildContext context, List<dynamic> members) {
-    int? selId = members.isNotEmpty ? members.first['id'] as int? : null;
+  void _showAddDepositModal(List<dynamic> members) {
+    if (members.isEmpty) return;
+    int selectedId = _toI(members.first['id']);
     final amountCtrl = TextEditingController();
     final noteCtrl = TextEditingController();
+    final dateCtrl = TextEditingController(
+      text: DateTime.now().toIso8601String().split('T')[0],
+    );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setS) => Container(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            16,
-            20,
-            MediaQuery.of(ctx).viewInsets.bottom + 24,
-          ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: Container(
+          padding: const EdgeInsets.all(18),
           decoration: const BoxDecoration(
             color: AppColors.paperRaised,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Add Deposit (manager only)',
-                style: TextStyle(fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                initialValue: selId,
-                items: members
-                    .map(
-                      (m) => DropdownMenuItem<int>(
-                        value: m['id'] as int,
-                        child: Text(m['name'] as String),
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.ink,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Add deposit — manager only',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
                       ),
-                    )
-                    .toList(),
-                onChanged: (v) => setS(() => selId = v),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              DropdownButtonFormField<int>(
+                initialValue: selectedId,
                 decoration: const InputDecoration(labelText: 'Member'),
+                items: [
+                  for (final m in members)
+                    DropdownMenuItem<int>(
+                      value: _toI(m['id']),
+                      child: Text((m['name'] ?? 'Member').toString()),
+                    ),
+                ],
+                onChanged: (v) {
+                  if (v != null) selectedId = v;
+                },
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: amountCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Amount ৳'),
+                decoration: const InputDecoration(
+                  labelText: 'Amount ৳ *',
+                  hintText: '2000',
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: dateCtrl,
+                readOnly: true,
+                decoration: const InputDecoration(labelText: 'Date'),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2024),
+                    lastDate: DateTime(2027),
+                  );
+                  if (picked != null) {
+                    dateCtrl.text = picked.toIso8601String().split('T')[0];
+                  }
+                },
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: noteCtrl,
-                decoration: const InputDecoration(labelText: 'Note (optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Note',
+                  hintText: 'e.g. cash',
+                ),
               ),
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () async {
-                    if (selId == null) return;
-                    final amt = double.tryParse(amountCtrl.text);
-                    if (amt == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Enter amount')),
-                      );
-                      return;
-                    }
-                    try {
-                      await _repo.addDeposit(
-                        widget.messId,
-                        widget.monthId,
-                        selId!,
-                        amt,
-                        note: noteCtrl.text.trim(),
-                      );
-                      if (context.mounted) {
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Deposit added')),
-                        );
-                        _refresh();
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              e.toString().replaceAll('Exception: ', ''),
-                            ),
-                          ),
-                        );
-                      }
-                    }
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.brandDark,
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Cancel'),
+                    ),
                   ),
-                  child: const Text('Add Deposit'),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () async {
+                        final amt = _toD(amountCtrl.text);
+                        if (amt <= 0) return;
+                        try {
+                          await _repo.addDeposit(
+                            widget.messId,
+                            widget.monthId,
+                            selectedId,
+                            amt,
+                            date: dateCtrl.text,
+                            note: noteCtrl.text,
+                          );
+                          if (context.mounted) {
+                            Navigator.pop(ctx);
+                            _refresh();
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              SnackBar(content: Text('Deposit failed: $e')),
+                            );
+                          }
+                        }
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.ink,
+                      ),
+                      child: const Text('Save'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -860,331 +1931,87 @@ class _SheetViewState extends State<_SheetView> {
     );
   }
 
-  void _showMealOffRequest(BuildContext context, int passedDays) {
-    int? selDay;
-    bool bOn = true, lOn = true, dOn = true;
-    bool sheetLoaded = false;
-    final noteCtrl = TextEditingController();
-    int daysInMonth = 31;
-    // Flat maps like web's window.mealOffInfo.myMealB (keyed by day, already filtered to myMember)
-    Map<String, dynamic> myMealB = {}, myMealL = {}, myMealD = {};
-    Map<String, dynamic> myPendingByDay = {};
-    Map<String, dynamic>? myDefaults;
-    void hydrateFromSheet(Map<String, dynamic> sheet) {
-      daysInMonth = (sheet['month']?['days'] as int?) ?? 31;
-      // Prefer new flat keys (web parity) — fall back to nested mealsB[memberId][day] for old payloads
-      final flatB = sheet['myMealB'],
-          flatL = sheet['myMealL'],
-          flatD = sheet['myMealD'];
-      if (flatB is Map) myMealB = flatB.cast<String, dynamic>();
-      if (flatL is Map) myMealL = flatL.cast<String, dynamic>();
-      if (flatD is Map) myMealD = flatD.cast<String, dynamic>();
-      final flatPend = sheet['myPendingByDay'];
-      if (flatPend is Map) myPendingByDay = flatPend.cast<String, dynamic>();
-      myDefaults = (sheet['myDefaults'] as Map?)?.cast<String, dynamic>();
-      if (myDefaults == null) {
-        final myMemberId = sheet['myMemberId'];
-        if (myMemberId != null) {
-          final members = sheet['members'] as List<dynamic>? ?? [];
-          final me = members.cast<Map<String, dynamic>?>().firstWhere(
-            (m) => m != null && '${m['id']}' == '$myMemberId',
-            orElse: () => null,
-          );
-          if (me != null) {
-            myDefaults = {
-              'default_breakfast': me['default_breakfast'],
-              'default_lunch': me['default_lunch'],
-              'default_dinner': me['default_dinner'],
-              'hasBld':
-                  me['default_breakfast'] != null ||
-                  me['default_lunch'] != null ||
-                  me['default_dinner'] != null,
-            };
-          }
-        }
-      }
-      // If flat maps are empty (old payload or no daily meals yet), try nested mealsB[myMemberId]
-      if (myMealB.isEmpty && myMealL.isEmpty && myMealD.isEmpty) {
-        final rawB = sheet['mealsB'],
-            rawL = sheet['mealsL'],
-            rawD = sheet['mealsD'];
-        final myId = '${sheet['myMemberId'] ?? ''}';
-        if (myId.isNotEmpty) {
-          if (rawB is Map && rawB[myId] is Map) {
-            myMealB = (rawB[myId] as Map).cast<String, dynamic>();
-          }
-          if (rawL is Map && rawL[myId] is Map) {
-            myMealL = (rawL[myId] as Map).cast<String, dynamic>();
-          }
-          if (rawD is Map && rawD[myId] is Map) {
-            myMealD = (rawD[myId] as Map).cast<String, dynamic>();
-          }
-        }
-      }
-      // Initial checked state = user's default (Cartpa 1·0·1 → B✓ L☐ D✓)
-      if (myDefaults != null && myDefaults!['hasBld'] == true) {
-        bool on(dynamic v) => v is num
-            ? v.toDouble() != 0
-            : (v == null || double.tryParse('$v') != 0);
-        bOn = on(myDefaults!['default_breakfast']);
-        lOn = on(myDefaults!['default_lunch']);
-        dOn = on(myDefaults!['default_dinner']);
-      } else {
-        bOn = true;
-        lOn = true;
-        dOn = true;
-      }
-    }
+  void _showEditMemberModal(Map memberRaw) {
+    final name = (memberRaw['name'] ?? 'Member').toString();
+    final memberId = _toI(memberRaw['id']);
+    final bfCtrl = TextEditingController(
+      text: memberRaw['default_breakfast'] != null
+          ? _toD(memberRaw['default_breakfast']).toStringAsFixed(2)
+          : '',
+    );
+    final lCtrl = TextEditingController(
+      text: memberRaw['default_lunch'] != null
+          ? _toD(memberRaw['default_lunch']).toStringAsFixed(2)
+          : '',
+    );
+    final dCtrl = TextEditingController(
+      text: memberRaw['default_dinner'] != null
+          ? _toD(memberRaw['default_dinner']).toStringAsFixed(2)
+          : '',
+    );
+    final legacyCtrl = TextEditingController(
+      text: memberRaw['default_meal'] != null
+          ? _toD(memberRaw['default_meal']).toStringAsFixed(2)
+          : '',
+    );
+    final depAmountCtrl = TextEditingController();
+    final depNoteCtrl = TextEditingController();
+    bool showLegacy = false;
 
-    try {
-      final st = context.read<MessCubit>().state;
-      if (st is MessSheetLoaded) {
-        hydrateFromSheet(st.sheet);
-        sheetLoaded = true;
-      }
-    } catch (_) {}
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setS) {
-          Widget buildCalendar() {
-            return Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.paper,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.paperLine),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.brandDark,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          selDay == null ? 'Pick a date' : 'Day $selDay',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Future only (after $passedDays)',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 7,
-                          crossAxisSpacing: 6,
-                          mainAxisSpacing: 6,
-                          childAspectRatio: 1,
-                        ),
-                    itemCount: daysInMonth,
-                    itemBuilder: (context, idx) {
-                      final d = idx + 1;
-                      final isPast = d <= passedDays;
-                      final isSelected = selDay == d;
-                      return InkWell(
-                        onTap: isPast
-                            ? null
-                            : () {
-                                final pending = myPendingByDay['$d'];
-                                if (pending is Map) {
-                                  bOn = !(pending['breakfast_off'] == true);
-                                  lOn = !(pending['lunch_off'] == true);
-                                  dOn = !(pending['dinner_off'] == true);
-                                  noteCtrl.text =
-                                      (pending['note'] as String?) ?? '';
-                                } else {
-                                  // Flat myMealB/L/D keyed by day (web: myMealB[String(d)])
-                                  final hasDaily =
-                                      myMealB.containsKey('$d') ||
-                                      myMealL.containsKey('$d') ||
-                                      myMealD.containsKey('$d');
-                                  if (hasDaily) {
-                                    final bVal = myMealB['$d'],
-                                        lVal = myMealL['$d'],
-                                        dVal = myMealD['$d'];
-                                    bOn =
-                                        !((bVal is num
-                                                ? bVal.toDouble()
-                                                : double.tryParse('$bVal') ??
-                                                      1) ==
-                                            0);
-                                    lOn =
-                                        !((lVal is num
-                                                ? lVal.toDouble()
-                                                : double.tryParse('$lVal') ??
-                                                      1) ==
-                                            0);
-                                    dOn =
-                                        !((dVal is num
-                                                ? dVal.toDouble()
-                                                : double.tryParse('$dVal') ??
-                                                      1) ==
-                                            0);
-                                  } else {
-                                    final def = myDefaults;
-                                    if (def != null && def['hasBld'] == true) {
-                                      final db = def['default_breakfast'],
-                                          dl = def['default_lunch'],
-                                          dd = def['default_dinner'];
-                                      bOn =
-                                          !((db is num
-                                                  ? db.toDouble()
-                                                  : double.tryParse('$db') ??
-                                                        1) ==
-                                              0);
-                                      lOn =
-                                          !((dl is num
-                                                  ? dl.toDouble()
-                                                  : double.tryParse('$dl') ??
-                                                        1) ==
-                                              0);
-                                      dOn =
-                                          !((dd is num
-                                                  ? dd.toDouble()
-                                                  : double.tryParse('$dd') ??
-                                                        1) ==
-                                              0);
-                                    } else {
-                                      bOn = true;
-                                      lOn = true;
-                                      dOn = true;
-                                    }
-                                  }
-                                  noteCtrl.text = '';
-                                }
-                                // Refresh from server so next open isn't stale (web reloads page; app re-fetches sheet)
-                                if (!sheetLoaded) {
-                                  try {
-                                    context.read<MessCubit>().loadSheet(
-                                      widget.messId,
-                                      widget.monthId,
-                                    );
-                                  } catch (_) {}
-                                }
-                                setS(() => selDay = d);
-                              },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.brandDark
-                                : (isPast
-                                      ? AppColors.paperLine.withValues(
-                                          alpha: 0.5,
-                                        )
-                                      : AppColors.paperRaised),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.brandDark
-                                  : AppColors.paperLine,
-                            ),
-                          ),
-                          child: Text(
-                            '$d',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: isSelected
-                                  ? Colors.white
-                                  : (isPast
-                                        ? AppColors.inkFaded
-                                        : AppColors.ink),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Container(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              MediaQuery.of(ctx).viewInsets.bottom + 24,
-            ),
+        builder: (ctx2, setS) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx2).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(18),
             decoration: const BoxDecoration(
               color: AppColors.paperRaised,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.paperLine,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
-                          color: AppColors.brandSoft,
-                          borderRadius: BorderRadius.circular(10),
+                          color: AppColors.ink,
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
-                          Icons.event_busy_rounded,
-                          color: AppColors.brandDark,
-                          size: 20,
+                          Icons.person_rounded,
+                          color: Colors.white,
+                          size: 18,
                         ),
                       ),
                       const SizedBox(width: 10),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Request Meal Off',
+                            const Text(
+                              'Edit member',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.ink,
                               ),
                             ),
+                            const SizedBox(height: 2),
                             Text(
-                              'Uncheck to turn OFF — shows your default for that day',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.inkFaded,
+                              'Editing: $name',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.brandDark,
                               ),
                             ),
                           ],
@@ -1192,1601 +2019,2403 @@ class _SheetViewState extends State<_SheetView> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  buildCalendar(),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 4),
                   const Text(
-                    'MEALS (checked = ON)',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Breakfast',
-                          value: bOn,
-                          onChanged: (v) => setS(() => bOn = v),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Lunch',
-                          value: lOn,
-                          onChanged: (v) => setS(() => lOn = v),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Dinner',
-                          value: dOn,
-                          onChanged: (v) => setS(() => dOn = v),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'NOTE (optional)',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: noteCtrl,
-                    maxLines: 2,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Not home that day',
-                      prefixIcon: Icon(
-                        Icons.notes_rounded,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () async {
-                        if (selDay == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Pick a date on the calendar'),
-                            ),
-                          );
-                          return;
-                        }
-                        if (selDay! <= passedDays) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Pick a future day — needs 1 day notice',
-                              ),
-                            ),
-                          );
-                          return;
-                        }
-                        try {
-                          await _repo.requestMealOff(
-                            widget.messId,
-                            widget.monthId,
-                            selDay!,
-                            bOn: bOn,
-                            lOn: lOn,
-                            dOn: dOn,
-                            note: noteCtrl.text.trim(),
-                          );
-                          if (context.mounted) {
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Meal-off requested — manager will review',
-                                ),
-                              ),
-                            );
-                            _refresh();
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  e.toString().replaceAll('Exception: ', ''),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.brandDark,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Send Request',
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Saving sends an email to the manager. OFF shows red on cards.',
+                    'Set a default meal, or add a deposit — manager only.',
                     style: TextStyle(fontSize: 11, color: AppColors.inkFaded),
                   ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _mealCheckTile({
-    required String label,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return InkWell(
-      onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        decoration: BoxDecoration(
-          color: value ? AppColors.brandSoft : const Color(0xFFFEE2E2),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: value
-                ? AppColors.brandDark.withValues(alpha: 0.2)
-                : const Color(0xFFFCA5A5),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              value ? Icons.check_circle_rounded : Icons.cancel_rounded,
-              size: 16,
-              color: value ? AppColors.brandDark : const Color(0xFFDC2626),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: value ? AppColors.brandDark : const Color(0xFF991B1B),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showGuestRequest(BuildContext context, int passedDays) {
-    int? selDay;
-    final nameCtrl = TextEditingController();
-    final countCtrl = TextEditingController(text: '1');
-    final noteCtrl = TextEditingController();
-    bool b = false, l = false, d = false;
-    int daysInMonth = 31;
-    try {
-      final st = context.read<MessCubit>().state;
-      if (st is MessSheetLoaded) {
-        daysInMonth = (st.sheet['month']?['days'] as int?) ?? 31;
-      }
-    } catch (_) {}
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setS) {
-          Widget buildCalendar() {
-            return Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.paper,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.paperLine),
-              ),
-              child: Column(
-                children: [
+                  const SizedBox(height: 14),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.brandDark,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          selDay == null ? 'Pick a date' : 'Day $selDay',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
+                      Expanded(
+                        child: TextField(
+                          controller: bfCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: "B'FAST (0=OFF)",
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Future day only (after $passedDays)',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.inkFaded,
+                      Expanded(
+                        child: TextField(
+                          controller: lCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'LUNCH (0=OFF)',
+                            filled: lCtrl.text == '0.00',
+                            fillColor: lCtrl.text == '0.00'
+                                ? AppColors.dangerSoft
+                                : null,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: dCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'DINNER (0=OFF)',
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 7,
-                          crossAxisSpacing: 6,
-                          mainAxisSpacing: 6,
-                          childAspectRatio: 1,
-                        ),
-                    itemCount: daysInMonth,
-                    itemBuilder: (context, idx) {
-                      final day = idx + 1;
-                      final isPast = day <= passedDays;
-                      final isSelected = selDay == day;
-                      return InkWell(
-                        onTap: isPast ? null : () => setS(() => selDay = day),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.brandDark
-                                : (isPast
-                                      ? AppColors.paperLine.withValues(
-                                          alpha: 0.5,
-                                        )
-                                      : AppColors.paperRaised),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.brandDark
-                                  : AppColors.paperLine,
-                            ),
-                          ),
-                          child: Text(
-                            '$day',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: isSelected
-                                  ? Colors.white
-                                  : (isPast
-                                        ? AppColors.inkFaded
-                                        : AppColors.ink),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Container(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              MediaQuery.of(ctx).viewInsets.bottom + 24,
-            ),
-            decoration: const BoxDecoration(
-              color: AppColors.paperRaised,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
+                  InkWell(
+                    onTap: () => setS(() => showLegacy = !showLegacy),
                     child: Container(
-                      width: 36,
-                      height: 4,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppColors.paperLine,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.brandSoft,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.person_add_rounded,
-                          color: AppColors.brandDark,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Request Guest Meal',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.ink,
-                              ),
-                            ),
-                            Text(
-                              'Guest stays with you — counts toward your bill',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  buildCalendar(),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'GUEST NAME *',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Mother / Friend',
-                      prefixIcon: Icon(
-                        Icons.badge_outlined,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'HOW MANY GUESTS *',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: countCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: '1',
-                      prefixIcon: Icon(
-                        Icons.group_outlined,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'MEALS FOR GUEST',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Breakfast',
-                          value: b,
-                          onChanged: (v) => setS(() => b = v),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Lunch',
-                          value: l,
-                          onChanged: (v) => setS(() => l = v),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Dinner',
-                          value: d,
-                          onChanged: (v) => setS(() => d = v),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'NOTE (optional)',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: noteCtrl,
-                    maxLines: 2,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Guest staying 2 days',
-                      prefixIcon: Icon(
-                        Icons.notes_rounded,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () async {
-                        if (selDay == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Pick a date on the calendar'),
-                            ),
-                          );
-                          return;
-                        }
-                        if (selDay! <= passedDays) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Pick a future day')),
-                          );
-                          return;
-                        }
-                        if (nameCtrl.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Enter guest name')),
-                          );
-                          return;
-                        }
-                        if (!b && !l && !d) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Pick at least one meal for guest'),
-                            ),
-                          );
-                          return;
-                        }
-                        try {
-                          await _repo.requestGuestMeal(
-                            widget.messId,
-                            widget.monthId,
-                            day: selDay!,
-                            guestName: nameCtrl.text.trim(),
-                            guestCount: int.tryParse(countCtrl.text) ?? 1,
-                            breakfast: b,
-                            lunch: l,
-                            dinner: d,
-                            note: noteCtrl.text.trim(),
-                          );
-                          if (context.mounted) {
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Guest request sent — manager will review',
-                                ),
-                              ),
-                            );
-                            _refresh();
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  e.toString().replaceAll('Exception: ', ''),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.brandDark,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Send Guest Request',
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _showGuestDirectSheet(
-    BuildContext context,
-    List<dynamic> members,
-    int passedDays,
-  ) {
-    int? selMemberId = members.isNotEmpty ? members.first['id'] as int : null;
-    int? selDay;
-    final nameCtrl = TextEditingController();
-    final countCtrl = TextEditingController(text: '1');
-    final noteCtrl = TextEditingController();
-    bool b = false, l = true, d = false;
-    int daysInMonth = 31;
-    try {
-      final st = context.read<MessCubit>().state;
-      if (st is MessSheetLoaded) {
-        daysInMonth = (st.sheet['month']?['days'] as int?) ?? 31;
-      }
-    } catch (_) {}
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setS) {
-          Widget buildCalendar() {
-            return Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.paper,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.paperLine),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.brandDark,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          selDay == null ? 'Pick a date' : 'Day $selDay',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Today or future',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 7,
-                          crossAxisSpacing: 6,
-                          mainAxisSpacing: 6,
-                          childAspectRatio: 1,
-                        ),
-                    itemCount: daysInMonth,
-                    itemBuilder: (context, idx) {
-                      final day = idx + 1;
-                      final isPast = day < passedDays;
-                      final isSelected = selDay == day;
-                      return InkWell(
-                        onTap: isPast ? null : () => setS(() => selDay = day),
+                        color: AppColors.paper,
                         borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.brandDark
-                                : (isPast
-                                      ? AppColors.paperLine.withValues(
-                                          alpha: 0.5,
-                                        )
-                                      : AppColors.paperRaised),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.brandDark
-                                  : AppColors.paperLine,
-                            ),
-                          ),
-                          child: Text(
-                            '$day',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: isSelected
-                                  ? Colors.white
-                                  : (isPast
-                                        ? AppColors.inkFaded
-                                        : AppColors.ink),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Container(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              MediaQuery.of(ctx).viewInsets.bottom + 24,
-            ),
-            decoration: const BoxDecoration(
-              color: AppColors.paperRaised,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.paperLine,
-                        borderRadius: BorderRadius.circular(2),
+                        border: Border.all(color: AppColors.paperLine),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.brandSoft,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.person_add_alt_1_rounded,
-                          color: AppColors.brandDark,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Add Guest Meal',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.ink,
-                              ),
-                            ),
-                            Text(
-                              'Manager — creates immediately',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF0F9F59,
-                          ).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'MANAGER',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF0F9F59),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'HOST MEMBER *',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<int>(
-                    initialValue: selMemberId,
-                    items: members
-                        .map(
-                          (m) => DropdownMenuItem<int>(
-                            value: m['id'] as int,
-                            child: Text(m['name'] as String),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (v) => setS(() => selMemberId = v),
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.person_outline_rounded,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  buildCalendar(),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'GUEST NAME *',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Mother / Friend',
-                      prefixIcon: Icon(
-                        Icons.badge_outlined,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'HOW MANY GUESTS *',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: countCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: '1',
-                      prefixIcon: Icon(
-                        Icons.group_outlined,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'MEALS FOR GUEST',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Breakfast',
-                          value: b,
-                          onChanged: (v) => setS(() => b = v),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Lunch',
-                          value: l,
-                          onChanged: (v) => setS(() => l = v),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _mealCheckTile(
-                          label: 'Dinner',
-                          value: d,
-                          onChanged: (v) => setS(() => d = v),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'NOTE (optional)',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: noteCtrl,
-                    maxLines: 2,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Guest staying 2 days',
-                      prefixIcon: Icon(
-                        Icons.notes_rounded,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () async {
-                        if (selMemberId == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Pick host member')),
-                          );
-                          return;
-                        }
-                        if (selDay == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Pick a date on the calendar'),
-                            ),
-                          );
-                          return;
-                        }
-                        if (nameCtrl.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Enter guest name')),
-                          );
-                          return;
-                        }
-                        if (!b && !l && !d) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Pick at least one meal for guest'),
-                            ),
-                          );
-                          return;
-                        }
-                        try {
-                          await _repo.addGuestDirect(
-                            widget.messId,
-                            widget.monthId,
-                            memberId: selMemberId!,
-                            day: selDay!,
-                            guestName: nameCtrl.text.trim(),
-                            guestCount: int.tryParse(countCtrl.text) ?? 1,
-                            breakfast: b,
-                            lunch: l,
-                            dinner: d,
-                          );
-                          if (context.mounted) {
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Guest added')),
-                            );
-                            _refresh();
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  e.toString().replaceAll('Exception: ', ''),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.brandDark,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Add Guest',
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  double _bazarRowTotal(List<Map<String, TextEditingController>> rows) {
-    double sum = 0;
-    for (final r in rows) {
-      final q = double.tryParse(r['qty']!.text.trim()) ?? 0;
-      final p = double.tryParse(r['price']!.text.trim()) ?? 0;
-      sum += q * p;
-    }
-    return sum;
-  }
-
-  Future<List<String>> _pickReceiptImages() async {
-    try {
-      final picker = ImagePicker();
-      final picked = await picker.pickMultiImage(
-        imageQuality: 80,
-        maxWidth: 1600,
-      );
-      return picked.map((x) => x.path).toList();
-    } catch (_) {
-      return [];
-    }
-  }
-
-  void _showBazarSheet(BuildContext context, int passedDays) {
-    final amountCtrl = TextEditingController();
-    final List<Map<String, TextEditingController>> itemRows = [
-      {
-        'name': TextEditingController(),
-        'qty': TextEditingController(text: '1'),
-        'price': TextEditingController(),
-      },
-    ];
-    final List<String> pickedReceiptPaths = [];
-    int? selDay = passedDays > 0 ? passedDays : 1;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setS) => Container(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            16,
-            20,
-            MediaQuery.of(ctx).viewInsets.bottom + 24,
-          ),
-          decoration: const BoxDecoration(
-            color: AppColors.paperRaised,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.paperLine,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.brandSoft,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.shopping_basket_rounded,
-                        color: AppColors.brandDark,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Bazar — Day',
+                          const Text(
+                            'LEGACY TOTAL — DEFAULT MEAL',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.inkFaded,
+                            ),
+                          ),
+                          Icon(
+                            showLegacy
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            size: 16,
+                            color: AppColors.inkFaded,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (showLegacy) ...[
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: legacyCtrl,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Legacy total',
+                        hintText: 'e.g. 2.00',
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  const Text(
+                    '0 = OFF for that slot (red mark on cards). Empty = no default for that slot. If any B/L/D is set (even 0), B·L·D is used; else legacy total is used.',
+                    style: TextStyle(fontSize: 10.5, color: AppColors.inkFaded),
+                  ),
+                  const SizedBox(height: 14),
+                  const Divider(height: 1, color: AppColors.paperLine),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'ADD DEPOSIT (OPTIONAL)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.inkFaded,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: depAmountCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Amount ৳',
+                            hintText: 'e.g. 2000',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: depNoteCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Note',
+                            hintText: 'e.g. cash',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx2),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () async {
+                            double? bf = bfCtrl.text.trim().isEmpty
+                                ? null
+                                : _toD(bfCtrl.text);
+                            double? ln = lCtrl.text.trim().isEmpty
+                                ? null
+                                : _toD(lCtrl.text);
+                            double? dn = dCtrl.text.trim().isEmpty
+                                ? null
+                                : _toD(dCtrl.text);
+                            double? legacy = legacyCtrl.text.trim().isEmpty
+                                ? null
+                                : _toD(legacyCtrl.text);
+                            double? depAmt = depAmountCtrl.text.trim().isEmpty
+                                ? null
+                                : _toD(depAmountCtrl.text);
+                            try {
+                              await _repo.updateMemberDetails(
+                                widget.messId,
+                                memberId,
+                                breakfast: bf,
+                                lunch: ln,
+                                dinner: dn,
+                                defaultMeal: legacy,
+                                depositAmount: depAmt,
+                                depositNote: depNoteCtrl.text.isEmpty
+                                    ? null
+                                    : depNoteCtrl.text,
+                              );
+                              if (context.mounted) {
+                                Navigator.pop(ctx2);
+                                _refresh();
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(ctx2).showSnackBar(
+                                  SnackBar(content: Text('Save failed: $e')),
+                                );
+                              }
+                            }
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.ink,
+                          ),
+                          child: const Text('Save changes ✓'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showMealOffModal(Map sheet) {
+    int selectedDay = _toI(sheet['todayDay'] ?? sheet['passedDays'] ?? 1);
+    // Prefill from sheet myMealB/L/D and myDefaults
+    final myB = _asMap(sheet['myMealB']);
+    final myL = _asMap(sheet['myMealL']);
+    final myD = _asMap(sheet['myMealD']);
+    // For simplicity show day picker + 3 toggles (web: calendar + breakfast_on etc.)
+    bool bOn = true, lOn = true, dOn = true;
+    final noteCtrl = TextEditingController();
+    final monthRaw = _asMap(sheet['month']);
+    final days = _toI(monthRaw['days']) > 0 ? _toI(monthRaw['days']) : 31;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx2, setS) {
+          void applyDayPrefill() {
+            final k = selectedDay.toString();
+            bOn = !(_toD(myB[k] ?? myB[selectedDay]) == 0);
+            lOn = !(_toD(myL[k] ?? myL[selectedDay]) == 0);
+            dOn = !(_toD(myD[k] ?? myD[selectedDay]) == 0);
+          }
+
+          applyDayPrefill();
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx2).viewInsets.bottom,
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: const BoxDecoration(
+                color: AppColors.paperRaised,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.ink,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.event_busy_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'Request meal off',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.ink,
                             ),
                           ),
-                          Text(
-                            'Items qty × price → day total + optional receipt',
-                            style: TextStyle(
-                              fontSize: 11,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Day $selectedDay in Asia/Dhaka — ${monthRaw['label'] ?? ''}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.inkFaded,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Simple day grid
+                    _guestDateGrid(
+                      days: days,
+                      selectedDay: selectedDay,
+                      onTap: (d) => setS(() {
+                        selectedDay = d;
+                        applyDayPrefill();
+                      }),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text(
+                              'Breakfast',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                            value: bOn,
+                            onChanged: (v) => setS(() => bOn = v ?? false),
+                          ),
+                        ),
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text(
+                              'Lunch',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                            value: lOn,
+                            onChanged: (v) => setS(() => lOn = v ?? false),
+                          ),
+                        ),
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text(
+                              'Dinner',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                            value: dOn,
+                            onChanged: (v) => setS(() => dOn = v ?? false),
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextField(
+                      controller: noteCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Note (optional)',
+                        hintText: 'e.g. Not home',
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(ctx2),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () async {
+                              try {
+                                await _repo.requestMealOff(
+                                  widget.messId,
+                                  widget.monthId,
+                                  selectedDay,
+                                  bOn: bOn,
+                                  lOn: lOn,
+                                  dOn: dOn,
+                                  note: noteCtrl.text,
+                                );
+                                if (context.mounted) {
+                                  Navigator.pop(ctx2);
+                                  _refresh();
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(ctx2).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Request failed: $e'),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.ink,
+                            ),
+                            child: const Text('Send request'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showGuestRequestModal(Map sheet) {
+    int selectedDay = _toI(sheet['todayDay'] ?? sheet['passedDays'] ?? 1);
+    final monthRaw = _asMap(sheet['month']);
+    final days = _toI(monthRaw['days']) > 0 ? _toI(monthRaw['days']) : 31;
+    final label = (monthRaw['label'] ?? monthRaw['cycle_label'] ?? '')
+        .toString();
+    final nameCtrl = TextEditingController();
+    int guestCount = 1;
+    bool b = false, l = false, dn = false;
+    final noteCtrl = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx2, setS) {
+          bool canSubmit =
+              nameCtrl.text.trim().isNotEmpty &&
+              guestCount > 0 &&
+              (b || l || dn);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx2).viewInsets.bottom,
+            ),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.paperRaised,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.paperLine,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 14, 10, 0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.ink,
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: const Icon(
+                              Icons.person_add_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 11),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Request guest meal',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Manager will approve — then it counts',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx2),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              size: 20,
                               color: AppColors.inkFaded,
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Pick a date — $label',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.inkFaded,
+                              letterSpacing: 0.7,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _guestDateGrid(
+                            days: days,
+                            selectedDay: selectedDay,
+                            onTap: (d) => setS(() => selectedDay = d),
+                          ),
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: nameCtrl,
+                            onChanged: (_) => setS(() {}),
+                            decoration: InputDecoration(
+                              labelText: 'GUEST NAME *',
+                              hintText: 'e.g. Mother / Friend',
+                              prefixIcon: const Icon(
+                                Icons.badge_outlined,
+                                size: 18,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 11,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              const Text(
+                                'GUESTS *',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.inkFaded,
+                                  letterSpacing: 0.7,
+                                ),
+                              ),
+                              const Spacer(),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        if (guestCount > 1) {
+                                          setS(() => guestCount--);
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Icon(
+                                          Icons.remove_rounded,
+                                          size: 18,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                      ),
+                                      child: Text(
+                                        '$guestCount',
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () => setS(() => guestCount++),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Icon(
+                                          Icons.add_rounded,
+                                          size: 18,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          const Text(
+                            'MEAL SLOTS *',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.inkFaded,
+                              letterSpacing: 0.7,
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          Row(
+                            children: [
+                              for (final e in [
+                                {
+                                  'k': 'b',
+                                  'label': 'Breakfast',
+                                  'icon': Icons.free_breakfast_outlined,
+                                  'v': b,
+                                },
+                                {
+                                  'k': 'l',
+                                  'label': 'Lunch',
+                                  'icon': Icons.lunch_dining_outlined,
+                                  'v': l,
+                                },
+                                {
+                                  'k': 'd',
+                                  'label': 'Dinner',
+                                  'icon': Icons.dinner_dining_outlined,
+                                  'v': dn,
+                                },
+                              ])
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: (e['k'] as String) == 'd' ? 0 : 8,
+                                    ),
+                                    child: InkWell(
+                                      onTap: () => setS(() {
+                                        if (e['k'] == 'b') b = !b;
+                                        if (e['k'] == 'l') l = !l;
+                                        if (e['k'] == 'd') dn = !dn;
+                                      }),
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: (e['v'] as bool)
+                                              ? AppColors.ink
+                                              : AppColors.paper,
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          border: Border.all(
+                                            color: (e['v'] as bool)
+                                                ? AppColors.ink
+                                                : AppColors.paperLine,
+                                            width: 1.2,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              e['icon'] as IconData,
+                                              size: 18,
+                                              color: (e['v'] as bool)
+                                                  ? Colors.white
+                                                  : AppColors.inkFaded,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              e['label'] as String,
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: (e['v'] as bool)
+                                                    ? Colors.white
+                                                    : AppColors.ink,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (!b && !l && !dn)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 6),
+                              child: Text(
+                                'Select at least one slot — host pays for checked slots.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.danger,
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: noteCtrl,
+                            maxLines: 2,
+                            decoration: InputDecoration(
+                              labelText: 'NOTE (optional)',
+                              hintText: 'e.g. Guest staying 2 days',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => Navigator.pop(ctx2),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: FilledButton(
+                                  onPressed: !canSubmit
+                                      ? null
+                                      : () async {
+                                          try {
+                                            await _repo.requestGuestMeal(
+                                              widget.messId,
+                                              widget.monthId,
+                                              day: selectedDay,
+                                              guestName: nameCtrl.text.trim(),
+                                              guestCount: guestCount,
+                                              breakfast: b,
+                                              lunch: l,
+                                              dinner: dn,
+                                              note: noteCtrl.text,
+                                            );
+                                            if (context.mounted) {
+                                              Navigator.pop(ctx2);
+                                              _refresh();
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                ctx2,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Request failed: $e',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.ink,
+                                    disabledBackgroundColor:
+                                        AppColors.paperLine,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Send request',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                InkWell(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2035, 12, 31),
-                    );
-                    if (picked != null) setS(() => selDay = picked.day);
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showAddGuestModal(List<dynamic> members, int todayDay, Map sheet) {
+    if (members.isEmpty) return;
+    int hostId = _toI(members.first['id']);
+    final monthRaw = _asMap(sheet['month']);
+    final days = _toI(monthRaw['days']) > 0 ? _toI(monthRaw['days']) : 31;
+    int selectedDay = todayDay > 0 ? todayDay : 1;
+    final nameCtrl = TextEditingController();
+    int guestCount = 1;
+    bool b = false, l = false, dn = false;
+    final noteCtrl = TextEditingController();
+    final sheetLabel =
+        (sheet['month'] is Map
+                ? (sheet['month']['label'] ?? sheet['month']['cycle_label'])
+                : '')
+            ?.toString() ??
+        '';
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx2, setS) {
+          bool canSubmit = nameCtrl.text.trim().isNotEmpty && (b || l || dn);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx2).viewInsets.bottom,
+            ),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.paperRaised,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.paperLine,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: AppColors.paper,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.paperLine),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 14, 10, 0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.ink,
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: const Icon(
+                              Icons.person_add_alt_1_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Add guest meal',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.ink,
+                                      ),
+                                    ),
+                                    SizedBox(width: 6),
+                                    DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFFFE8D6),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.fromBorderSide(
+                                          BorderSide(color: Color(0xFFFFAB78)),
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 1,
+                                        ),
+                                        child: Text(
+                                          'MANAGER',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFFE65100),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  'Manager creates directly — no approval needed.',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx2),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: AppColors.inkFaded,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pick a date — $sheetLabel',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.inkFaded,
+                              letterSpacing: 0.7,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _guestDateGrid(
+                            days: days,
+                            selectedDay: selectedDay,
+                            onTap: (d) => setS(() => selectedDay = d),
+                          ),
+                          const SizedBox(height: 14),
+                          DropdownButtonFormField<int>(
+                            initialValue: hostId,
+                            decoration: InputDecoration(
+                              labelText: 'HOST MEMBER *',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 11,
+                              ),
+                            ),
+                            items: [
+                              for (final m in members)
+                                DropdownMenuItem<int>(
+                                  value: _toI(m['id']),
+                                  child: Text(
+                                    '${m['name']} — ${m['member_role'] ?? 'member'}',
+                                  ),
+                                ),
+                            ],
+                            onChanged: (v) {
+                              if (v != null) hostId = v;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: nameCtrl,
+                            onChanged: (_) => setS(() {}),
+                            decoration: InputDecoration(
+                              labelText: 'GUEST NAME *',
+                              hintText: 'e.g. Mother / Friend',
+                              prefixIcon: const Icon(
+                                Icons.badge_outlined,
+                                size: 18,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 11,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              const Text(
+                                'GUESTS *',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.inkFaded,
+                                  letterSpacing: 0.7,
+                                ),
+                              ),
+                              const Spacer(),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        if (guestCount > 1) {
+                                          setS(() => guestCount--);
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Icon(
+                                          Icons.remove_rounded,
+                                          size: 18,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                      ),
+                                      child: Text(
+                                        '$guestCount',
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () => setS(() => guestCount++),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Icon(
+                                          Icons.add_rounded,
+                                          size: 18,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          const Text(
+                            'MEAL SLOTS *',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.inkFaded,
+                              letterSpacing: 0.7,
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          Row(
+                            children: [
+                              for (final e in [
+                                {
+                                  'k': 'b',
+                                  'label': 'Breakfast',
+                                  'icon': Icons.free_breakfast_outlined,
+                                  'v': b,
+                                },
+                                {
+                                  'k': 'l',
+                                  'label': 'Lunch',
+                                  'icon': Icons.lunch_dining_outlined,
+                                  'v': l,
+                                },
+                                {
+                                  'k': 'd',
+                                  'label': 'Dinner',
+                                  'icon': Icons.dinner_dining_outlined,
+                                  'v': dn,
+                                },
+                              ])
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: (e['k'] as String) == 'd' ? 0 : 8,
+                                    ),
+                                    child: InkWell(
+                                      onTap: () => setS(() {
+                                        if (e['k'] == 'b') b = !b;
+                                        if (e['k'] == 'l') l = !l;
+                                        if (e['k'] == 'd') dn = !dn;
+                                      }),
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: (e['v'] as bool)
+                                              ? AppColors.ink
+                                              : AppColors.paper,
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          border: Border.all(
+                                            color: (e['v'] as bool)
+                                                ? AppColors.ink
+                                                : AppColors.paperLine,
+                                            width: 1.2,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              e['icon'] as IconData,
+                                              size: 18,
+                                              color: (e['v'] as bool)
+                                                  ? Colors.white
+                                                  : AppColors.inkFaded,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              e['label'] as String,
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: (e['v'] as bool)
+                                                    ? Colors.white
+                                                    : AppColors.ink,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (!b && !l && !dn)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 6),
+                              child: Text(
+                                'Select at least one slot — creates a future card if beyond today.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.danger,
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: noteCtrl,
+                            maxLines: 2,
+                            decoration: InputDecoration(
+                              labelText: 'NOTE (optional)',
+                              hintText: 'e.g. Guest staying 2 days',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Creates a FUTURE card if the day is beyond today. Counts toward host immediately.',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: AppColors.inkFaded,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => Navigator.pop(ctx2),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: FilledButton(
+                                  onPressed: !canSubmit
+                                      ? null
+                                      : () async {
+                                          if (nameCtrl.text.trim().isEmpty) {
+                                            return;
+                                          }
+                                          final cnt = guestCount;
+                                          try {
+                                            await _repo.addGuestDirect(
+                                              widget.messId,
+                                              widget.monthId,
+                                              memberId: hostId,
+                                              day: selectedDay,
+                                              guestName: nameCtrl.text.trim(),
+                                              guestCount: cnt > 0 ? cnt : 1,
+                                              breakfast: b,
+                                              lunch: l,
+                                              dinner: dn,
+                                            );
+                                            if (context.mounted) {
+                                              Navigator.pop(ctx2);
+                                              _refresh();
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                ctx2,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Add guest failed: $e',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.ink,
+                                    disabledBackgroundColor:
+                                        AppColors.paperLine,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Add guest ✓',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _guestDateGrid({
+    required int days,
+    required int selectedDay,
+    required ValueChanged<int> onTap,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.paper,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.paperLine),
+      ),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: days,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 7,
+          crossAxisSpacing: 6,
+          mainAxisSpacing: 6,
+          childAspectRatio: 1.1,
+        ),
+        itemBuilder: (ctx, index) {
+          final d = index + 1;
+          final isSelected = selectedDay == d;
+          return InkWell(
+            onTap: () => onTap(d),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.ink : AppColors.paperRaised,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isSelected ? AppColors.ink : AppColors.paperLine,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  '$d',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: isSelected ? Colors.white : AppColors.ink,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _openDayEdit(
+    int day,
+    List<dynamic> members,
+    Map sheet, {
+    bool bazarOnly = false,
+  }) {
+    final receiptsRaw = _byDay(_asMap(sheet['bazarReceiptsMulti']), day);
+    final List<dynamic> existingReceipts = receiptsRaw is List
+        ? receiptsRaw
+        : <dynamic>[];
+    final List<XFile> pickedReceipts = [];
+    final Set<int> removedReceiptIds = {};
+    final itemsRaw = _byDay(_asMap(sheet['bazarItemsByDay']), day);
+    final List<dynamic> existingItems = itemsRaw is List
+        ? itemsRaw
+        : <dynamic>[];
+    final List<Map<String, TextEditingController>> rows = [];
+    for (final it in existingItems) {
+      rows.add({
+        'name': TextEditingController(text: (it['name'] ?? '').toString()),
+        'qty': TextEditingController(text: (it['qty'] ?? '').toString()),
+        'price': TextEditingController(text: (it['price'] ?? '').toString()),
+      });
+    }
+    if (rows.isEmpty) {
+      rows.add({
+        'name': TextEditingController(),
+        'qty': TextEditingController(text: '1'),
+        'price': TextEditingController(),
+      });
+    }
+
+    final mealCtrls = <int, Map<String, TextEditingController>>{};
+    for (final m in members) {
+      final mid = _toI(m['id']).toString();
+      dynamic getMeal(Map mp) => (mp[mid] is Map
+          ? (mp[mid] as Map)[day.toString()] ?? (mp[mid] as Map)[day]
+          : null);
+      final bVal = getMeal(_asMap(sheet['mealsB']));
+      final lVal = getMeal(_asMap(sheet['mealsL']));
+      final dVal = getMeal(_asMap(sheet['mealsD']));
+      mealCtrls[_toI(m['id'])] = {
+        'b': TextEditingController(
+          text: bVal != null ? _toD(bVal).toString() : '',
+        ),
+        'l': TextEditingController(
+          text: lVal != null ? _toD(lVal).toString() : '',
+        ),
+        'd': TextEditingController(
+          text: dVal != null ? _toD(dVal).toString() : '',
+        ),
+      };
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx2, setS) {
+          double calcTotal() {
+            double sum = 0;
+            for (final r in rows) {
+              final q = _toD(r['qty']!.text);
+              final p = _toD(r['price']!.text);
+              sum += (q * p);
+            }
+            return sum;
+          }
+
+          final bazarTotal = calcTotal();
+
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx2).viewInsets.bottom,
+            ),
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(ctx2).size.height * 0.88,
+              ),
+              decoration: const BoxDecoration(
+                color: AppColors.paperRaised,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.paperLine,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 12, 10),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.calendar_today_rounded,
-                          size: 16,
-                          color: AppColors.brandDark,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          selDay == null ? 'Pick day' : 'Day $selDay',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13,
-                            color: AppColors.ink,
+                        Container(
+                          padding: const EdgeInsets.all(9),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandDark,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.receipt_long_rounded,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
-                        const Spacer(),
-                        Text(
-                          'Today is $passedDays for members',
-                          style: const TextStyle(
-                            fontSize: 11,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    bazarOnly ? 'Bazar Log' : 'Bazar & Meals',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.ink,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.brandSoft,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'Day $day',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.brandDark,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                bazarOnly
+                                    ? 'Record daily bazar market costs'
+                                    : 'Update daily meals and market expenses',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.inkFaded,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx2),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            size: 22,
                             color: AppColors.inkFaded,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'BAZAR ITEMS',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.inkFaded,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.paper,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.paperLine),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
+                  const Divider(height: 1, color: AppColors.paperLine),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Expanded(
-                            child: Text(
-                              'Item name',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.inkFaded,
-                              ),
+                          // 1) BAZAR ITEMS SECTION
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.paper,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.paperLine),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          const SizedBox(
-                            width: 56,
-                            child: Text(
-                              'Qty',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const SizedBox(
-                            width: 72,
-                            child: Text(
-                              'Price',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 28),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      ...List.generate(itemRows.length, (idx) {
-                        final row = itemRows[idx];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: row['name']!,
-                                  decoration: const InputDecoration(
-                                    hintText: 'e.g. Rice',
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 8,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.shopping_bag_outlined,
+                                      size: 16,
+                                      color: AppColors.brandDark,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    const Text(
+                                      'BAZAR ITEMS',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.ink,
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    if (bazarTotal > 0)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.emeraldSoft,
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: AppColors.emerald.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Total: ৳${bazarTotal.toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppColors.emerald,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                for (int i = 0; i < rows.length; i++)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 3,
+                                          child: TextField(
+                                            controller: rows[i]['name']!,
+                                            onChanged: (_) => setS(() {}),
+                                            decoration: InputDecoration(
+                                              hintText: 'Item name',
+                                              isDense: true,
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 9,
+                                                  ),
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          flex: 1,
+                                          child: TextField(
+                                            controller: rows[i]['qty']!,
+                                            keyboardType:
+                                                TextInputType.number,
+                                            onChanged: (_) => setS(() {}),
+                                            textAlign: TextAlign.center,
+                                            decoration: InputDecoration(
+                                              hintText: 'Qty',
+                                              isDense: true,
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 9,
+                                                  ),
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          flex: 2,
+                                          child: TextField(
+                                            controller: rows[i]['price']!,
+                                            keyboardType:
+                                                TextInputType.number,
+                                            onChanged: (_) => setS(() {}),
+                                            decoration: InputDecoration(
+                                              hintText: 'Price ৳',
+                                              isDense: true,
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 9,
+                                                  ),
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          constraints: const BoxConstraints(),
+                                          padding: const EdgeInsets.all(4),
+                                          icon: const Icon(
+                                            Icons.remove_circle_outline_rounded,
+                                            size: 18,
+                                            color: AppColors.danger,
+                                          ),
+                                          onPressed: rows.length == 1
+                                              ? null
+                                              : () => setS(
+                                                    () => rows.removeAt(i),
+                                                  ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                const SizedBox(height: 4),
+                                OutlinedButton.icon(
+                                  onPressed: () => setS(
+                                    () => rows.add({
+                                      'name': TextEditingController(),
+                                      'qty': TextEditingController(text: '1'),
+                                      'price': TextEditingController(),
+                                    }),
+                                  ),
+                                  icon: const Icon(Icons.add_rounded, size: 16),
+                                  label: const Text(
+                                    'Add Item Row',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size(double.infinity, 38),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(9),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              SizedBox(
-                                width: 56,
-                                child: TextField(
-                                  controller: row['qty']!,
-                                  keyboardType: TextInputType.number,
-                                  textAlign: TextAlign.center,
-                                  decoration: const InputDecoration(
-                                    hintText: '1',
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                      vertical: 8,
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // 2) RECEIPTS ATTACHMENT CARD
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.paper,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.paperLine),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.receipt_long_outlined,
+                                      size: 15,
+                                      color: AppColors.brandDark,
                                     ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              SizedBox(
-                                width: 72,
-                                child: TextField(
-                                  controller: row['price']!,
-                                  keyboardType: TextInputType.number,
-                                  textAlign: TextAlign.center,
-                                  decoration: const InputDecoration(
-                                    hintText: '0',
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                      vertical: 8,
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'RECEIPTS & VOUCHERS',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.ink,
+                                        letterSpacing: 0.6,
+                                      ),
                                     ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                if (existingReceipts.isNotEmpty) ...[
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: [
+                                      for (final r in existingReceipts)
+                                        Builder(
+                                          builder: (_) {
+                                            final rid = _toI(r['id']);
+                                            final removed =
+                                                removedReceiptIds.contains(rid);
+                                            return InkWell(
+                                              onTap: () => setS(() {
+                                                if (removed) {
+                                                  removedReceiptIds.remove(rid);
+                                                } else {
+                                                  removedReceiptIds.add(rid);
+                                                }
+                                              }),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 5,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: removed
+                                                      ? AppColors.dangerSoft
+                                                      : AppColors.brandSoft
+                                                            .withValues(
+                                                              alpha: 0.35,
+                                                            ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: removed
+                                                        ? AppColors.danger
+                                                              .withValues(
+                                                                alpha: 0.3,
+                                                              )
+                                                        : AppColors.brandDark
+                                                              .withValues(
+                                                                alpha: 0.15,
+                                                              ),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      removed
+                                                          ? Icons.close_rounded
+                                                          : Icons
+                                                                .receipt_outlined,
+                                                      size: 12,
+                                                      color: removed
+                                                          ? AppColors.danger
+                                                          : AppColors.brandDark,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      (r['name'] ??
+                                                              r['original_name'] ??
+                                                              'Receipt')
+                                                          .toString()
+                                                          .split('/')
+                                                          .last,
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: removed
+                                                            ? AppColors.danger
+                                                            : AppColors.ink,
+                                                        decoration: removed
+                                                            ? TextDecoration
+                                                                  .lineThrough
+                                                            : null,
+                                                      ),
+                                                    ),
+                                                    if (removed)
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                              left: 4,
+                                                            ),
+                                                        child: Text(
+                                                          'undo',
+                                                          style: TextStyle(
+                                                            fontSize: 9,
+                                                            color:
+                                                                AppColors
+                                                                    .danger,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                    ],
                                   ),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              InkWell(
-                                onTap: () {
-                                  if (itemRows.length == 1) {
-                                    row['name']!.clear();
-                                    row['qty']!.text = '1';
-                                    row['price']!.clear();
-                                  } else {
-                                    setS(() => itemRows.removeAt(idx));
-                                  }
-                                  setS(() {});
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEE2E2),
-                                    borderRadius: BorderRadius.circular(6),
+                                  const SizedBox(height: 8),
+                                ],
+                                if (pickedReceipts.isNotEmpty) ...[
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: [
+                                      for (final f in pickedReceipts)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 5,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.emeraldSoft,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: AppColors.emerald
+                                                  .withValues(alpha: 0.3),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.check_circle_rounded,
+                                                size: 12,
+                                                color: AppColors.emerald,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                f.name,
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.ink,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              InkWell(
+                                                onTap: () => setS(
+                                                  () => pickedReceipts.remove(
+                                                    f,
+                                                  ),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.close_rounded,
+                                                  size: 14,
+                                                  color: AppColors.inkFaded,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  child: const Icon(
-                                    Icons.close_rounded,
-                                    size: 14,
-                                    color: Color(0xFFDC2626),
-                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () async {
+                                          final picker = ImagePicker();
+                                          final files =
+                                              await picker.pickMultiImage(
+                                                imageQuality: 80,
+                                              );
+                                          if (files.isNotEmpty) {
+                                            setS(
+                                              () =>
+                                                  pickedReceipts.addAll(files),
+                                            );
+                                          }
+                                        },
+                                        icon: const Icon(
+                                          Icons.photo_library_outlined,
+                                          size: 15,
+                                        ),
+                                        label: const Text(
+                                          'Pick Images',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () async {
+                                          final picker = ImagePicker();
+                                          final f = await picker.pickImage(
+                                            source: ImageSource.camera,
+                                            imageQuality: 80,
+                                          );
+                                          if (f != null) {
+                                            setS(() => pickedReceipts.add(f));
+                                          }
+                                        },
+                                        icon: const Icon(
+                                          Icons.photo_camera_outlined,
+                                          size: 15,
+                                        ),
+                                        label: const Text(
+                                          'Camera',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => setS(
-                                () => itemRows.add({
-                                  'name': TextEditingController(),
-                                  'qty': TextEditingController(text: '1'),
-                                  'price': TextEditingController(),
-                                }),
-                              ),
-                              icon: const Icon(Icons.add_rounded, size: 16),
-                              label: const Text('Add row'),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                side: const BorderSide(
-                                  color: AppColors.paperLine,
-                                  style: BorderStyle.solid,
-                                ),
-                              ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _bazarRowTotal(itemRows)
-                                .toStringAsFixed(2)
-                                .replaceAll(RegExp(r'\.?0+$'), ''),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.brandDark,
-                            ),
-                          ),
-                          const Text(
-                            ' ৳',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.inkFaded,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 16, color: AppColors.paperLine),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.receipt_long_rounded,
-                            size: 14,
-                            color: AppColors.inkFaded,
-                          ),
-                          const SizedBox(width: 6),
-                          const Expanded(
-                            child: Text(
-                              'Receipts — tap to add (jpg/png/pdf, up to 8 per save)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${pickedReceiptPaths.length} picked',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.brandDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (int i = 0; i < pickedReceiptPaths.length; i++)
+
+                          // 3) DAILY MEALS SECTION (if !bazarOnly)
+                          if (!bazarOnly) ...[
+                            const SizedBox(height: 14),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 6,
-                              ),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: AppColors.brandSoft,
-                                borderRadius: BorderRadius.circular(8),
+                                color: AppColors.paper,
+                                borderRadius: BorderRadius.circular(14),
                                 border: Border.all(color: AppColors.paperLine),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(
-                                    Icons.attach_file_rounded,
-                                    size: 12,
-                                    color: AppColors.brandDark,
+                                  Row(
+                                    children: const [
+                                      Icon(
+                                        Icons.restaurant_menu_rounded,
+                                        size: 16,
+                                        color: AppColors.brandDark,
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'DAILY MEALS (B · L · D)',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.ink,
+                                          letterSpacing: 0.6,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    pickedReceiptPaths[i].split('/').last,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.ink,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  InkWell(
-                                    onTap: () => setS(
-                                      () => pickedReceiptPaths.removeAt(i),
-                                    ),
-                                    child: const Icon(
-                                      Icons.close_rounded,
-                                      size: 14,
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    '0 = OFF (red pill). Empty = keep existing.',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
                                       color: AppColors.inkFaded,
                                     ),
                                   ),
+                                  const SizedBox(height: 10),
+                                  for (final m in members) ...[
+                                    Builder(
+                                      builder: (_) {
+                                        final mid = _toI(m['id']);
+                                        final ctrls = mealCtrls[mid]!;
+                                        return Container(
+                                          margin: const EdgeInsets.only(
+                                            bottom: 8,
+                                          ),
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.paperRaised,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color: AppColors.paperLine,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  (m['name'] ?? 'Member')
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: AppColors.ink,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: TextField(
+                                                  controller: ctrls['b']!,
+                                                  keyboardType:
+                                                      const TextInputType.numberWithOptions(
+                                                        decimal: true,
+                                                      ),
+                                                  textAlign: TextAlign.center,
+                                                  decoration: InputDecoration(
+                                                    labelText: 'B',
+                                                    hintText: '—',
+                                                    isDense: true,
+                                                    contentPadding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 7,
+                                                        ),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Expanded(
+                                                child: TextField(
+                                                  controller: ctrls['l']!,
+                                                  keyboardType:
+                                                      const TextInputType.numberWithOptions(
+                                                        decimal: true,
+                                                      ),
+                                                  textAlign: TextAlign.center,
+                                                  decoration: InputDecoration(
+                                                    labelText: 'L',
+                                                    hintText: '—',
+                                                    isDense: true,
+                                                    contentPadding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 7,
+                                                        ),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Expanded(
+                                                child: TextField(
+                                                  controller: ctrls['d']!,
+                                                  keyboardType:
+                                                      const TextInputType.numberWithOptions(
+                                                        decimal: true,
+                                                      ),
+                                                  textAlign: TextAlign.center,
+                                                  decoration: InputDecoration(
+                                                    labelText: 'D',
+                                                    hintText: '—',
+                                                    isDense: true,
+                                                    contentPadding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 7,
+                                                        ),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
-                          InkWell(
-                            onTap: () async {
-                              final picked = await _pickReceiptImages();
-                              if (picked.isNotEmpty) {
-                                setS(() => pickedReceiptPaths.addAll(picked));
+                          ],
+
+                          // 4) APPROVED GUESTS (IF ANY)
+                          Builder(
+                            builder: (_) {
+                              final guestListForDay =
+                                  (_byDay(_asMap(sheet['guestByDay']), day)
+                                      is List)
+                                  ? (_byDay(_asMap(sheet['guestByDay']), day)
+                                        as List)
+                                  : <dynamic>[];
+                              final passedForGuest = _toI(
+                                sheet['passedDays'] ??
+                                    _asMap(sheet['month'])['passed_days'],
+                              );
+                              final isFutureGuestDay = day > passedForGuest;
+                              if (guestListForDay.isEmpty) {
+                                return const SizedBox.shrink();
                               }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.paperRaised,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: AppColors.paperLine,
-                                  style: BorderStyle.solid,
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(
-                                    Icons.add_a_photo_outlined,
-                                    size: 14,
-                                    color: AppColors.brandDark,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Add receipts',
+                                  const SizedBox(height: 14),
+                                  const Text(
+                                    'APPROVED GUESTS ON THIS DAY',
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.brandDark,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.inkFaded,
+                                      letterSpacing: 0.6,
                                     ),
                                   ),
+                                  const SizedBox(height: 6),
+                                  for (final g in guestListForDay)
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 7,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.emeraldSoft.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        borderRadius: BorderRadius.circular(9),
+                                        border: Border.all(
+                                          color: AppColors.emerald.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              '${g['guest_name'] ?? 'Guest'} ×${g['guest_count'] ?? 1} · ${(g['slots'] is List ? (g['slots'] as List).join(' + ') : (g['count'] ?? '').toString())}',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.ink,
+                                              ),
+                                            ),
+                                          ),
+                                          if (isFutureGuestDay)
+                                            TextButton(
+                                              onPressed: () async {
+                                                final ok =
+                                                    await showDialog<bool>(
+                                                      context: context,
+                                                      builder: (c) =>
+                                                          AlertDialog(
+                                                            title: Text(
+                                                              'Remove guest ${g['guest_name'] ?? ''}?',
+                                                            ),
+                                                            content: const Text(
+                                                              'This cannot be undone.',
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                      c,
+                                                                      false,
+                                                                    ),
+                                                                child:
+                                                                    const Text(
+                                                                      'Cancel',
+                                                                    ),
+                                                              ),
+                                                              FilledButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                      c,
+                                                                      true,
+                                                                    ),
+                                                                style: FilledButton.styleFrom(
+                                                                  backgroundColor:
+                                                                      AppColors
+                                                                          .danger,
+                                                                ),
+                                                                child:
+                                                                    const Text(
+                                                                      'Remove',
+                                                                    ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                    );
+                                                if (ok != true) return;
+                                                try {
+                                                  await _repo.removeGuestMeal(
+                                                    widget.messId,
+                                                    widget.monthId,
+                                                    _toI(g['id']),
+                                                  );
+                                                  if (context.mounted) {
+                                                    Navigator.pop(ctx2);
+                                                    _refresh();
+                                                  }
+                                                } catch (e) {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(
+                                                      ctx2,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          'Remove failed: $e',
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                              child: const Text(
+                                                'Remove',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: AppColors.danger,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            )
+                                          else
+                                            const Text(
+                                              'past/today',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: AppColors.inkFaded,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
                                 ],
-                              ),
-                            ),
+                              );
+                            },
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Or quick total (web fallback):',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      TextField(
-                        controller: amountCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          hintText:
-                              'Total amount ৳ (quick) — leave empty if using rows above',
-                          isDense: true,
-                          prefixIcon: Icon(
-                            Icons.payments_outlined,
-                            size: 16,
-                            color: AppColors.inkFaded,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: () async {
-                      if (selDay == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Pick a day')),
-                        );
-                        return;
-                      }
-                      final hasRows = itemRows.any(
-                        (r) =>
-                            r['name']!.text.trim().isNotEmpty ||
-                            r['price']!.text.trim().isNotEmpty,
-                      );
-                      final quickAmt = double.tryParse(amountCtrl.text.trim());
-                      if (!hasRows &&
-                          quickAmt == null &&
-                          pickedReceiptPaths.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Add at least one item, amount, or receipt',
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-                      try {
-                        if (hasRows || pickedReceiptPaths.isNotEmpty) {
-                          final items = itemRows
-                              .where(
-                                (r) =>
-                                    r['name']!.text.trim().isNotEmpty ||
-                                    double.tryParse(r['price']!.text.trim()) !=
-                                        null,
-                              )
-                              .map(
-                                (r) => {
-                                  'name': r['name']!.text.trim().isEmpty
-                                      ? 'Item'
-                                      : r['name']!.text.trim(),
-                                  'qty': r['qty']!.text.trim().isEmpty
-                                      ? '1'
-                                      : r['qty']!.text.trim(),
-                                  'price': r['price']!.text.trim().isEmpty
-                                      ? '0'
-                                      : r['price']!.text.trim(),
-                                },
-                              )
-                              .toList();
-                          if (items.isEmpty && pickedReceiptPaths.isNotEmpty) {
-                            // Receipt-only: send one dummy row that backend will skip but validation needs items
-                            items.add({'name': '', 'qty': '0', 'price': '0'});
-                          }
-                          await _repo.saveBazarItems(
-                            messId: widget.messId,
-                            monthId: widget.monthId,
-                            day: selDay!,
-                            items: items,
-                            receiptPaths: pickedReceiptPaths.isEmpty
-                                ? null
-                                : pickedReceiptPaths,
-                          );
-                        } else {
-                          await _repo.saveBazar(
-                            messId: widget.messId,
-                            monthId: widget.monthId,
-                            day: selDay!,
-                            amount: quickAmt!,
-                          );
-                        }
-                        if (context.mounted) {
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Bazar saved')),
-                          );
-                          _refresh();
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                e.toString().replaceAll('Exception: ', ''),
+                  const Divider(height: 1, color: AppColors.paperLine),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(ctx2),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 44),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                          );
-                        }
-                      }
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.brandDark,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Text(
-                      'Save Bazar',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () async {
+                              if (!bazarOnly) {
+                                for (final m in members) {
+                                  final mid = _toI(m['id']);
+                                  final ctrls = mealCtrls[mid]!;
+                                  final bTxt = ctrls['b']!.text.trim();
+                                  final lTxt = ctrls['l']!.text.trim();
+                                  final dTxt = ctrls['d']!.text.trim();
+                                  if (bTxt.isEmpty &&
+                                      lTxt.isEmpty &&
+                                      dTxt.isEmpty) {
+                                    continue;
+                                  }
+                                  try {
+                                    await _repo.saveMeal(
+                                      messId: widget.messId,
+                                      monthId: widget.monthId,
+                                      memberId: mid,
+                                      day: day,
+                                      breakfast: bTxt.isEmpty
+                                          ? null
+                                          : _toD(bTxt),
+                                      lunch: lTxt.isEmpty ? null : _toD(lTxt),
+                                      dinner: dTxt.isEmpty ? null : _toD(dTxt),
+                                    );
+                                  } catch (_) {}
+                                }
+                              }
+                              final items = <Map<String, dynamic>>[];
+                              for (final r in rows) {
+                                final n = r['name']!.text.trim();
+                                if (n.isEmpty) continue;
+                                items.add({
+                                  'name': n,
+                                  'qty': _toD(r['qty']!.text),
+                                  'price': _toD(r['price']!.text),
+                                });
+                              }
+                              try {
+                                if (items.isNotEmpty) {
+                                  await _repo.saveBazarItems(
+                                    messId: widget.messId,
+                                    monthId: widget.monthId,
+                                    day: day,
+                                    items: items,
+                                  );
+                                } else if (bazarOnly) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(ctx2).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Add at least one item'),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                if (context.mounted) {
+                                  Navigator.pop(ctx2);
+                                  _refresh();
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(ctx2).showSnackBar(
+                                    SnackBar(content: Text('Save failed: $e')),
+                                  );
+                                }
+                              }
+                            },
+                            icon: const Icon(Icons.check_rounded, size: 18),
+                            label: const Text(
+                              'Save Entry',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.ink,
+                              minimumSize: const Size(double.infinity, 44),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -2795,7 +4424,7 @@ class _SheetViewState extends State<_SheetView> {
 class _PendingSection extends StatelessWidget {
   final int messId;
   final int monthId;
-  final Map<String, dynamic> sheet;
+  final Map sheet;
   final VoidCallback onHandled;
   const _PendingSection({
     required this.messId,
@@ -2803,163 +4432,238 @@ class _PendingSection extends StatelessWidget {
     required this.sheet,
     required this.onHandled,
   });
-
   @override
   Widget build(BuildContext context) {
-    final offReqByDay = sheet['offReqByDay'] as Map<String, dynamic>? ?? {};
-    final guestPending =
-        sheet['guestReqPending'] as Map<String, dynamic>? ?? {};
+    List<dynamic> pendingOff = [];
+    if (sheet['pendingOffRequests'] is List) {
+      pendingOff = sheet['pendingOffRequests'] as List;
+    } else if (sheet['offReqByDay'] is Map) {
+      for (final v in (sheet['offReqByDay'] as Map).values) {
+        if (v is List) pendingOff.addAll(v);
+      }
+    }
+    List<dynamic> pendingGuest = [];
+    if (sheet['pendingGuestRequests'] is List) {
+      pendingGuest = sheet['pendingGuestRequests'] as List;
+    } else if (sheet['guestReqPending'] is Map) {
+      for (final v in (sheet['guestReqPending'] as Map).values) {
+        if (v is List) pendingGuest.addAll(v);
+      }
+    }
+    if (pendingOff.isEmpty && pendingGuest.isEmpty) {
+      return const SizedBox.shrink();
+    }
     final repo = MessRepository();
-    final hasOff = offReqByDay.isNotEmpty;
-    final hasGuest = guestPending.isNotEmpty;
-    if (!hasOff && !hasGuest) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'PENDING REQUESTS (manager)',
-          style: TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w900,
-            color: AppColors.inkFaded,
-            letterSpacing: 0.8,
-          ),
+        Row(
+          children: const [
+            Icon(
+              Icons.pending_actions_rounded,
+              size: 14,
+              color: AppColors.brandDark,
+            ),
+            SizedBox(width: 6),
+            Text(
+              'PENDING MANAGER APPROVALS',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.brandDark,
+                letterSpacing: 0.6,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
-        if (hasOff)
+        for (final r in pendingOff)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-              color: AppColors.paperRaised,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.paperLine),
+              color: AppColors.brandSoft.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(11),
+              border: Border.all(
+                color: AppColors.brandDark.withValues(alpha: 0.18),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                const Text(
-                  'Meal-off requests',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                for (final entry in offReqByDay.entries)
-                  for (final r in (entry.value as List<dynamic>))
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Day ${r['day']} — ${(r['member']?['name'] ?? 'Member')} • ${r['note'] ?? ''}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              await repo.handleMealOff(
-                                messId,
-                                monthId,
-                                r['id'] as int,
-                                'deny',
-                              );
-                              onHandled();
-                            },
-                            child: const Text('Deny'),
-                          ),
-                          FilledButton(
-                            onPressed: () async {
-                              await repo.handleMealOff(
-                                messId,
-                                monthId,
-                                r['id'] as int,
-                                'approve',
-                              );
-                              onHandled();
-                            },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.emerald,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              minimumSize: Size.zero,
-                            ),
-                            child: const Text('Approve'),
-                          ),
-                        ],
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandDark,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Day ${r['day']}',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
                     ),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (r['member_name'] ?? r['member']?['name'] ?? 'Member')
+                            .toString(),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      Text(
+                        '${r['label'] ?? (r['is_reenable'] == true ? 'Meal ON' : 'Meal OFF')}${r['note'] != null && r['note'].toString().isNotEmpty ? ' · "${r['note']}"' : ''}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.inkSoft,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                  onPressed: () async {
+                    await repo.handleMealOff(
+                      messId,
+                      monthId,
+                      r['id'] as int,
+                      'deny',
+                    );
+                    onHandled();
+                  },
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.danger,
+                    size: 20,
+                  ),
+                ),
+                IconButton(
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                  onPressed: () async {
+                    await repo.handleMealOff(
+                      messId,
+                      monthId,
+                      r['id'] as int,
+                      'approve',
+                    );
+                    onHandled();
+                  },
+                  icon: const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.emerald,
+                    size: 22,
+                  ),
+                ),
               ],
             ),
           ),
-        if (hasOff && hasGuest) const SizedBox(height: 8),
-        if (hasGuest)
+        for (final gr in pendingGuest)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-              color: AppColors.paperRaised,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.paperLine),
+              color: AppColors.emeraldSoft.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(11),
+              border: Border.all(
+                color: AppColors.emerald.withValues(alpha: 0.18),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                const Text(
-                  'Guest meal requests',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                for (final entry in guestPending.entries)
-                  for (final r in (entry.value as List<dynamic>))
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Day ${r['day']} — ${r['guest_name']} ×${r['guest_count']} • ${r['member']?['name'] ?? ''}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              await repo.handleGuestMeal(
-                                messId,
-                                monthId,
-                                r['id'] as int,
-                                'deny',
-                              );
-                              onHandled();
-                            },
-                            child: const Text('Deny'),
-                          ),
-                          FilledButton(
-                            onPressed: () async {
-                              await repo.handleGuestMeal(
-                                messId,
-                                monthId,
-                                r['id'] as int,
-                                'approve',
-                              );
-                              onHandled();
-                            },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.emerald,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              minimumSize: Size.zero,
-                            ),
-                            child: const Text('Approve'),
-                          ),
-                        ],
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.emerald,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Day ${gr['day']}',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
                     ),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${gr['member_name'] ?? gr['member']?['name'] ?? 'Member'} · ${gr['guest_name'] ?? 'Guest'} ×${gr['guest_count'] ?? 1}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      Text(
+                        'Guest Meal Request${gr['note'] != null && gr['note'].toString().isNotEmpty ? ' · "${gr['note']}"' : ''}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.inkSoft,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                  onPressed: () async {
+                    await repo.handleGuestMeal(
+                      messId,
+                      monthId,
+                      gr['id'] as int,
+                      'deny',
+                    );
+                    onHandled();
+                  },
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.danger,
+                    size: 20,
+                  ),
+                ),
+                IconButton(
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                  onPressed: () async {
+                    await repo.handleGuestMeal(
+                      messId,
+                      monthId,
+                      gr['id'] as int,
+                      'approve',
+                    );
+                    onHandled();
+                  },
+                  icon: const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.emerald,
+                    size: 22,
+                  ),
+                ),
               ],
             ),
           ),
-        const SizedBox(height: 12),
       ],
     );
   }

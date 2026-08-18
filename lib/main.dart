@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'app.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
 import 'core/logger/app_logger.dart';
 import 'core/network/dio_client.dart';
 
@@ -22,9 +24,29 @@ Future<void> main() async {
   AppLogger.i('MessMax starting');
   try {
     await Firebase.initializeApp();
-  } catch (e) {
-    // firebase_options.dart not yet generated — web Google still works, native waits for `flutterfire configure`
+    AppLogger.i('Firebase initialized successfully');
+  } catch (e, st) {
+    AppLogger.e('Firebase initialization failed: missing google-services.json or firebase_options.dart', e, st);
   }
+
+  // Initialize GoogleSignIn once at app boot so the Android
+  // Pigeon channel (getGoogleServicesJsonServerClientId) is bound
+  // before any button tap. serverClientId is passed explicitly so
+  // the plugin does NOT need to read the string resource over the
+  // channel (avoids channel-error on hot-restart).
+  if (!kIsWeb) {
+    try {
+      await GoogleSignIn.instance.initialize(
+        serverClientId:
+            '66639149544-53t28igfqu0ll8ts5a4na0t49kvlr88f.apps.googleusercontent.com',
+      );
+      AppLogger.i('GoogleSignIn initialized (native Credential Manager ready)');
+    } catch (e, st) {
+      AppLogger.w('GoogleSignIn initialize deferred/failed: \$e');
+      AppLogger.e('GoogleSignIn init error', e, st);
+    }
+  }
+
   await DioClient.hydrateAuth();
   runApp(const MessMaxApp());
 }
