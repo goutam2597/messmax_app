@@ -124,11 +124,17 @@ class DashboardActivityItem {
       if (data['notes'] != null && data['notes'].toString().isNotEmpty) {
         details['Notes'] = data['notes'].toString();
       }
-    } else if (model.type == 'member_join') {
+    } else if (model.type == 'member_join' || model.type == 'join_request') {
       type = DashboardActivityType.memberJoin;
-      tag = 'New Member';
-      highlightValue = data['role'] != null ? data['role'].toString().toUpperCase() : 'Member';
-      status = statusStr == 'approved' ? ActivityStatus.approved : ActivityStatus.pending;
+      tag = model.type == 'join_request' ? 'Join Request' : 'New Member';
+      highlightValue = data['user_name']?.toString() ?? (data['role'] != null ? data['role'].toString().toUpperCase() : 'Applicant');
+      status = statusStr == 'approved' ? ActivityStatus.approved : (statusStr == 'rejected' || statusStr == 'denied' ? ActivityStatus.declined : ActivityStatus.pending);
+      if (data['user_name'] != null) details['Applicant'] = data['user_name'].toString();
+      if (data['action'] != null) details['Action'] = data['action'].toString();
+    } else if (model.type == 'join_decision') {
+      type = DashboardActivityType.memberJoin;
+      tag = 'Join Result';
+      status = ActivityStatus.info;
     } else if (model.type == 'announcement') {
       type = DashboardActivityType.monthClose;
       tag = model.title.toLowerCase().contains('manager') ? 'Manager' : 'Announcement';

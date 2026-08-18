@@ -45,7 +45,7 @@ class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.brand,
           foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 48),
           textStyle: base.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
           ),
@@ -55,7 +55,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.ink,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 48),
           side: const BorderSide(color: AppColors.ink, width: 1.4),
           textStyle: base.textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,

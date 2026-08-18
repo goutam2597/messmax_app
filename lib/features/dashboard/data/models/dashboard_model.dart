@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class DashboardModel extends Equatable {
   final bool hasMess;
   final ActiveMessModel? activeMess;
+  final PendingJoinRequestModel? myPendingJoinRequest;
   final SummaryStatsModel summaryStats;
   final LedgerStatsModel ledgerStats;
   final PendingRequestsModel pendingRequests;
@@ -14,6 +15,7 @@ class DashboardModel extends Equatable {
   const DashboardModel({
     required this.hasMess,
     this.activeMess,
+    this.myPendingJoinRequest,
     required this.summaryStats,
     required this.ledgerStats,
     required this.pendingRequests,
@@ -27,6 +29,7 @@ class DashboardModel extends Equatable {
     final data = json['data'] as Map<String, dynamic>? ?? json;
     final hasMess = data['has_mess'] as bool? ?? false;
     final active = data['active_mess'] as Map<String, dynamic>?;
+    final myPending = data['my_pending_join_request'] as Map<String, dynamic>?;
     final summary = data['summary_stats'] as Map<String, dynamic>?;
     final stats = data['ledger_stats'] as Map<String, dynamic>?;
     final pending = data['pending_requests'] as Map<String, dynamic>?;
@@ -38,6 +41,7 @@ class DashboardModel extends Equatable {
     return DashboardModel(
       hasMess: hasMess,
       activeMess: active != null ? ActiveMessModel.fromJson(active) : null,
+      myPendingJoinRequest: myPending != null ? PendingJoinRequestModel.fromJson(myPending) : null,
       summaryStats: summary != null
           ? SummaryStatsModel.fromJson(summary)
           : const SummaryStatsModel(
@@ -79,6 +83,7 @@ class DashboardModel extends Equatable {
   List<Object?> get props => [
         hasMess,
         activeMess,
+        myPendingJoinRequest,
         summaryStats,
         ledgerStats,
         pendingRequests,
@@ -87,6 +92,35 @@ class DashboardModel extends Equatable {
         dailySheetTeaser,
         myMesses,
       ];
+}
+
+class PendingJoinRequestModel extends Equatable {
+  final int id;
+  final int messId;
+  final String messName;
+  final String messCode;
+  final String? createdAt;
+
+  const PendingJoinRequestModel({
+    required this.id,
+    required this.messId,
+    required this.messName,
+    required this.messCode,
+    this.createdAt,
+  });
+
+  factory PendingJoinRequestModel.fromJson(Map<String, dynamic> json) {
+    return PendingJoinRequestModel(
+      id: json['id'] as int? ?? 0,
+      messId: json['mess_id'] as int? ?? 0,
+      messName: json['mess_name'] as String? ?? 'Mess',
+      messCode: json['mess_code'] as String? ?? '',
+      createdAt: json['created_at'] as String?,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, messId, messName, messCode];
 }
 
 class SummaryStatsModel extends Equatable {

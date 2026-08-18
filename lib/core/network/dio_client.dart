@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 
 import '../config/app_config.dart';
 import 'auth_storage.dart';
@@ -42,6 +46,18 @@ class DioClient {
         _authInterceptor,
         LoggingInterceptor(),
       ]);
+
+    // Allow Laragon local development self-signed certificates
+    if (!kIsWeb) {
+      dio.httpClientAdapter = IOHttpClientAdapter(
+        createHttpClient: () {
+          final client = HttpClient();
+          client.badCertificateCallback =
+              (X509Certificate cert, String host, int port) => true;
+          return client;
+        },
+      );
+    }
 
     return dio;
   }

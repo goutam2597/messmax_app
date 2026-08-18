@@ -194,21 +194,33 @@ class _MessesViewState extends State<_MessesView> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          FilledButton.icon(
-                            onPressed: () {
-                              final cubit = context.read<MessCubit>();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MessFormScreen(cubit: cubit),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FilledButton.icon(
+                                onPressed: () {
+                                  final cubit = context.read<MessCubit>();
+                                  MessFormScreen.showAsDialog(
+                                    context,
+                                    cubit: cubit,
+                                    isIndividual: state.isIndividual,
+                                  );
+                                },
+                                icon: const Icon(Icons.add_rounded, size: 18),
+                                label: Text(
+                                  state.isIndividual ? 'Setup New Mess' : 'Create Mess',
+                                  style: const TextStyle(fontWeight: FontWeight.w800),
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.add_rounded, size: 20),
-                            label: const Text('Create New Mess'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.brandDark,
-                            ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.brandDark,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

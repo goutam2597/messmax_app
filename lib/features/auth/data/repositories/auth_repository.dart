@@ -71,6 +71,14 @@ class AuthRepository {
       final data = <String, dynamic>{'idToken': idToken};
       if (accountType != null) data['account_type'] = accountType;
       final res = await _dio.post(ApiEndpoints.authFirebase, data: data);
+      if (res.data is! Map<String, dynamic>) {
+        throw DioException(
+          requestOptions: res.requestOptions,
+          response: res,
+          type: DioExceptionType.badResponse,
+          error: 'Invalid response from server (${res.statusCode}): ${res.data}',
+        );
+      }
       final body = res.data as Map<String, dynamic>;
       if (res.statusCode != null && res.statusCode! >= 400) {
         throw _asDioException(res, body);

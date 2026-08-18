@@ -12,7 +12,10 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
+import '../../../mess/presentation/cubit/mess_cubit.dart';
+import '../../../mess/presentation/cubit/mess_state.dart';
 import '../../../mess/presentation/screens/mess_detail_screen.dart';
+import '../../../mess/presentation/screens/mess_form_screen.dart';
 import '../../../mess/presentation/screens/mess_sheet_screen.dart';
 import '../../../bazar_schedule/presentation/screens/bazar_schedule_screen.dart';
 import '../widgets/mess_drawer.dart';
@@ -42,6 +45,186 @@ class _DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<_DashboardView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _activeSection = 'dashboard';
+
+  Future<void> _openJoinMessDialog() async {
+    final codeCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool loading = false;
+
+    final joined = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) => Dialog(
+          backgroundColor: AppColors.paperRaised,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: const BorderSide(color: AppColors.paperLine),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandSoft,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.key_rounded,
+                            color: AppColors.brandDark,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Join a Mess',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.ink,
+                                ),
+                              ),
+                              Text(
+                                'Enter secret mess code or slug',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: AppColors.inkFaded,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => Navigator.pop(context, false),
+                            borderRadius: BorderRadius.circular(20),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: Icon(Icons.close_rounded, size: 18, color: AppColors.inkSoft),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'MESS SECRET CODE *',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.inkFaded,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: codeCtrl,
+                      autofocus: true,
+                      textCapitalization: TextCapitalization.characters,
+                      validator: (v) =>
+                          v == null || v.trim().isEmpty ? 'Please enter mess code' : null,
+                      decoration: const InputDecoration(
+                        hintText: 'e.g. #MX-0002 or mess-slug',
+                        prefixIcon: Icon(Icons.tag_rounded, color: AppColors.inkFaded),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: loading ? null : () => Navigator.pop(context, false),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.inkSoft,
+                              side: const BorderSide(color: AppColors.paperLine),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: loading
+                                ? null
+                                : () async {
+                                    if (!formKey.currentState!.validate()) return;
+                                    setDlgState(() => loading = true);
+                                    final messCubit = MessCubit();
+                                    final msg = await messCubit.joinMess(codeCtrl.text.trim());
+                                    if (!context.mounted) return;
+                                    setDlgState(() => loading = false);
+                                    if (msg != null) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(msg),
+                                          backgroundColor: AppColors.brandDark,
+                                        ),
+                                      );
+                                      Navigator.pop(context, true);
+                                    } else {
+                                      final err = messCubit.state is MessError
+                                          ? (messCubit.state as MessError).message
+                                          : 'Failed to submit join request. Check code.';
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text(err)),
+                                      );
+                                    }
+                                  },
+                            icon: loading
+                                ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.send_rounded, size: 18),
+                            label: Text(loading ? 'Sending...' : 'Send Request'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.brandDark,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (joined == true && mounted) {
+      context.read<DashboardCubit>().loadDashboard(forceRefresh: true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -399,6 +582,10 @@ class _DashboardViewState extends State<_DashboardView> {
 
                 if (state is DashboardLoaded) {
                   final dashboard = state.dashboard;
+                  final authState = context.watch<AuthCubit>().state;
+                  final isIndividual = authState is AuthAuthenticated
+                      ? authState.user.isIndividual
+                      : true;
 
                   if (!dashboard.hasMess) {
                     return RefreshIndicator(
@@ -412,6 +599,57 @@ class _DashboardViewState extends State<_DashboardView> {
                         child: Center(
                           child: Column(
                             children: [
+                              if (dashboard.myPendingJoinRequest != null) ...[
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 24),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEFF6FF),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFDBEAFE),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(
+                                          Icons.hourglass_top_rounded,
+                                          color: Color(0xFF1D4ED8),
+                                          size: 20,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Join Request Pending',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w800,
+                                                color: Color(0xFF1E3A8A),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Requested to join ${dashboard.myPendingJoinRequest!.messName} (${dashboard.myPendingJoinRequest!.messCode}). Awaiting manager approval.',
+                                              style: const TextStyle(
+                                                fontSize: 11.5,
+                                                color: Color(0xFF3B82F6),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                               Container(
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
@@ -434,29 +672,70 @@ class _DashboardViewState extends State<_DashboardView> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              const Text(
-                                'Create your first mess or ask your manager for an invite link to start tracking daily meals and expenses.',
+                              Text(
+                                isIndividual
+                                    ? 'Set up your mess ledger to manage meals, or join an existing mess with a secret code.'
+                                    : 'Create a new mess or join an existing mess with a secret code to start tracking meals.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.inkFaded,
                                   height: 1.4,
                                 ),
                               ),
                               const SizedBox(height: 24),
-                              FilledButton.icon(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Create Mess coming soon'),
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: [
+                                  FilledButton.icon(
+                                    onPressed: () async {
+                                      final messCubit = MessCubit();
+                                      final created = await MessFormScreen.showAsDialog(
+                                        context,
+                                        cubit: messCubit,
+                                        isIndividual: isIndividual,
+                                      );
+                                      if (created == true && context.mounted) {
+                                        context.read<DashboardCubit>().loadDashboard(forceRefresh: true);
+                                      }
+                                    },
+                                    icon: const Icon(Icons.add_rounded, size: 18),
+                                    label: Text(
+                                      isIndividual ? 'Setup New Mess' : 'Create Mess',
+                                      style: const TextStyle(fontWeight: FontWeight.w800),
                                     ),
-                                  );
-                                },
-                                icon: const Icon(Icons.add_rounded, size: 20),
-                                label: const Text('Create New Mess'),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppColors.brandDark,
-                                ),
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: AppColors.brandDark,
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size(140, 46),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  OutlinedButton.icon(
+                                    onPressed: _openJoinMessDialog,
+                                    icon: const Icon(Icons.key_rounded, size: 17, color: AppColors.brandDark),
+                                    label: const Text(
+                                      'Join a Mess',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.brandDark,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: AppColors.brandDark, width: 1.4),
+                                      minimumSize: const Size(140, 46),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -1301,19 +1580,25 @@ class _DashboardViewState extends State<_DashboardView> {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: items[i].type == 'guest_meal'
-                              ? AppColors.brandSoft
-                              : const Color(0xFFFDF2F2),
+                          color: items[i].type == 'join_request'
+                              ? const Color(0xFFEFF6FF)
+                              : (items[i].type == 'guest_meal'
+                                  ? AppColors.brandSoft
+                                  : const Color(0xFFFDF2F2)),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
-                          items[i].type == 'guest_meal'
-                              ? Icons.person_add_outlined
-                              : Icons.event_busy_outlined,
+                          items[i].type == 'join_request'
+                              ? Icons.group_add_rounded
+                              : (items[i].type == 'guest_meal'
+                                  ? Icons.person_add_outlined
+                                  : Icons.event_busy_outlined),
                           size: 20,
-                          color: items[i].type == 'guest_meal'
-                              ? AppColors.brandDark
-                              : const Color(0xFFA02626),
+                          color: items[i].type == 'join_request'
+                              ? const Color(0xFF1D4ED8)
+                              : (items[i].type == 'guest_meal'
+                                  ? AppColors.brandDark
+                                  : const Color(0xFFA02626)),
                         ),
                       ),
                       const SizedBox(width: 12),

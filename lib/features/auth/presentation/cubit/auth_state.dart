@@ -39,3 +39,11 @@ class AuthError extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+class AuthNeedsAccountType extends AuthState {
+  final String idToken;
+  final String email;
+  const AuthNeedsAccountType({required this.idToken, required this.email});
+  @override
+  List<Object?> get props => [idToken, email];
+}

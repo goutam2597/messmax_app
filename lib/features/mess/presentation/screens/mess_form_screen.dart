@@ -9,6 +9,7 @@ class MessFormScreen extends StatefulWidget {
   final MessCubit cubit;
   final bool isBottomSheet;
   final bool isDialog;
+  final bool isIndividual;
 
   const MessFormScreen({
     super.key,
@@ -16,12 +17,14 @@ class MessFormScreen extends StatefulWidget {
     required this.cubit,
     this.isBottomSheet = false,
     this.isDialog = false,
+    this.isIndividual = false,
   });
 
   static Future<bool?> showAsDialog(
     BuildContext context, {
     MessModel? mess,
     required MessCubit cubit,
+    bool isIndividual = false,
   }) {
     return showDialog<bool>(
       context: context,
@@ -45,6 +48,7 @@ class MessFormScreen extends StatefulWidget {
             mess: mess,
             cubit: cubit,
             isDialog: true,
+            isIndividual: isIndividual,
           ),
         ),
       ),
@@ -55,8 +59,9 @@ class MessFormScreen extends StatefulWidget {
     BuildContext context, {
     MessModel? mess,
     required MessCubit cubit,
+    bool isIndividual = false,
   }) {
-    return showAsDialog(context, mess: mess, cubit: cubit);
+    return showAsDialog(context, mess: mess, cubit: cubit, isIndividual: isIndividual);
   }
 
   @override
@@ -600,8 +605,12 @@ class _MessFormScreenState extends State<MessFormScreen> {
                     ),
               label: Text(
                 _saving
-                    ? (isEdit ? 'Saving...' : 'Creating...')
-                    : (isEdit ? 'Save Changes' : 'Create Mess'),
+                    ? (isEdit
+                        ? 'Saving...'
+                        : (widget.isIndividual ? 'Setting up...' : 'Creating...'))
+                    : (isEdit
+                        ? 'Save Changes'
+                        : (widget.isIndividual ? 'Setup Mess' : 'Create Mess')),
                 style: const TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 14,
@@ -649,7 +658,11 @@ class _MessFormScreenState extends State<MessFormScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isEdit ? 'Edit Mess Details' : 'Create New Mess',
+                        isEdit
+                            ? 'Edit Mess Details'
+                            : (widget.isIndividual
+                                ? 'Setup New Mess'
+                                : 'Create New Mess'),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
@@ -660,7 +673,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                       Text(
                         isEdit
                             ? 'Update name, location & billing cycle'
-                            : 'Setup a new shared mess ledger',
+                            : (widget.isIndividual
+                                ? 'Setup your mess ledger & meal system'
+                                : 'Setup a new shared mess ledger'),
                         style: const TextStyle(
                           fontSize: 11.5,
                           color: AppColors.inkFaded,

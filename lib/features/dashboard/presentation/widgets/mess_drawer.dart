@@ -595,7 +595,9 @@ class MessDrawer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Code: $messCode',
+                      messCode != '—' && messCode.isNotEmpty
+                          ? 'Code: $messCode'
+                          : (isIndividual ? 'No mess yet' : 'Console'),
                       style: const TextStyle(
                         fontSize: 11,
                         color: Colors.white70,
@@ -1126,6 +1128,11 @@ class MessDrawer extends StatelessWidget {
     if (confirmed == true && context.mounted) {
       Navigator.of(context).pop(); // close drawer
       context.read<AuthCubit>().logout();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MainShellScreen()),
+        (route) => false,
+      );
     }
   }
 }

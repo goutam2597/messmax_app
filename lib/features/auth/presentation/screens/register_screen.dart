@@ -23,7 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _email = TextEditingController();
   final _pass = TextEditingController();
   final _confirm = TextEditingController();
-  String _accountType = 'hostel_owner';
+  String _accountType = 'individual';
   bool _obscure1 = true;
   bool _obscure2 = true;
 
@@ -63,28 +63,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     if (_pass.text != _confirm.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
       return;
     }
     context.read<AuthCubit>().register(
-          name: _name.text.trim(),
-          email: _email.text.trim(),
-          password: _pass.text,
-          passwordConfirmation: _confirm.text,
-          accountType: _accountType,
-        );
+      name: _name.text.trim(),
+      email: _email.text.trim(),
+      password: _pass.text,
+      passwordConfirmation: _confirm.text,
+      accountType: _accountType,
+    );
   }
 
-  void _googleWithPick() async {
-    final selectedRole = await SignUpRoleDialog.show(
-      context,
-      initialRole: _accountType,
-    );
-    if (selectedRole == null || !mounted) return;
-    setState(() => _accountType = selectedRole);
-    context.read<AuthCubit>().loginWithGoogle(accountType: selectedRole);
+  void _googleWithPick() {
+    // Google first — no dialog before. If the account is new, the listener
+    // shows the role picker AFTER Google signs in; existing users go straight in.
+    context.read<AuthCubit>().loginWithGoogle();
   }
 
   @override
@@ -98,17 +94,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
         leading: const AppBackButton(),
       ),
       body: BlocListener<AuthCubit, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AuthAuthenticated) {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const DashboardScreen()),
               (_) => false,
             );
           }
-          if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+          if (state is AuthNeedsAccountType) {
+            // NEW Google account — choose role AFTER Google signed in
+            final picked = await SignUpRoleDialog.show(
+              context,
+              initialRole: _accountType,
             );
+            if (!context.mounted) return;
+            if (picked == null) {
+              context.read<AuthCubit>().cancelGooglePick();
+              return;
+            }
+            setState(() => _accountType = picked);
+            context.read<AuthCubit>().completeGoogleWithAccountType(
+              idToken: state.idToken,
+              accountType: picked,
+            );
+          }
+          if (state is AuthError) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: SafeArea(
@@ -208,8 +221,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final isAnyLoading = state is AuthLoading;
-        final isEmailLoading = state is AuthLoading && (state.type == AuthLoadingType.email || state.type == AuthLoadingType.general);
-        final isGoogleLoading = state is AuthLoading && state.type == AuthLoadingType.google;
+        final isEmailLoading =
+            state is AuthLoading &&
+            (state.type == AuthLoadingType.email ||
+                state.type == AuthLoadingType.general);
+        final isGoogleLoading =
+            state is AuthLoading && state.type == AuthLoadingType.google;
         final err = state is AuthError ? state.message : null;
 
         return AnimatedContainer(
@@ -242,7 +259,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                     hintText: 'e.g. Goutam Sharma',
-                    prefixIcon: Icon(Icons.person_outline_rounded, size: 20, color: AppColors.inkFaded),
+                    prefixIcon: Icon(
+                      Icons.person_outline_rounded,
+                      size: 20,
+                      color: AppColors.inkFaded,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -253,7 +274,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     hintText: 'you@example.com',
-                    prefixIcon: Icon(Icons.email_outlined, size: 20, color: AppColors.inkFaded),
+                    prefixIcon: Icon(
+                      Icons.email_outlined,
+                      size: 20,
+                      color: AppColors.inkFaded,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -270,7 +295,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     Text(
                       ' *',
-                      style: TextStyle(color: AppColors.brandDark, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: AppColors.brandDark,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -279,21 +307,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     Expanded(
                       child: AccountTypeTile(
-                        title: 'Hostel Owner',
-                        subtitle: 'Multi-mess owner',
-                        icon: Icons.business_rounded,
-                        selected: _accountType == 'hostel_owner',
-                        onTap: () => setState(() => _accountType = 'hostel_owner'),
+                        title: 'Individual',
+                        subtitle: 'Single mess',
+                        icon: Icons.person_rounded,
+                        selected: _accountType == 'individual',
+                        onTap: () =>
+                            setState(() => _accountType = 'individual'),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: AccountTypeTile(
-                        title: 'Individual',
-                        subtitle: 'Single mess member',
-                        icon: Icons.person_rounded,
-                        selected: _accountType == 'individual',
-                        onTap: () => setState(() => _accountType = 'individual'),
+                        title: 'Hostel Owner',
+                        subtitle: 'Multi-mess owner',
+                        icon: Icons.business_rounded,
+                        selected: _accountType == 'hostel_owner',
+                        onTap: () =>
+                            setState(() => _accountType = 'hostel_owner'),
                       ),
                     ),
                   ],
@@ -338,7 +368,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Already have an account? ', style: TextStyle(fontSize: 13, color: AppColors.inkFaded)),
+                    const Text(
+                      'Already have an account? ',
+                      style: TextStyle(fontSize: 13, color: AppColors.inkFaded),
+                    ),
                     GestureDetector(
                       onTap: () => Navigator.of(context).maybePop(),
                       child: const Text(
@@ -355,7 +388,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ] else ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.paper,
                     borderRadius: BorderRadius.circular(12),
@@ -375,25 +411,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           children: [
                             Text(
                               _name.text.trim(),
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.ink),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.ink,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               _email.text.trim(),
-                              style: const TextStyle(fontSize: 11.5, color: AppColors.inkFaded),
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: AppColors.inkFaded,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.brandSoft,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          _accountType == 'hostel_owner' ? 'OWNER' : 'INDIVIDUAL',
+                          _accountType == 'hostel_owner'
+                              ? 'OWNER'
+                              : 'INDIVIDUAL',
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -412,9 +460,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   obscureText: _obscure1,
                   decoration: InputDecoration(
                     hintText: 'At least 6 characters',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.inkFaded),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 20,
+                      color: AppColors.inkFaded,
+                    ),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure1 ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 18, color: AppColors.inkFaded),
+                      icon: Icon(
+                        _obscure1
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                        size: 18,
+                        color: AppColors.inkFaded,
+                      ),
                       onPressed: () => setState(() => _obscure1 = !_obscure1),
                     ),
                   ),
@@ -428,9 +486,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
                     hintText: 'Repeat password',
-                    prefixIcon: const Icon(Icons.lock_reset_rounded, size: 20, color: AppColors.inkFaded),
+                    prefixIcon: const Icon(
+                      Icons.lock_reset_rounded,
+                      size: 20,
+                      color: AppColors.inkFaded,
+                    ),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure2 ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 18, color: AppColors.inkFaded),
+                      icon: Icon(
+                        _obscure2
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                        size: 18,
+                        color: AppColors.inkFaded,
+                      ),
                       onPressed: () => setState(() => _obscure2 = !_obscure2),
                     ),
                   ),
@@ -438,12 +506,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 20),
                 FilledButton(
                   onPressed: isAnyLoading ? null : _submit,
-                  style: FilledButton.styleFrom(backgroundColor: AppColors.brandDark),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.brandDark,
+                  ),
                   child: isEmailLoading
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,

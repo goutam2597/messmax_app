@@ -78,6 +78,42 @@ class MessRepository {
     }
   }
 
+  Future<String> joinMess(String code, {String? note}) async {
+    try {
+      final res = await _dio.post(
+        '${ApiEndpoints.messes}/join',
+        data: {
+          'code': code.trim(),
+          if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+        },
+      );
+      final data = res.data as Map<String, dynamic>;
+      if (data['success'] == true) {
+        return (data['message'] as String?) ?? 'Join request sent to managers for approval.';
+      }
+      throw Exception(data['message'] ?? 'Failed to submit join request');
+    } catch (e) {
+      AppLogger.w('joinMess failed: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> handleJoinRequest(int requestId, bool approve) async {
+    try {
+      final res = await _dio.post(
+        '${ApiEndpoints.messes}/join-requests/$requestId/handle',
+        data: {'action': approve ? 'approve' : 'reject'},
+      );
+      final data = res.data as Map<String, dynamic>;
+      if (data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to handle join request');
+      }
+    } catch (e) {
+      AppLogger.w('handleJoinRequest failed: $e');
+      rethrow;
+    }
+  }
+
   Future<MessModel> updateMess(int id, Map<String, dynamic> payload) async {
     try {
       final res = await _dio.post('${ApiEndpoints.messes}/$id', data: payload);

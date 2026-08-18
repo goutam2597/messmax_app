@@ -170,7 +170,7 @@ class AccountTypeTile extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFFFFF8F2) : AppColors.paperRaised,
           borderRadius: BorderRadius.circular(16),
@@ -219,7 +219,7 @@ class AccountTypeTile extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 12,
                       fontWeight: FontWeight.w800,
                       color: selected ? AppColors.ink : AppColors.inkSoft,
                     ),
@@ -228,7 +228,7 @@ class AccountTypeTile extends StatelessWidget {
                   Text(
                     subtitle,
                     style: const TextStyle(
-                      fontSize: 11,
+                      fontSize: 10,
                       color: AppColors.inkFaded,
                       height: 1.25,
                     ),

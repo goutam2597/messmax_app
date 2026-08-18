@@ -8,11 +8,11 @@ import '../theme/app_colors.dart';
 class SignUpRoleDialog extends StatefulWidget {
   final String initialRole;
 
-  const SignUpRoleDialog({super.key, this.initialRole = 'hostel_owner'});
+  const SignUpRoleDialog({super.key, this.initialRole = 'individual'});
 
   static Future<String?> show(
     BuildContext context, {
-    String initialRole = 'hostel_owner',
+    String initialRole = 'individual',
   }) {
     return showDialog<String>(
       context: context,
@@ -129,18 +129,7 @@ class _SignUpRoleDialogState extends State<SignUpRoleDialog> {
               ),
               const SizedBox(height: 20),
 
-              // Option 1: Hostel Owner / Manager
-              _buildRoleCard(
-                role: 'hostel_owner',
-                title: 'Hostel Owner / Manager',
-                badge: 'MULTI-MESS',
-                description:
-                    'Manage multiple messes, post seat vacancy ads, meal counters, bazar ledgers & member deposits.',
-                icon: Icons.apartment_rounded,
-              ),
-              const SizedBox(height: 12),
-
-              // Option 2: Individual Member
+              // Option 1: Individual Member (preselected, first)
               _buildRoleCard(
                 role: 'individual',
                 title: 'Individual / Member',
@@ -148,6 +137,17 @@ class _SignUpRoleDialogState extends State<SignUpRoleDialog> {
                 description:
                     'Join a mess, track your daily meal count, monthly bills, bazar balance & browse available seats.',
                 icon: Icons.person_rounded,
+              ),
+              const SizedBox(height: 12),
+
+              // Option 2: Hostel Owner / Manager
+              _buildRoleCard(
+                role: 'hostel_owner',
+                title: 'Hostel Owner / Manager',
+                badge: 'MULTI-MESS',
+                description:
+                    'Manage multiple messes, post seat vacancy ads, meal counters, bazar ledgers & member deposits.',
+                icon: Icons.apartment_rounded,
               ),
               const SizedBox(height: 16),
 

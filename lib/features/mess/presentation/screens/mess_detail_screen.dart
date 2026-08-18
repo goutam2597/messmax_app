@@ -334,7 +334,7 @@ class _MessDetailView extends StatelessWidget {
           ),
 
           // Manager Action Buttons
-          if (canManage || mess.isOwner) ...[
+          if (canManage || (!mess.isIndividualMess && mess.isOwner)) ...[
             const SizedBox(height: 12),
             Row(
               children: [
@@ -405,7 +405,7 @@ class _MessDetailView extends StatelessWidget {
                     ),
                   ),
                 ],
-                if (mess.isOwner) ...[
+                if (!mess.isIndividualMess && mess.isOwner) ...[
                   const SizedBox(width: 8),
                   InkWell(
                     onTap: () => _confirmDeleteMess(context, mess),
@@ -708,7 +708,7 @@ class _MessDetailView extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           activeMonth.cycleLabel.isNotEmpty
-                              ? activeMonth.cycleLabel
+                              ? activeMonth.cycleLabel.replaceAll(r'\u2192', '→')
                               : '${activeMonth.daysInMonth} Days cycle',
                           style: const TextStyle(
                             fontSize: 11.5,
@@ -1354,8 +1354,11 @@ class _MessDetailView extends StatelessWidget {
   // MODALS: OPEN MONTH SHEET
   // ==========================================
   void _showCreateMonthModal(BuildContext context, int messId) {
-    final yearCtrl = TextEditingController(text: '${DateTime.now().year}');
-    int selectedMonth = DateTime.now().month;
+    final now = DateTime.now();
+    final yearCtrl = TextEditingController(text: '${now.year}');
+    int selectedMonth = now.month;
+    DateTime? startDate;
+    DateTime? endDate;
 
     const monthNames = [
       'January',
@@ -1372,6 +1375,14 @@ class _MessDetailView extends StatelessWidget {
       'December',
     ];
 
+    String formatIsoDate(DateTime d) {
+      return '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    }
+
+    String formatDisplayDate(DateTime d) {
+      return '${d.day} ${monthNames[d.month - 1].substring(0, 3)} ${d.year}';
+    }
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -1379,7 +1390,6 @@ class _MessDetailView extends StatelessWidget {
         bool saving = false;
         return StatefulBuilder(
           builder: (ctx2, setS) {
-            final now = DateTime.now();
             final nextMonthDate = DateTime(now.year, now.month + 1, 1);
 
             return Dialog(
@@ -1393,332 +1403,567 @@ class _MessDetailView extends StatelessWidget {
                 side: const BorderSide(color: AppColors.paperLine),
               ),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 460),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header Row
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 14, 12),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.brandSoft,
-                              borderRadius: BorderRadius.circular(12),
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Row
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 14, 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.brandSoft,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.calendar_month_rounded,
+                                color: AppColors.brandDark,
+                                size: 20,
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.calendar_month_rounded,
-                              color: AppColors.brandDark,
-                              size: 20,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text(
+                                    'Open New Monthly Sheet',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.ink,
+                                    ),
+                                  ),
+                                  SizedBox(height: 1),
+                                  Text(
+                                    'Create 1–31 daily roster & ledger matrix',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: AppColors.inkFaded,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Open New Monthly Sheet',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.ink,
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => Navigator.pop(ctx2),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.paper,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.paperLine,
+                                    ),
                                   ),
-                                ),
-                                SizedBox(height: 1),
-                                Text(
-                                  'Create 1–31 daily roster & ledger matrix',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    color: AppColors.inkFaded,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => Navigator.pop(ctx2),
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: AppColors.paper,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppColors.paperLine,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.close_rounded,
-                                    size: 16,
-                                    color: AppColors.inkSoft,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.close_rounded,
+                                      size: 16,
+                                      color: AppColors.inkSoft,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const Divider(height: 1, color: AppColors.paperLine),
+                      const Divider(height: 1, color: AppColors.paperLine),
 
-                    Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Quick Preset Chips
-                          Row(
-                            children: [
-                              ActionChip(
-                                label: Text(
-                                  'Current: ${monthNames[now.month - 1]} ${now.year}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color:
-                                        selectedMonth == now.month &&
-                                            yearCtrl.text == '${now.year}'
-                                        ? Colors.white
-                                        : AppColors.ink,
+                      Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Quick Preset Chips
+                            Row(
+                              children: [
+                                ActionChip(
+                                  label: Text(
+                                    'Current: ${monthNames[now.month - 1]} ${now.year}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color:
+                                          selectedMonth == now.month &&
+                                              yearCtrl.text == '${now.year}'
+                                          ? Colors.white
+                                          : AppColors.ink,
+                                    ),
                                   ),
-                                ),
-                                backgroundColor:
-                                    selectedMonth == now.month &&
-                                        yearCtrl.text == '${now.year}'
-                                    ? AppColors.brandDark
-                                    : AppColors.paper,
-                                side: BorderSide(
-                                  color:
+                                  backgroundColor:
                                       selectedMonth == now.month &&
                                           yearCtrl.text == '${now.year}'
                                       ? AppColors.brandDark
-                                      : AppColors.paperLine,
+                                      : AppColors.paper,
+                                  side: BorderSide(
+                                    color:
+                                        selectedMonth == now.month &&
+                                            yearCtrl.text == '${now.year}'
+                                        ? AppColors.brandDark
+                                        : AppColors.paperLine,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  onPressed: () {
+                                    setS(() {
+                                      selectedMonth = now.month;
+                                      yearCtrl.text = '${now.year}';
+                                    });
+                                  },
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                onPressed: () {
-                                  setS(() {
-                                    selectedMonth = now.month;
-                                    yearCtrl.text = '${now.year}';
-                                  });
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                              ActionChip(
-                                label: Text(
-                                  'Next: ${monthNames[nextMonthDate.month - 1]} ${nextMonthDate.year}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
+                                const SizedBox(width: 8),
+                                ActionChip(
+                                  label: Text(
+                                    'Next: ${monthNames[nextMonthDate.month - 1]} ${nextMonthDate.year}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color:
+                                          selectedMonth == nextMonthDate.month &&
+                                              yearCtrl.text ==
+                                                  '${nextMonthDate.year}'
+                                          ? Colors.white
+                                          : AppColors.ink,
+                                    ),
+                                  ),
+                                  backgroundColor:
+                                      selectedMonth == nextMonthDate.month &&
+                                          yearCtrl.text == '${nextMonthDate.year}'
+                                      ? AppColors.brandDark
+                                      : AppColors.paper,
+                                  side: BorderSide(
                                     color:
                                         selectedMonth == nextMonthDate.month &&
                                             yearCtrl.text ==
                                                 '${nextMonthDate.year}'
-                                        ? Colors.white
-                                        : AppColors.ink,
+                                        ? AppColors.brandDark
+                                        : AppColors.paperLine,
                                   ),
-                                ),
-                                backgroundColor:
-                                    selectedMonth == nextMonthDate.month &&
-                                        yearCtrl.text == '${nextMonthDate.year}'
-                                    ? AppColors.brandDark
-                                    : AppColors.paper,
-                                side: BorderSide(
-                                  color:
-                                      selectedMonth == nextMonthDate.month &&
-                                          yearCtrl.text ==
-                                              '${nextMonthDate.year}'
-                                      ? AppColors.brandDark
-                                      : AppColors.paperLine,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                onPressed: () {
-                                  setS(() {
-                                    selectedMonth = nextMonthDate.month;
-                                    yearCtrl.text = '${nextMonthDate.year}';
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Month Dropdown & Year Input
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: DropdownButtonFormField<int>(
-                                  initialValue: selectedMonth,
-                                  decoration: InputDecoration(
-                                    labelText: 'Month',
-                                    filled: true,
-                                    fillColor: AppColors.paper,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 12,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.paperLine,
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.paperLine,
-                                      ),
-                                    ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  items: List.generate(12, (index) {
-                                    return DropdownMenuItem<int>(
-                                      value: index + 1,
-                                      child: Text(
-                                        monthNames[index],
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setS(() => selectedMonth = val);
-                                    }
+                                  onPressed: () {
+                                    setS(() {
+                                      selectedMonth = nextMonthDate.month;
+                                      yearCtrl.text = '${nextMonthDate.year}';
+                                    });
                                   },
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                flex: 2,
-                                child: TextField(
-                                  controller: yearCtrl,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    labelText: 'Year',
-                                    filled: true,
-                                    fillColor: AppColors.paper,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 12,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.paperLine,
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Month Dropdown & Year Input
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: DropdownButtonFormField<int>(
+                                    value: selectedMonth,
+                                    decoration: InputDecoration(
+                                      labelText: 'Month',
+                                      filled: true,
+                                      fillColor: AppColors.paper,
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 12,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.paperLine,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.paperLine,
+                                        ),
                                       ),
                                     ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.paperLine,
+                                    items: List.generate(12, (index) {
+                                      return DropdownMenuItem<int>(
+                                        value: index + 1,
+                                        child: Text(
+                                          monthNames[index],
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setS(() => selectedMonth = val);
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 2,
+                                  child: TextField(
+                                    controller: yearCtrl,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      labelText: 'Year',
+                                      filled: true,
+                                      fillColor: AppColors.paper,
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 12,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.paperLine,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.paperLine,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
 
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.icon(
-                              onPressed: saving
-                                  ? null
-                                  : () async {
-                                      setS(() => saving = true);
-                                      try {
-                                        await MessRepository()
-                                            .createMonth(messId, {
-                                              'year':
-                                                  int.tryParse(yearCtrl.text) ??
-                                                  DateTime.now().year,
-                                              'month': selectedMonth,
-                                            });
-                                        if (context.mounted) {
-                                          Navigator.pop(ctx2);
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Monthly sheet opened successfully',
+                            // --- Period Start & End Date Pickers (Two Individual Date Pickers) ---
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'CUSTOM BILLING CYCLE (OPTIONAL)',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                    color: AppColors.inkSoft,
+                                  ),
+                                ),
+                                if (startDate != null || endDate != null)
+                                  InkWell(
+                                    onTap: () {
+                                      setS(() {
+                                        startDate = null;
+                                        endDate = null;
+                                      });
+                                    },
+                                    child: const Text(
+                                      'Reset to Default',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.brandDark,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+
+                            // Row with 2 clean date selector boxes (Period Start & Period End)
+                            Row(
+                              children: [
+                                // 1. Period Start Date Picker Box
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () async {
+                                      final initialDate = startDate ??
+                                          DateTime(
+                                            int.tryParse(yearCtrl.text) ?? now.year,
+                                            selectedMonth,
+                                            1,
+                                          );
+                                      final picked = await showDatePicker(
+                                        context: context,
+                                        initialDate: initialDate,
+                                        firstDate: DateTime(2020),
+                                        lastDate: DateTime(2035),
+                                        builder: (context, child) {
+                                          return Theme(
+                                            data: Theme.of(context).copyWith(
+                                              colorScheme: const ColorScheme.light(
+                                                primary: AppColors.brandDark,
+                                                onPrimary: Colors.white,
+                                                surface: AppColors.paperRaised,
+                                                onSurface: AppColors.ink,
                                               ),
                                             ),
+                                            child: child!,
                                           );
-                                          context.read<MessCubit>().loadMess(
-                                            messId,
-                                          );
-                                        }
-                                      } catch (e) {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                e.toString().replaceAll(
-                                                  'Exception: ',
-                                                  '',
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      } finally {
-                                        setS(() => saving = false);
+                                        },
+                                      );
+                                      if (picked != null) {
+                                        setS(() {
+                                          startDate = picked;
+                                          if (endDate != null && endDate!.isBefore(picked)) {
+                                            endDate = picked.add(const Duration(days: 29));
+                                          }
+                                        });
                                       }
                                     },
-                              icon: saving
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.paper,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: startDate != null
+                                              ? AppColors.brandDark
+                                              : AppColors.paperLine,
+                                          width: startDate != null ? 1.4 : 1.0,
+                                        ),
                                       ),
-                                    )
-                                  : const Icon(
-                                      Icons.add_task_rounded,
-                                      size: 18,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Row(
+                                            children: [
+                                              Icon(Icons.calendar_today_rounded, size: 13, color: AppColors.brandDark),
+                                              SizedBox(width: 5),
+                                              Text(
+                                                'PERIOD START',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: AppColors.inkFaded,
+                                                  letterSpacing: 0.3,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            startDate != null
+                                                ? formatDisplayDate(startDate!)
+                                                : '${1} ${monthNames[selectedMonth - 1].substring(0, 3)} ${yearCtrl.text}',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w800,
+                                              color: startDate != null ? AppColors.ink : AppColors.inkSoft,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                              label: Text(
-                                saving ? 'Opening...' : 'Create Monthly Sheet',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
+                                  ),
                                 ),
+                                const SizedBox(width: 10),
+
+                                // 2. Period End Date Picker Box
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () async {
+                                      final defaultEnd = DateTime(
+                                        int.tryParse(yearCtrl.text) ?? now.year,
+                                        selectedMonth + 1,
+                                        0,
+                                      );
+                                      final initialDate = endDate ?? (startDate != null ? startDate!.add(const Duration(days: 29)) : defaultEnd);
+                                      final picked = await showDatePicker(
+                                        context: context,
+                                        initialDate: initialDate,
+                                        firstDate: startDate ?? DateTime(2020),
+                                        lastDate: DateTime(2035),
+                                        builder: (context, child) {
+                                          return Theme(
+                                            data: Theme.of(context).copyWith(
+                                              colorScheme: const ColorScheme.light(
+                                                primary: AppColors.brandDark,
+                                                onPrimary: Colors.white,
+                                                surface: AppColors.paperRaised,
+                                                onSurface: AppColors.ink,
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+                                      if (picked != null) {
+                                        setS(() {
+                                          endDate = picked;
+                                        });
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.paper,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: endDate != null
+                                              ? AppColors.brandDark
+                                              : AppColors.paperLine,
+                                          width: endDate != null ? 1.4 : 1.0,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Row(
+                                            children: [
+                                              Icon(Icons.event_available_rounded, size: 13, color: AppColors.brandDark),
+                                              SizedBox(width: 5),
+                                              Text(
+                                                'PERIOD END',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: AppColors.inkFaded,
+                                                  letterSpacing: 0.3,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            endDate != null
+                                                ? formatDisplayDate(endDate!)
+                                                : '${DateTime(int.tryParse(yearCtrl.text) ?? now.year, selectedMonth + 1, 0).day} ${monthNames[selectedMonth - 1].substring(0, 3)} ${yearCtrl.text}',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w800,
+                                              color: endDate != null ? AppColors.ink : AppColors.inkSoft,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (startDate != null && endDate != null) ...[
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(Icons.info_outline_rounded, size: 13, color: AppColors.brandDark),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${endDate!.difference(startDate!).inDays + 1} days in custom billing period (${formatIsoDate(startDate!)} → ${formatIsoDate(endDate!)})',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.inkFaded,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.brandDark,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
+                            ],
+                            const SizedBox(height: 20),
+
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed: saving
+                                    ? null
+                                    : () async {
+                                        setS(() => saving = true);
+                                        try {
+                                          final payload = <String, dynamic>{
+                                            'year': int.tryParse(yearCtrl.text) ?? DateTime.now().year,
+                                            'month': selectedMonth,
+                                          };
+                                          if (startDate != null && endDate != null) {
+                                            payload['cycle_start_date'] = formatIsoDate(startDate!);
+                                            payload['cycle_end_date'] = formatIsoDate(endDate!);
+                                          }
+                                          await MessRepository().createMonth(messId, payload);
+                                          if (context.mounted) {
+                                            Navigator.pop(ctx2);
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Monthly sheet opened successfully',
+                                                ),
+                                              ),
+                                            );
+                                            context.read<MessCubit>().loadMess(
+                                              messId,
+                                            );
+                                          }
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  e.toString().replaceAll(
+                                                    'Exception: ',
+                                                    '',
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        } finally {
+                                          setS(() => saving = false);
+                                        }
+                                      },
+                                icon: saving
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.add_task_rounded,
+                                        size: 18,
+                                      ),
+                                label: Text(
+                                  saving ? 'Opening...' : 'Create Monthly Sheet',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.brandDark,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

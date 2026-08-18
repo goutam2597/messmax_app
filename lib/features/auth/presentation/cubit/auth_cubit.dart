@@ -8,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/network/auth_storage.dart';
+import '../../../../core/network/cache_manager.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -107,6 +108,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<bool?> loginWithGoogle({String? accountType}) async {
     emit(const AuthLoading(AuthLoadingType.google));
     AppLogger.i('Google sign-in tapped (accountType=$accountType)');
+    String? idToken;
     try {
       if (Firebase.apps.isEmpty) {
         AppLogger.e('Google sign-in: Firebase not initialized');
@@ -114,8 +116,6 @@ class AuthCubit extends Cubit<AuthState> {
           'Firebase is not initialized. Place google-services.json in android/app/ and restart.',
         );
       }
-
-      String? idToken;
 
       if (kIsWeb) {
         AppLogger.d('Google sign-in: web popup flow');
@@ -173,8 +173,17 @@ class AuthCubit extends Cubit<AuthState> {
       return true;
     } on GoogleSignInException catch (e, st) {
       AppLogger.e('GoogleSignInException code=${e.code} desc=${e.description}', e, st);
-      if (e.code == GoogleSignInExceptionCode.canceled ||
-          e.code == GoogleSignInExceptionCode.interrupted) {
+      final desc = (e.description ?? '').toLowerCase();
+      final codeStr = e.code.toString().toLowerCase();
+      final isCancel = e.code == GoogleSignInExceptionCode.canceled ||
+          e.code == GoogleSignInExceptionCode.interrupted ||
+          desc.contains('cancel') ||
+          desc.contains('dismiss') ||
+          desc.contains('interrupted') ||
+          desc.contains('sign_in_canceled') ||
+          codeStr.contains('cancel') ||
+          codeStr.contains('interrupted');
+      if (isCancel) {
         AppLogger.i('Google sign-in cancelled/dismissed -> idle (spinner off)');
         emit(const AuthUnauthenticated());
         return false;
@@ -191,11 +200,17 @@ class AuthCubit extends Cubit<AuthState> {
       return false;
     } on FirebaseAuthException catch (e, st) {
       AppLogger.e('FirebaseAuthException code=${e.code} msg=${e.message}', e, st);
-      if (e.code == 'user-cancelled' ||
-          e.code == 'canceled' ||
-          e.code == 'web-context-cancelled' ||
-          e.code == 'popup-closed-by-user') {
-        AppLogger.i('Firebase sign-in cancelled -> idle');
+      final fCode = e.code.toLowerCase();
+      final fMsg = (e.message ?? '').toLowerCase();
+      final isCancel = fCode.contains('cancel') ||
+          fCode.contains('dismiss') ||
+          fCode.contains('popup-closed') ||
+          fCode.contains('web-context-cancel') ||
+          fCode.contains('interrupted') ||
+          fMsg.contains('cancel') ||
+          fMsg.contains('popup-closed');
+      if (isCancel) {
+        AppLogger.i('Firebase sign-in cancelled -> idle (spinner off)');
         emit(const AuthUnauthenticated());
         return false;
       }
@@ -209,7 +224,7 @@ class AuthCubit extends Cubit<AuthState> {
     } on PlatformException catch (e, st) {
       // The Pigeon channel-error surfaces as PlatformException(channel-error, ...)
       AppLogger.e('PlatformException code=${e.code} msg=${e.message}', e, st);
-      final msg = '${e.code} ${e.message}'.toLowerCase();
+      final msg = '${e.code} ${e.message} ${e.details ?? ''}'.toLowerCase();
       if (msg.contains('channel-error') ||
           msg.contains('getgoogleservicesjsonserverclientid')) {
         AppLogger.e('Pigeon channel-error on PlatformException — stale binding', e, st);
@@ -217,7 +232,13 @@ class AuthCubit extends Cubit<AuthState> {
             'Google Sign-In not ready. Run: flutter clean, uninstall the app from the device, then flutter run.'));
         return false;
       }
-      if (msg.contains('cancel')) {
+      if (msg.contains('cancel') ||
+          msg.contains('dismiss') ||
+          msg.contains('sign_in_canceled') ||
+          msg.contains('popup-closed') ||
+          msg.contains('interrupted') ||
+          msg.contains('user_cancelled')) {
+        AppLogger.i('Platform cancel -> idle (spinner off)');
         emit(const AuthUnauthenticated());
         return false;
       }
@@ -233,16 +254,68 @@ class AuthCubit extends Cubit<AuthState> {
         return false;
       }
       if (errStr.contains('cancel') ||
+          errStr.contains('dismiss') ||
           errStr.contains('sign_in_canceled') ||
-          errStr.contains('popup-closed')) {
-        AppLogger.i('Google sign-in cancelled (catch-all) -> idle');
+          errStr.contains('sign_in_cancelled') ||
+          errStr.contains('popup-closed') ||
+          errStr.contains('interrupted') ||
+          errStr.contains('user_cancelled')) {
+        AppLogger.i('Google sign-in cancelled (catch-all) -> idle (spinner off)');
         emit(const AuthUnauthenticated());
         return false;
       }
       final friendly = _extractMessage(e);
+      final lowerFriendly = friendly?.toLowerCase() ?? '';
+      final needsType = lowerFriendly.contains('needs_account_type') ||
+          errStr.contains('needs_account_type') ||
+          (e is DioException &&
+              e.response?.data is Map &&
+              ((e.response!.data as Map)['needs_account_type'] == true));
+      if (needsType) {
+        String email = '';
+        try {
+          if (e is DioException && e.response?.data is Map) {
+            final m = e.response!.data as Map;
+            email = (m['email'] as String?) ?? '';
+            if (email.isEmpty) {
+              final tokenEmail = m['data'] is Map ? (m['data'] as Map)['email'] : null;
+              if (tokenEmail is String) email = tokenEmail;
+            }
+          }
+        } catch (_) {}
+        final tokenToKeep = idToken ?? '';
+        if (tokenToKeep.isNotEmpty) {
+          AppLogger.i('Google needs_account_type -> AuthNeedsAccountType');
+          emit(AuthNeedsAccountType(idToken: tokenToKeep, email: email));
+          return false;
+        }
+      }
       emit(AuthError(friendly ?? 'Google sign-in failed'));
       return false;
     }
+  }
+
+  Future<void> completeGoogleWithAccountType(
+      {required String idToken, required String accountType}) async {
+    emit(const AuthLoading(AuthLoadingType.google));
+    AppLogger.i('Google completing with accountType=$accountType');
+    try {
+      final res =
+          await _repo.loginWithFirebase(idToken: idToken, accountType: accountType);
+      AppLogger.i('Google complete success user=${res.user.id}');
+      emit(AuthAuthenticated(res.user));
+      PushNotificationService.syncDeviceToken();
+      return;
+    } catch (e, st) {
+      AppLogger.e('Google complete failed', e, st);
+      emit(AuthError(_extractMessage(e) ?? 'Google sign-in failed'));
+    }
+  }
+
+  /// Dismissing the role picker for a brand-new Google account returns to idle.
+  void cancelGooglePick() {
+    AppLogger.i('Google role picker dismissed -> idle');
+    emit(const AuthUnauthenticated());
   }
 
   /// For mobile native Google flow: caller provides idToken directly
@@ -317,6 +390,8 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e, st) {
       AppLogger.e('Logout error', e, st);
     } finally {
+      // Clear all repository caches so next account starts completely fresh
+      CacheManager.clearAll();
       emit(const AuthUnauthenticated());
       AppLogger.i('Logout -> AuthUnauthenticated');
     }

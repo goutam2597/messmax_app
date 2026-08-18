@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/signup_role_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -47,6 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
     context.read<AuthCubit>().login(email: email, password: pass);
   }
 
+  void _googleWithPick() {
+    // Google first — no role dialog before. If the account is brand new,
+    // the server returns needs_account_type and the listener shows the picker AFTER.
+    context.read<AuthCubit>().loginWithGoogle();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,12 +65,27 @@ class _LoginScreenState extends State<LoginScreen> {
         leading: const AppBackButton(),
       ),
       body: BlocListener<AuthCubit, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AuthAuthenticated) {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const DashboardScreen()),
               (_) => false,
             );
+          } else if (state is AuthNeedsAccountType) {
+            // NEW Google account — ask role AFTER Google signed in
+            final picked = await SignUpRoleDialog.show(
+              context,
+              initialRole: 'individual',
+            );
+            if (!context.mounted) return;
+            if (picked == null) {
+              context.read<AuthCubit>().cancelGooglePick();
+              return;
+            }
+            context.read<AuthCubit>().completeGoogleWithAccountType(
+                  idToken: state.idToken,
+                  accountType: picked,
+                );
           } else if (state is AuthError) {
             ScaffoldMessenger.of(
               context,
@@ -284,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 loading: isGoogleLoading,
                 onPressed: isAnyLoading
                     ? null
-                    : () => context.read<AuthCubit>().loginWithGoogle(),
+                    : () => _googleWithPick(),
               ),
               const SizedBox(height: 16),
               Row(

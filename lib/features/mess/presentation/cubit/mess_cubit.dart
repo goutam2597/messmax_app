@@ -63,6 +63,29 @@ class MessCubit extends Cubit<MessState> {
     }
   }
 
+  Future<String?> joinMess(String code, {String? note}) async {
+    try {
+      final msg = await _repo.joinMess(code, note: note);
+      await loadMesses();
+      return msg;
+    } catch (e) {
+      final err = e.toString().replaceAll('Exception: ', '');
+      emit(MessError(err));
+      return null;
+    }
+  }
+
+  Future<bool> handleJoinRequest(int requestId, bool approve) async {
+    try {
+      await _repo.handleJoinRequest(requestId, approve);
+      await loadMesses();
+      return true;
+    } catch (e) {
+      emit(MessError(e.toString().replaceAll('Exception: ', '')));
+      return false;
+    }
+  }
+
   Future<bool> updateMess(int id, Map<String, dynamic> payload) async {
     try {
       await _repo.updateMess(id, payload);

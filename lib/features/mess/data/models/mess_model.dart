@@ -155,7 +155,9 @@ class MessMonthLite extends Equatable {
       year: (json['year'] as num?)?.toInt() ?? 0,
       month: (json['month'] as num?)?.toInt() ?? 0,
       label: json['label'] as String? ?? '',
-      cycleLabel: json['cycle_label'] as String? ?? '',
+      cycleLabel: (json['cycle_label'] as String? ?? '')
+          .replaceAll(r'\u2192', '→')
+          .replaceAll('\\u2192', '→'),
       isClosed: json['is_closed'] as bool? ?? false,
       managerLabel: json['manager_label'] as String? ?? '',
       daysInMonth: (json['days_in_month'] as num?)?.toInt() ?? 31,
