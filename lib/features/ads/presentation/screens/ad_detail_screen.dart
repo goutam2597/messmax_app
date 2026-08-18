@@ -558,17 +558,12 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   final imageIndex = isLoop ? index % ad.imageUrls.length : index;
                   return GestureDetector(
                     onTap: () => _openPhotoViewer(imageIndex),
-                    child: Image.network(
-                      ad.imageUrls[imageIndex],
+                    child: NetworkImageCover(
+                      url: ad.imageUrls[imageIndex],
+                      height: 310,
+                      width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        color: AppColors.brandSoft,
-                        child: const Icon(
-                          Icons.home_rounded,
-                          color: AppColors.inkFaded,
-                          size: 48,
-                        ),
-                      ),
+                      iconSize: 52,
                     ),
                   );
                 },

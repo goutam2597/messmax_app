@@ -7,6 +7,7 @@ import '../../../../core/widgets/network_image_cover.dart';
 import '../cubit/blog_cubit.dart';
 import '../cubit/blog_state.dart';
 import '../../data/models/blog_model.dart';
+import '../widgets/blog_shimmer.dart';
 import 'blog_detail_screen.dart';
 
 class BlogScreen extends StatefulWidget {
@@ -117,11 +118,7 @@ class _BlogScreenState extends State<BlogScreen> {
               child: BlocBuilder<BlogCubit, BlogState>(
                 builder: (context, state) {
                   if (state is BlogLoading || state is BlogInitial) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.brandDark,
-                      ),
-                    );
+                    return const BlogShimmer();
                   }
 
                   if (state is BlogError) {

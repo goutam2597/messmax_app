@@ -9,6 +9,7 @@ import '../../../home/data/models/home_data_model.dart';
 import '../../../home/presentation/widgets/home_filter_dialog.dart';
 import '../cubit/ads_cubit.dart';
 import '../cubit/ads_state.dart';
+import '../widgets/ads_shimmer.dart';
 
 class AdsScreen extends StatefulWidget {
   const AdsScreen({super.key});
@@ -97,11 +98,7 @@ class _AdsScreenState extends State<AdsScreen> {
                 child: BlocBuilder<AdsCubit, AdsState>(
                   builder: (context, state) {
                     if (state is AdsLoading || state is AdsInitial) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.brandDark,
-                        ),
-                      );
+                      return const AdsShimmer();
                     }
 
                     if (state is AdsError) {

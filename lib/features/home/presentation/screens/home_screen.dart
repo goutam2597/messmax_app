@@ -14,6 +14,7 @@ import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../../data/models/home_data_model.dart';
 import '../widgets/home_filter_dialog.dart';
+import '../widgets/home_shimmer.dart';
 import 'public_notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -87,9 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: BlocBuilder<HomeCubit, HomeState>(
             builder: (context, state) {
               if (state is HomeLoading || state is HomeInitial) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppColors.brandDark),
-                );
+                return const HomeShimmer();
               }
 
               if (state is HomeError) {

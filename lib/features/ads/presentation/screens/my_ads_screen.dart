@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
+import '../../../../core/widgets/shimmer_box.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../../core/widgets/network_image_cover.dart';
 import '../../data/models/ad_model.dart';
@@ -135,8 +136,41 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
       ),
       body: SafeArea(
         child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.brandDark),
+            ? Shimmer(
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 90),
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 4,
+                  separatorBuilder: (_, _) => const SizedBox(height: 14),
+                  itemBuilder: (context, index) => Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.paperRaised,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFEAEBEF)),
+                    ),
+                    child: Row(
+                      children: [
+                        const ShimmerBox(width: 90, height: 80, radius: 12),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              ShimmerBox(width: 80, height: 18, radius: 6),
+                              SizedBox(height: 8),
+                              ShimmerBox(width: double.infinity, height: 16, radius: 4),
+                              SizedBox(height: 6),
+                              ShimmerBox(width: 110, height: 12, radius: 3),
+                              SizedBox(height: 8),
+                              ShimmerBox(width: 90, height: 14, radius: 4),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               )
             : RefreshIndicator(
                 color: AppColors.brandDark,
