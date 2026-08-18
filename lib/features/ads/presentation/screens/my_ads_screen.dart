@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_menu_button.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
-import '../../../dashboard/presentation/widgets/mess_drawer.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../../core/widgets/network_image_cover.dart';
 import '../../data/models/ad_model.dart';
 import '../../data/repositories/user_ad_repository.dart';
@@ -18,7 +18,6 @@ class MyAdsScreen extends StatefulWidget {
 }
 
 class _MyAdsScreenState extends State<MyAdsScreen> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final UserAdRepository _repository = UserAdRepository();
   List<AdModel> _ads = [];
   bool _isLoading = true;
@@ -81,28 +80,39 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
     }
   }
 
+  void _backToDashboard() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      (_) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.paper,
-      drawer: const MessDrawer(activeSection: 'my_ads'),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: AppMenuButton(
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: const Text(
-          'My Posted Seat Ads',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            color: AppColors.ink,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _backToDashboard();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.paper,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+          leading: AppBackButton(
+            onPressed: _backToDashboard,
+          ),
+          title: const Text(
+            'My Posted Seat Ads',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
           ),
         ),
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
         backgroundColor: AppColors.brandDark,
@@ -168,6 +178,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                       ),
               ),
       ),
+    ),
     );
   }
 

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_menu_button.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
-import '../../../dashboard/presentation/widgets/mess_drawer.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../data/models/bazar_schedule_model.dart';
 import '../cubit/bazar_schedule_cubit.dart';
 import '../cubit/bazar_schedule_state.dart';
@@ -31,7 +31,6 @@ class _BazarScheduleView extends StatefulWidget {
 }
 
 class _BazarScheduleViewState extends State<_BazarScheduleView> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSendingAnnouncement = false;
   final _announcementSubjectController = TextEditingController();
   final _announcementMessageController = TextEditingController();
@@ -953,20 +952,31 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
     );
   }
 
+  void _backToDashboard() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      (_) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.paper,
-      drawer: const MessDrawer(activeSection: 'bazar_schedule'),
-      appBar: AppBar(
-        backgroundColor: AppColors.paperRaised,
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: AppMenuButton(
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _backToDashboard();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.paper,
+        appBar: AppBar(
+          backgroundColor: AppColors.paperRaised,
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+          leading: AppBackButton(
+            onPressed: _backToDashboard,
+          ),
         title: BlocBuilder<BazarScheduleCubit, BazarScheduleState>(
           builder: (context, state) {
             final mess = state is BazarScheduleLoaded
@@ -1141,6 +1151,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           },
         ),
       ),
+    ),
     );
   }
 

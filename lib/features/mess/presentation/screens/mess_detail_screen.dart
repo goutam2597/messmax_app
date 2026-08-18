@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../data/models/mess_model.dart';
 import '../../data/repositories/mess_repository.dart';
 import '../cubit/mess_cubit.dart';
@@ -29,16 +30,31 @@ class _MessDetailView extends StatelessWidget {
   final int messId;
   const _MessDetailView({required this.messId});
 
+  void _backToDashboard(BuildContext context) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      (_) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.paper,
-      appBar: AppBar(
-        backgroundColor: AppColors.paperRaised,
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: const AppBackButton(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _backToDashboard(context);
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.paper,
+        appBar: AppBar(
+          backgroundColor: AppColors.paperRaised,
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+          leading: AppBackButton(
+            onPressed: () => _backToDashboard(context),
+          ),
         title: BlocBuilder<MessCubit, MessState>(
           builder: (context, state) {
             final name = state is MessDetailLoaded
@@ -185,6 +201,7 @@ class _MessDetailView extends StatelessWidget {
           },
         ),
       ),
+    ),
     );
   }
 

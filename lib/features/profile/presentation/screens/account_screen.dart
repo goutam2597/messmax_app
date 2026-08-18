@@ -9,8 +9,8 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../data/models/account_response_model.dart';
 import '../../data/repositories/account_repository.dart';
-import '../../../../core/widgets/app_menu_button.dart';
-import '../../../dashboard/presentation/widgets/mess_drawer.dart';
+import '../../../../core/widgets/app_back_button.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../../features/dashboard/data/models/dashboard_model.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -21,7 +21,6 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final AccountRepository _repository = AccountRepository();
   AccountResponseModel? _accountData;
   bool _isLoading = true;
@@ -183,21 +182,32 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  void _backToDashboard() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      (_) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.paper,
-      drawer: const MessDrawer(activeSection: 'account'),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: AppMenuButton(
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: const Text(
-          'My Account',
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _backToDashboard();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.paper,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+          leading: AppBackButton(
+            onPressed: _backToDashboard,
+          ),
+          title: const Text(
+            'My Account',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w900,
@@ -236,6 +246,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               ),
       ),
+    ),
     );
   }
 

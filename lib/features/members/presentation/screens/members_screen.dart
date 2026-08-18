@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_menu_button.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../data/models/member_model.dart';
 import '../cubit/member_cubit.dart';
 import '../cubit/member_state.dart';
 import 'member_form_screen.dart';
-import '../../../dashboard/presentation/widgets/mess_drawer.dart';
 import '../../../mess/presentation/screens/mess_detail_screen.dart';
 
 class MembersScreen extends StatelessWidget {
@@ -30,7 +30,20 @@ class _MembersView extends StatefulWidget {
 }
 
 class _MembersViewState extends State<_MembersView> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _backToDashboard() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      (_) => false,
+    );
+  }
 
   void _confirmDelete(BuildContext context, MemberModel member) async {
     final confirm = await ConfirmDeleteDialog.show(
@@ -56,56 +69,57 @@ class _MembersViewState extends State<_MembersView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.paper,
-      drawer: MessDrawer(
-        activeSection: 'members',
-        onSectionSelected: (sec) {},
-      ),
-      appBar: AppBar(
-        backgroundColor: AppColors.paperRaised,
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        leading: AppMenuButton(
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: BlocBuilder<MemberCubit, MemberState>(
-          builder: (context, state) {
-            final messName = state is MemberLoaded
-                ? state.response.messName
-                : '';
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Mess Members',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.ink,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _backToDashboard();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.paper,
+        appBar: AppBar(
+          backgroundColor: AppColors.paperRaised,
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+          leading: AppBackButton(
+            onPressed: _backToDashboard,
+          ),
+          title: BlocBuilder<MemberCubit, MemberState>(
+            builder: (context, state) {
+              final messName = state is MemberLoaded
+                  ? state.response.messName
+                  : '';
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Mess Members',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.ink,
+                    ),
                   ),
-                ),
-                Text(
-                  messName.isNotEmpty
-                      ? '$messName • Member List'
-                      : 'Member List & Meal Defaults',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.inkFaded,
-                    fontWeight: FontWeight.w600,
+                  Text(
+                    messName.isNotEmpty
+                        ? '$messName • Member List'
+                        : 'Member List & Meal Defaults',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.inkFaded,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            );
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Material(
+                ],
+              );
+            },
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(
+                child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => context.read<MemberCubit>().loadMembers(),
@@ -277,6 +291,7 @@ class _MembersViewState extends State<_MembersView> {
           return const SizedBox.shrink();
         },
       ),
+    ),
     );
   }
 

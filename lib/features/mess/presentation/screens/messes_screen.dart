@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_menu_button.dart';
-import '../../../dashboard/presentation/widgets/mess_drawer.dart';
+import '../../../../core/widgets/app_back_button.dart';
+import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/mess_cubit.dart';
 import '../cubit/mess_state.dart';
 import '../../data/models/mess_model.dart';
@@ -28,21 +28,30 @@ class _MessesView extends StatefulWidget {
 }
 
 class _MessesViewState extends State<_MessesView> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  void _backToDashboard() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      (_) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.paper,
-      drawer: const MessDrawer(activeSection: 'messes'),
-      appBar: AppBar(
-        backgroundColor: AppColors.paperRaised,
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        leading: AppMenuButton(
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _backToDashboard();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.paper,
+        appBar: AppBar(
+          backgroundColor: AppColors.paperRaised,
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+          leading: AppBackButton(
+            onPressed: _backToDashboard,
+          ),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -329,6 +338,7 @@ class _MessesViewState extends State<_MessesView> {
           return const SizedBox.shrink();
         },
       ),
+    ),
     );
   }
 }
