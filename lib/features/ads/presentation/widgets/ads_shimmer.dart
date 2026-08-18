@@ -111,13 +111,47 @@ class _ShimmerGridCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image skeleton
+          // Image skeleton with house & meal emblem
           Stack(
+            alignment: Alignment.center,
             children: [
               Container(
                 height: imageHeight,
                 width: double.infinity,
                 color: const Color(0xFFE2E4E8),
+              ),
+              Opacity(
+                opacity: 0.55,
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      const Icon(
+                        Icons.apartment_rounded,
+                        size: 32,
+                        color: Color(0xFFB4B9C4),
+                      ),
+                      Positioned(
+                        right: 2,
+                        bottom: 2,
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFD0D5DF),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.restaurant_rounded,
+                            size: 14,
+                            color: Color(0xFFB4B9C4),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const Positioned(
                 top: 10,
