@@ -8,7 +8,6 @@ class MessFormScreen extends StatefulWidget {
   final MessModel? mess;
   final MessCubit cubit;
   final bool isBottomSheet;
-
   final bool isDialog;
 
   const MessFormScreen({
@@ -39,8 +38,8 @@ class MessFormScreen extends StatefulWidget {
         ),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: 480,
-            maxHeight: MediaQuery.of(ctx).size.height * 0.88,
+            maxWidth: 520,
+            maxHeight: MediaQuery.of(ctx).size.height * 0.90,
           ),
           child: MessFormScreen(
             mess: mess,
@@ -69,6 +68,8 @@ class _MessFormScreenState extends State<MessFormScreen> {
   late TextEditingController _name;
   late TextEditingController _location;
   late TextEditingController _billingDay;
+  DateTime? _billingStartDate;
+  DateTime? _billingEndDate;
   String _timezone = 'Asia/Dhaka';
   bool _saving = false;
 
@@ -81,6 +82,19 @@ class _MessFormScreenState extends State<MessFormScreen> {
       text: widget.mess != null ? '${widget.mess!.billingStartDay}' : '1',
     );
     _timezone = widget.mess?.timezone ?? 'Asia/Dhaka';
+
+    if (widget.mess?.billingStartDate != null &&
+        widget.mess!.billingStartDate!.isNotEmpty) {
+      try {
+        _billingStartDate = DateTime.parse(widget.mess!.billingStartDate!);
+      } catch (_) {}
+    }
+    if (widget.mess?.billingEndDate != null &&
+        widget.mess!.billingEndDate!.isNotEmpty) {
+      try {
+        _billingEndDate = DateTime.parse(widget.mess!.billingEndDate!);
+      } catch (_) {}
+    }
   }
 
   @override
@@ -91,15 +105,90 @@ class _MessFormScreenState extends State<MessFormScreen> {
     super.dispose();
   }
 
+  String _formatDate(DateTime? d) {
+    if (d == null) return '';
+    return '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _pickStartDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _billingStartDate ?? now,
+      firstDate: DateTime(now.year - 2),
+      lastDate: DateTime(now.year + 5),
+      helpText: 'SELECT BILLING START DATE',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.brandDark,
+              onPrimary: Colors.white,
+              onSurface: AppColors.ink,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _billingStartDate = picked;
+        _billingDay.text = '${picked.day}';
+        if (_billingEndDate != null && _billingEndDate!.isBefore(picked)) {
+          _billingEndDate = picked.add(const Duration(days: 29));
+        }
+      });
+    }
+  }
+
+  Future<void> _pickEndDate() async {
+    final now = DateTime.now();
+    final initial = _billingEndDate ??
+        (_billingStartDate?.add(const Duration(days: 29)) ?? now);
+    final first = _billingStartDate ?? DateTime(now.year - 2);
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial.isBefore(first) ? first : initial,
+      firstDate: first,
+      lastDate: DateTime(now.year + 5),
+      helpText: 'SELECT BILLING END DATE',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.brandDark,
+              onPrimary: Colors.white,
+              onSurface: AppColors.ink,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _billingEndDate = picked;
+      });
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
+
     final payload = <String, dynamic>{
       'name': _name.text.trim(),
       'location': _location.text.trim(),
       'timezone': _timezone,
       'billing_start_day': int.tryParse(_billingDay.text.trim()) ?? 1,
+      if (_billingStartDate != null)
+        'billing_start_date': _formatDate(_billingStartDate),
+      if (_billingEndDate != null)
+        'billing_end_date': _formatDate(_billingEndDate),
     };
+
     bool ok;
     if (widget.mess == null) {
       ok = await widget.cubit.createMess(payload);
@@ -112,7 +201,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              widget.mess == null ? 'Mess created' : 'Mess updated',
+              widget.mess == null ? 'Mess created successfully' : 'Mess updated successfully',
             ),
           ),
         );
@@ -132,6 +221,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Section 1: Basic info
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -148,6 +238,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     color: AppColors.inkFaded,
+                    letterSpacing: 0.5,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -165,7 +256,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                   validator: (v) =>
                       v == null || v.trim().isEmpty ? 'Name required' : null,
                   decoration: const InputDecoration(
-                    hintText: 'e.g. Green View Hostel',
+                    hintText: 'e.g. Sunrise Mess / Green View',
                     prefixIcon: Icon(
                       Icons.apartment_rounded,
                       color: AppColors.inkFaded,
@@ -174,7 +265,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  'LOCATION / CITY',
+                  'LOCATION / ADDRESS (OPTIONAL)',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -196,6 +287,8 @@ class _MessFormScreenState extends State<MessFormScreen> {
             ),
           ),
           const SizedBox(height: 16),
+
+          // Section 2: Billing & Schedule with Calendar Range Pickers
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -206,15 +299,241 @@ class _MessFormScreenState extends State<MessFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'BILLING CYCLE & SCHEDULE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.inkFaded,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    if (_billingStartDate != null && _billingEndDate != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.brandSoft,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.brandDark.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Text(
+                          '${_billingEndDate!.difference(_billingStartDate!).inDays + 1} Days Cycle',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.brandDark,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Calendar Start & End Date pickers
+                Row(
+                  children: [
+                    // Start Date
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'BILLING START DATE',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.inkFaded,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          InkWell(
+                            onTap: _pickStartDate,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 11,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.paper,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _billingStartDate != null
+                                      ? AppColors.brandDark
+                                      : AppColors.paperLine,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 16,
+                                    color: _billingStartDate != null
+                                        ? AppColors.brandDark
+                                        : AppColors.inkFaded,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _billingStartDate != null
+                                          ? _formatDate(_billingStartDate)
+                                          : 'Select start',
+                                      style: TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: _billingStartDate != null
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: _billingStartDate != null
+                                            ? AppColors.ink
+                                            : AppColors.inkFaded,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (_billingStartDate != null)
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        _billingStartDate = null;
+                                      }),
+                                      child: const Icon(
+                                        Icons.close_rounded,
+                                        size: 15,
+                                        color: AppColors.inkFaded,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // End Date
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'BILLING END DATE',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.inkFaded,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          InkWell(
+                            onTap: _pickEndDate,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 11,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.paper,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _billingEndDate != null
+                                      ? AppColors.brandDark
+                                      : AppColors.paperLine,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.event_available_rounded,
+                                    size: 16,
+                                    color: _billingEndDate != null
+                                        ? AppColors.brandDark
+                                        : AppColors.inkFaded,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _billingEndDate != null
+                                          ? _formatDate(_billingEndDate)
+                                          : 'Select end',
+                                      style: TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: _billingEndDate != null
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: _billingEndDate != null
+                                            ? AppColors.ink
+                                            : AppColors.inkFaded,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (_billingEndDate != null)
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        _billingEndDate = null;
+                                      }),
+                                      child: const Icon(
+                                        Icons.close_rounded,
+                                        size: 15,
+                                        color: AppColors.inkFaded,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 const Text(
-                  'BILLING & TIMEZONE',
+                  'Pick any custom range (e.g. 10th to 9th next month, or 1st to 30th). Each month can also override.',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: AppColors.inkFaded,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Fallback Cycle Start Day
+                const Text(
+                  'DEFAULT CYCLE START DAY (1..28)',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w800,
                     color: AppColors.inkFaded,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _billingDay,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: '1',
+                    prefixIcon: Icon(
+                      Icons.calendar_month_outlined,
+                      color: AppColors.inkFaded,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Timezone
                 const Text(
                   'TIMEZONE *',
                   style: TextStyle(
@@ -246,25 +565,20 @@ class _MessFormScreenState extends State<MessFormScreen> {
                   onChanged: (v) =>
                       setState(() => _timezone = v ?? 'Asia/Dhaka'),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 4),
                 const Text(
-                  'BILLING CYCLE START DAY (1..28)',
+                  'Per-mess clock — meal count cut-off and daily sheets roll at 12 AM in this timezone.',
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 10.5,
                     color: AppColors.inkFaded,
                   ),
-                ),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _billingDay,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(hintText: '1'),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 20),
+
+          // Submit Button
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -279,7 +593,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                       ),
                     )
                   : Icon(
-                      isEdit ? Icons.check_circle_outline_rounded : Icons.add_rounded,
+                      isEdit
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.add_rounded,
                       size: 18,
                     ),
               label: Text(
