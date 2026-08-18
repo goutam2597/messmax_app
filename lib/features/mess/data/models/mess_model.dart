@@ -107,13 +107,16 @@ class MessMemberLite extends Equatable {
   });
 
   factory MessMemberLite.fromJson(Map<String, dynamic> json) {
+    final rawRole = json['member_role'] as String? ?? 'member';
+    final role = rawRole.toLowerCase() == 'owner' ? 'manager' : rawRole;
+
     return MessMemberLite(
       id: (json['id'] as num?)?.toInt() ?? 0,
       name: json['name'] as String? ?? '',
       email: json['email'] as String? ?? '',
       color: json['color'] as String? ?? '#3b82f6',
       bazarDay: (json['bazar_day'] ?? json['bazarDay'] ?? '1').toString(),
-      memberRole: json['member_role'] as String? ?? 'member',
+      memberRole: role,
       userId: (json['user_id'] as num?)?.toInt(),
       avatarUrl: AppConfig.sanitizeImageUrl(json['avatar_url'] as String?),
       defaultMeal: (json['default_meal'] as num?)?.toDouble(),
@@ -257,15 +260,18 @@ class MemberSettlementModel extends Equatable {
         ? json['member'] as Map<String, dynamic>
         : json;
 
+    final rawRole = memberObj['member_role'] as String? ??
+        memberObj['role'] as String? ??
+        json['role'] as String? ??
+        'member';
+    final role = rawRole.toLowerCase() == 'owner' ? 'manager' : rawRole;
+
     return MemberSettlementModel(
       memberId: (memberObj['id'] ?? json['member_id'] as num?)?.toInt() ?? 0,
       name: memberObj['name'] as String? ?? json['name'] as String? ?? '',
       email: memberObj['email'] as String? ?? json['email'] as String? ?? '',
       color: memberObj['color'] as String? ?? json['color'] as String? ?? '#3b82f6',
-      role: memberObj['member_role'] as String? ??
-          memberObj['role'] as String? ??
-          json['role'] as String? ??
-          'member',
+      role: role,
       defaultDisplay: memberObj['default_display'] as String? ??
           json['default_display'] as String? ??
           '',
