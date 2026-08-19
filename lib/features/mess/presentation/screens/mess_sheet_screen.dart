@@ -155,8 +155,9 @@ class _SheetViewState extends State<_SheetView>
 
   String _friendlySheetErr(Object e) {
     final m = e.toString();
-    if (m.contains('404') || m.contains('Not found'))
+    if (m.contains('404') || m.contains('Not found')) {
       return 'ui.sheet_not_found'.tr2;
+    }
     if (m.contains('403') || m.contains('Only manager')) {
       return 'ui.sheet_delete_forbidden'.tr2;
     }
