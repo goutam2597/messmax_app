@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class AppAuthHeader extends StatelessWidget {
@@ -130,16 +131,19 @@ class GoogleSignInButton extends StatelessWidget {
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.ink),
               )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset('assets/icons/google_g.svg', width: 20, height: 20),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Continue with Google',
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, letterSpacing: -0.1),
-                  ),
-                ],
+            : ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset('assets/icons/google_g.svg', width: 20, height: 20),
+                    const SizedBox(width: 10),
+                    Text(
+                      'auth.continue_with_google'.tr2,
+                      style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, letterSpacing: -0.1),
+                    ),
+                  ],
+                ),
               ),
       ),
     );

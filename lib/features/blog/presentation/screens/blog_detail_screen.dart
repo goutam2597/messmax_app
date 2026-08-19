@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/network_image_cover.dart';
@@ -86,10 +89,17 @@ class BlogDetailScreen extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Sharing "${blog.title}"')),
-                    );
+                  onTap: () async {
+                    final webUrl = 'http://${AppConfig.baseDomain}/blog/${blog.slug.isNotEmpty ? blog.slug : blog.id}';
+                    final text = '${blog.title}\n$webUrl';
+                    try {
+                      await SharePlus.instance.share(ShareParams(text: text, subject: blog.title));
+                    } catch (_) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('ui.share_failed'.tr2)),
+                      );
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -403,20 +413,23 @@ class BlogDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.format_quote_rounded,
                       color: AppColors.brandDark,
                       size: 22,
                     ),
-                    SizedBox(width: 6),
-                    Text(
-                      'ARTICLE SUMMARY',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.brandDark,
-                        letterSpacing: 0.8,
+                    const SizedBox(width: 6),
+                    ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        'ui.blog_article_summary'.tr2,
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.brandDark,
+                          letterSpacing: 0.8,
+                        ),
                       ),
                     ),
                   ],
@@ -502,22 +515,28 @@ class BlogDetailScreen extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'MessMax Editorial Team',
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.ink,
+              children: [
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.blog_editorial_team'.tr2,
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.ink,
+                    ),
                   ),
                 ),
-                SizedBox(height: 2),
-                Text(
-                  'Tips & guides for mess managers, seat seekers & members.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.inkFaded,
-                    height: 1.3,
+                const SizedBox(height: 2),
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.blog_editorial_sub'.tr2,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.inkFaded,
+                      height: 1.3,
+                    ),
                   ),
                 ),
               ],
@@ -558,13 +577,16 @@ class BlogDetailScreen extends StatelessWidget {
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Saved "${blog.title}" to bookmarks')),
+                    SnackBar(content: Text('${'ui.blog_saved'.tr2} "${blog.title}"')),
                   );
                 },
                 icon: const Icon(Icons.bookmark_outline_rounded, size: 20),
-                label: const Text(
-                  'Save Guide',
-                  style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                label: ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.blog_save_guide'.tr2,
+                    style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
             ),

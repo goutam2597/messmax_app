@@ -1,22 +1,23 @@
-/// User-facing copy in one place, so wording stays consistent.
+import '../locale/app_translations.dart';
+
+/// User-facing copy — now API-driven. Keep constants only for non-translated fallbacks.
 abstract final class AppStrings {
   static const String appName = 'MessMax';
-  static const String tagline = 'Find, manage & run your mess';
+  static String get tagline => 'ui.splash_tagline'.tr2;
 
-  // welcome / marketing
-  static const String welcomeTitle = 'One app for every\nmess, meal & seat.';
-  static const String welcomeSubtitle =
-      'Find a mess, book a seat, and track meals, bazar and deposits — all in one place.';
-  static const String findMesses = 'Find messes';
-  static const String createMess = 'Create mess';
-  static const String alreadyHaveAccount = 'Already have a mess?';
-  static const String login = 'Log in';
+  // welcome — API keys (ui.welcome_*)
+  static String get welcomeTitle => 'ui.welcome_title'.tr2;
+  static String get welcomeSubtitle => 'ui.welcome_subtitle'.tr2;
+  static String get findMesses => 'ui.welcome_find_messes'.tr2;
+  static String get createMess => 'ui.welcome_create_mess'.tr2;
+  static String get alreadyHaveAccount => 'ui.welcome_already_account'.tr2;
+  static String get login => 'ui.welcome_login'.tr2;
 
-  // welcome / feature highlights
-  static const String featureMealCount = 'Meal count';
-  static const String featureBazarLedger = 'Bazar ledger';
-  static const String featureDeposits = 'Deposits';
-  static const String featurePostMessAds = 'Post mess ads';
-  static const String featureFindMess = 'Find mess';
-  static const String featureSmartReports = 'Smart reports';
+  // feature highlights
+  static String get featureMealCount => 'ui.welcome_feature_meal'.tr2;
+  static String get featureBazarLedger => 'ui.welcome_feature_bazar'.tr2;
+  static String get featureDeposits => 'ui.welcome_feature_deposits'.tr2;
+  static String get featurePostMessAds => 'ui.welcome_feature_ads'.tr2;
+  static String get featureFindMess => 'ui.welcome_feature_find'.tr2;
+  static String get featureSmartReports => 'ui.welcome_feature_reports'.tr2;
 }

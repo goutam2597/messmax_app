@@ -29,16 +29,15 @@ class MessMaxAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showBrandLogo = useLogo || (title == 'MessMax' && subtitle == 'Seats & Meals Hub');
+    final showBrandLogo =
+        useLogo || (title == 'MessMax' && subtitle == 'Seats & Meals Hub');
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
         color: AppColors.paper,
         border: showBorder
-            ? const Border(
-                bottom: BorderSide(color: AppColors.paperLine),
-              )
+            ? const Border(bottom: BorderSide(color: AppColors.paperLine))
             : null,
       ),
       child: Column(
@@ -53,28 +52,32 @@ class MessMaxAppBar extends StatelessWidget {
                   fit: BoxFit.contain,
                 ),
               ] else ...[
-                if (leading != null) ...[
-                  leading!,
-                  const SizedBox(width: 10),
-                ],
+                if (leading != null) ...[leading!, const SizedBox(width: 10)],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: AppColors.ink,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                          letterSpacing: -0.5,
-                          height: 1.1,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          style: const TextStyle(
+                            color: AppColors.ink,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                            letterSpacing: -0.5,
+                            height: 1.1,
+                          ),
                         ),
                       ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 2),
                         Text(
                           subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.inkFaded,
                             fontSize: 11.5,
@@ -101,10 +104,7 @@ class MessMaxAppBar extends StatelessWidget {
               ],
             ],
           ),
-          if (bottom != null) ...[
-            const SizedBox(height: 12),
-            bottom!,
-          ],
+          if (bottom != null) ...[const SizedBox(height: 12), bottom!],
         ],
       ),
     );
@@ -189,8 +189,10 @@ class AppBarActionButton extends StatelessWidget {
                 svgAsset!,
                 width: 19,
                 height: 19,
-                colorFilter:
-                    const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  AppColors.ink,
+                  BlendMode.srcIn,
+                ),
               )
             else
               Icon(icon, size: 19, color: AppColors.ink),

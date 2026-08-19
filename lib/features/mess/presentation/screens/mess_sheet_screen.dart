@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
+import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -118,6 +120,50 @@ class _SheetViewState extends State<_SheetView>
     return isCurrency ? '৳$str' : str;
   }
 
+  Future<void> _confirmDeleteMonth(BuildContext ctx) async {
+    final label = widget.monthLabel.isNotEmpty
+        ? widget.monthLabel
+        : 'this sheet';
+    final ok = await ConfirmDeleteDialog.show(
+      ctx,
+      title: 'ui.confirm_delete_sheet_title'.tr2,
+      itemName: widget.monthLabel,
+      message: 'ui.confirm_delete_sheet_message_dynamic'.tr2.replaceAll(
+        '{label}',
+        label,
+      ),
+      confirmLabel: 'ui.confirm_delete_sheet_label'.tr2,
+      icon: Icons.calendar_month_rounded,
+    );
+    if (ok != true || !ctx.mounted) return;
+    try {
+      await _repo.deleteMonth(widget.messId, widget.monthId);
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('ui.sheet_deleted'.tr2.replaceAll('{label}', label)),
+        ),
+      );
+      Navigator.of(ctx).pop(true);
+    } catch (e) {
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(
+        ctx,
+      ).showSnackBar(SnackBar(content: Text(_friendlySheetErr(e))));
+    }
+  }
+
+  String _friendlySheetErr(Object e) {
+    final m = e.toString();
+    if (m.contains('404') || m.contains('Not found'))
+      return 'ui.sheet_not_found'.tr2;
+    if (m.contains('403') || m.contains('Only manager')) {
+      return 'ui.sheet_delete_forbidden'.tr2;
+    }
+    if (m.contains('Failed to delete')) return 'ui.sheet_delete_failed'.tr2;
+    return m.replaceAll('Exception: ', '').trim();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,16 +179,16 @@ class _SheetViewState extends State<_SheetView>
             Text(
               widget.monthLabel.isNotEmpty
                   ? widget.monthLabel
-                  : 'Monthly Sheet',
+                  : 'ui.sheet_title'.tr2,
               style: const TextStyle(
                 fontWeight: FontWeight.w900,
                 color: AppColors.ink,
                 fontSize: 16,
               ),
             ),
-            const Text(
-              'Ledger Matrix & Daily Meal Sheet',
-              style: TextStyle(fontSize: 11, color: AppColors.inkFaded),
+            Text(
+              'ui.sheet_subtitle'.tr2,
+              style: const TextStyle(fontSize: 11, color: AppColors.inkFaded),
             ),
           ],
         ),
@@ -150,28 +196,67 @@ class _SheetViewState extends State<_SheetView>
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Center(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _refresh,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.paper,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.paperLine),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.refresh_rounded,
-                        color: AppColors.ink,
-                        size: 18,
+              child: BlocBuilder<MessCubit, MessState>(
+                builder: (c, s) {
+                  final canManage = s is MessSheetLoaded
+                      ? s.sheet['canManage'] == true
+                      : false;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (canManage)
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _confirmDeleteMonth(c),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: AppColors.dangerSoft.withValues(
+                                  alpha: 0.3,
+                                ),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.dangerSoft),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: AppColors.danger,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (canManage) const SizedBox(width: 6),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _refresh,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.paper,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.paperLine),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.refresh_rounded,
+                                color: AppColors.ink,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -399,9 +484,9 @@ class _SheetViewState extends State<_SheetView>
                           color: AppColors.accent,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
-                          'MEAL RATE',
-                          style: TextStyle(
+                        child: Text(
+                          'ui.sheet_meal_rate'.tr2,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 9.5,
                             fontWeight: FontWeight.w900,
@@ -410,24 +495,27 @@ class _SheetViewState extends State<_SheetView>
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Σ Bazar ÷ Σ Meals',
-                        style: TextStyle(color: Colors.white60, fontSize: 10),
+                      Text(
+                        'ui.sheet_formula'.tr2,
+                        style: const TextStyle(
+                          color: Colors.white60,
+                          fontSize: 10,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
                   RichText(
                     text: TextSpan(
-                      text: mealRate.toStringAsFixed(2),
+                      text: bnDigits(mealRate.toStringAsFixed(2)),
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
                         letterSpacing: -0.5,
                       ),
-                      children: const [
-                        TextSpan(
+                      children: [
+                        const TextSpan(
                           text: ' ৳',
                           style: TextStyle(
                             fontSize: 18,
@@ -436,8 +524,8 @@ class _SheetViewState extends State<_SheetView>
                           ),
                         ),
                         TextSpan(
-                          text: ' / meal',
-                          style: TextStyle(
+                          text: ' / ${'ui.sheet_per_meal'.tr2}',
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: Colors.white60,
@@ -468,7 +556,7 @@ class _SheetViewState extends State<_SheetView>
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'REST MONEY',
+                      'ui.sheet_rest_money'.tr2,
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
@@ -515,9 +603,9 @@ class _SheetViewState extends State<_SheetView>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'TOTAL GIVEN',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_total_given'.tr2,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
                               color: Colors.white60,
@@ -550,9 +638,9 @@ class _SheetViewState extends State<_SheetView>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'TOTAL MEALS',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_total_meals'.tr2,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
                               color: Colors.white60,
@@ -560,8 +648,8 @@ class _SheetViewState extends State<_SheetView>
                           ),
                           Text(
                             totalMeals % 1 == 0
-                                ? '${totalMeals.toInt()} meals'
-                                : '${totalMeals.toStringAsFixed(1)} meals',
+                                ? '${bnDigits(totalMeals.toInt())} ${'ui.sheet_meals_unit'.tr2}'
+                                : '${bnDigits(totalMeals.toStringAsFixed(1))} ${'ui.sheet_meals_unit'.tr2}',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,
@@ -597,7 +685,7 @@ class _SheetViewState extends State<_SheetView>
           Expanded(
             child: _buildActionChip(
               icon: Icons.add_circle_outline_rounded,
-              label: 'Deposit',
+              label: 'ui.sheet_deposit'.tr2,
               color: AppColors.emerald,
               onTap: () => _showAddDepositModal(members),
             ),
@@ -606,7 +694,7 @@ class _SheetViewState extends State<_SheetView>
           Expanded(
             child: _buildActionChip(
               icon: Icons.person_add_alt_1_rounded,
-              label: 'Guest Meal',
+              label: 'ui.sheet_guest_meal'.tr2,
               color: AppColors.brandDark,
               onTap: () => _showAddGuestModal(members, todayDay, sheet),
             ),
@@ -621,7 +709,7 @@ class _SheetViewState extends State<_SheetView>
         Expanded(
           child: _buildActionChip(
             icon: Icons.event_busy_rounded,
-            label: 'Request Meal Off',
+            label: 'ui.sheet_request_off'.tr2,
             color: AppColors.ink,
             onTap: () => _showMealOffModal(sheet),
           ),
@@ -630,7 +718,7 @@ class _SheetViewState extends State<_SheetView>
         Expanded(
           child: _buildActionChip(
             icon: Icons.person_add_rounded,
-            label: 'Request Guest',
+            label: 'ui.sheet_request_guest'.tr2,
             color: AppColors.brandDark,
             onTap: () => _showGuestRequestModal(sheet),
           ),
@@ -742,22 +830,26 @@ class _SheetViewState extends State<_SheetView>
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _filterChip('Today', 0, icon: Icons.wb_sunny_rounded),
+                    _filterChip(
+                      'ui.sheet_filter_today'.tr2,
+                      0,
+                      icon: Icons.wb_sunny_rounded,
+                    ),
                     const SizedBox(width: 8),
                     _filterChip(
-                      'All Days (${allDays.length})',
+                      '${'ui.sheet_filter_all'.tr2} (${bnDigits(allDays.length)})',
                       1,
                       icon: Icons.calendar_view_day_rounded,
                     ),
                     const SizedBox(width: 8),
                     _filterChip(
-                      'Upcoming (${futureDaysList.length})',
+                      '${'ui.sheet_filter_upcoming'.tr2} (${bnDigits(futureDaysList.length)})',
                       2,
                       icon: Icons.arrow_forward_rounded,
                     ),
                     const SizedBox(width: 8),
                     _filterChip(
-                      'Passed (${passedDaysList.length})',
+                      '${'ui.sheet_filter_passed'.tr2} (${bnDigits(passedDaysList.length)})',
                       3,
                       icon: Icons.history_rounded,
                     ),
@@ -789,7 +881,7 @@ class _SheetViewState extends State<_SheetView>
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Sheet cycle started from Day $startDay. (${startDay - 1} days before hidden).',
+                          '${'ui.sheet_cycle_start'.tr2} ${'ui.sheet_day'.tr2} ${bnDigits(startDay)}. (${bnDigits(startDay - 1)} ${'ui.sheet_days_hidden'.tr2}).',
                           style: const TextStyle(
                             fontSize: 11.5,
                             color: AppColors.inkSoft,
@@ -807,8 +899,8 @@ class _SheetViewState extends State<_SheetView>
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Text(
-                      'No days in this filter.',
-                      style: TextStyle(color: AppColors.inkFaded),
+                      'ui.sheet_no_days'.tr2,
+                      style: const TextStyle(color: AppColors.inkFaded),
                     ),
                   ),
                 ),
@@ -1043,9 +1135,9 @@ class _SheetViewState extends State<_SheetView>
                                   color: AppColors.emerald,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: const Text(
-                                  'TODAY',
-                                  style: TextStyle(
+                                child: Text(
+                                  'ui.sheet_today_badge'.tr2,
+                                  style: const TextStyle(
                                     fontSize: 8.5,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
@@ -1059,7 +1151,7 @@ class _SheetViewState extends State<_SheetView>
                         Row(
                           children: [
                             Text(
-                              '${dayTotal % 1 == 0 ? dayTotal.toInt() : dayTotal.toStringAsFixed(1)} meals',
+                              '${bnDigits(dayTotal % 1 == 0 ? dayTotal.toInt() : dayTotal.toStringAsFixed(1))} ${'ui.sheet_meals_unit'.tr2}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w600,
@@ -1078,7 +1170,7 @@ class _SheetViewState extends State<_SheetView>
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  '৳${bazarTotal.toStringAsFixed(0)} Bazar',
+                                  '৳${bnDigits(bazarTotal.toStringAsFixed(0))} ${'ui.sheet_bazar'.tr2}',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w800,
@@ -1105,9 +1197,9 @@ class _SheetViewState extends State<_SheetView>
                     OutlinedButton.icon(
                       onPressed: () => _openDayEdit(day, members, sheet),
                       icon: const Icon(Icons.edit_outlined, size: 13),
-                      label: const Text(
-                        'Edit',
-                        style: TextStyle(fontSize: 11.5),
+                      label: Text(
+                        'ui.sheet_edit'.tr2,
+                        style: const TextStyle(fontSize: 11.5),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.ink,
@@ -1128,9 +1220,9 @@ class _SheetViewState extends State<_SheetView>
                         Icons.shopping_basket_outlined,
                         size: 13,
                       ),
-                      label: const Text(
-                        'Bazar',
-                        style: TextStyle(fontSize: 11.5),
+                      label: Text(
+                        'ui.sheet_bazar'.tr2,
+                        style: const TextStyle(fontSize: 11.5),
                       ),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.brandDark,
@@ -2208,11 +2300,12 @@ class _SheetViewState extends State<_SheetView>
                             child: InkWell(
                               onTap: () => _confirmDeleteDeposit(
                                 d['id'] as int,
-                                memberName: (d['member_name'] ??
-                                        (d['member'] is Map
-                                            ? d['member']['name']
-                                            : null))
-                                    ?.toString(),
+                                memberName:
+                                    (d['member_name'] ??
+                                            (d['member'] is Map
+                                                ? d['member']['name']
+                                                : null))
+                                        ?.toString(),
                                 amount: _toD(d['amount']),
                               ),
                               borderRadius: BorderRadius.circular(20),
@@ -2223,8 +2316,9 @@ class _SheetViewState extends State<_SheetView>
                                   color: AppColors.dangerSoft,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color:
-                                        AppColors.danger.withValues(alpha: 0.2),
+                                    color: AppColors.danger.withValues(
+                                      alpha: 0.2,
+                                    ),
                                   ),
                                 ),
                                 child: const Center(
@@ -2399,8 +2493,9 @@ class _SheetViewState extends State<_SheetView>
                                 color: AppColors.dangerSoft,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color:
-                                      AppColors.danger.withValues(alpha: 0.2),
+                                  color: AppColors.danger.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                               ),
                               child: const Icon(
@@ -2432,8 +2527,9 @@ class _SheetViewState extends State<_SheetView>
                                 color: AppColors.emeraldSoft,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color:
-                                      AppColors.emerald.withValues(alpha: 0.3),
+                                  color: AppColors.emerald.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               child: const Icon(
@@ -2537,8 +2633,9 @@ class _SheetViewState extends State<_SheetView>
                                 color: AppColors.dangerSoft,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color:
-                                      AppColors.danger.withValues(alpha: 0.2),
+                                  color: AppColors.danger.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                               ),
                               child: const Icon(
@@ -2570,8 +2667,9 @@ class _SheetViewState extends State<_SheetView>
                                 color: AppColors.emeraldSoft,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color:
-                                      AppColors.emerald.withValues(alpha: 0.3),
+                                  color: AppColors.emerald.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               child: const Icon(
@@ -2651,19 +2749,19 @@ class _SheetViewState extends State<_SheetView>
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                'Add Member Deposit',
-                                style: TextStyle(
+                                'ui.sheet_add_deposit_title'.tr2,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                   color: AppColors.ink,
                                 ),
                               ),
-                              SizedBox(height: 1),
+                              const SizedBox(height: 1),
                               Text(
-                                'Record cash or online deposit for ledger',
-                                style: TextStyle(
+                                'ui.sheet_add_deposit_sub'.tr2,
+                                style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
                                 ),
@@ -2705,9 +2803,9 @@ class _SheetViewState extends State<_SheetView>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // 1. Select Member
-                          const Text(
-                            'SELECT MEMBER *',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_select_member'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -2754,9 +2852,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 2. Deposit Amount
-                          const Text(
-                            'DEPOSIT AMOUNT (৳) *',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_deposit_amount'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -2772,7 +2870,7 @@ class _SheetViewState extends State<_SheetView>
                               color: AppColors.ink,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'e.g. 2000',
+                              hintText: 'ui.sheet_deposit_hint'.tr2,
                               hintStyle: const TextStyle(
                                 fontSize: 12.5,
                                 color: AppColors.inkFaded,
@@ -2856,9 +2954,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 3. Deposit Date
-                          const Text(
-                            'DEPOSIT DATE',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_deposit_date'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -2916,9 +3014,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 4. Note
-                          const Text(
-                            'NOTE (OPTIONAL)',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_note_optional'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -2933,7 +3031,7 @@ class _SheetViewState extends State<_SheetView>
                               color: AppColors.ink,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'e.g. bKash / cash payment',
+                              hintText: 'ui.sheet_deposit_note_hint'.tr2,
                               hintStyle: const TextStyle(
                                 fontSize: 12.5,
                                 color: AppColors.inkFaded,
@@ -2994,9 +3092,9 @@ class _SheetViewState extends State<_SheetView>
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
+                            child: Text(
+                              'ui.cancel'.tr2,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12.5,
                               ),
@@ -3013,9 +3111,9 @@ class _SheetViewState extends State<_SheetView>
                                     final amt = _toD(amountCtrl.text);
                                     if (amt <= 0) {
                                       ScaffoldMessenger.of(ctx2).showSnackBar(
-                                        const SnackBar(
+                                        SnackBar(
                                           content: Text(
-                                            'Please enter a valid deposit amount',
+                                            'ui.sheet_invalid_deposit'.tr2,
                                           ),
                                         ),
                                       );
@@ -3057,9 +3155,9 @@ class _SheetViewState extends State<_SheetView>
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text(
-                                    'Save Deposit',
-                                    style: TextStyle(
+                                : Text(
+                                    'ui.sheet_save_deposit'.tr2,
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12.5,
                                     ),
@@ -3093,13 +3191,12 @@ class _SheetViewState extends State<_SheetView>
   }) async {
     final ok = await ConfirmDeleteDialog.show(
       context,
-      title: 'Delete Deposit?',
+      title: 'ui.confirm_delete_deposit_title'.tr2,
       itemName: memberName != null && amount != null && amount > 0
           ? '$memberName · ৳${amount.toStringAsFixed(0)}'
           : memberName,
-      message:
-          'This will permanently remove this deposit entry and recalculate member balances.',
-      confirmLabel: 'Delete Deposit',
+      message: 'ui.confirm_delete_deposit_message'.tr2,
+      confirmLabel: 'ui.confirm_delete_deposit_label'.tr2,
       icon: Icons.account_balance_wallet_outlined,
     );
     if (ok != true) return;
@@ -3768,8 +3865,7 @@ class _SheetViewState extends State<_SheetView>
                               decoration: BoxDecoration(
                                 color: AppColors.paper,
                                 shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: AppColors.paperLine),
+                                border: Border.all(color: AppColors.paperLine),
                               ),
                               child: const Center(
                                 child: Icon(
@@ -5218,8 +5314,9 @@ class _SheetViewState extends State<_SheetView>
                                           border: Border.all(
                                             color: rows.length == 1
                                                 ? AppColors.paperLine
-                                                : AppColors.danger
-                                                      .withValues(alpha: 0.2),
+                                                : AppColors.danger.withValues(
+                                                    alpha: 0.2,
+                                                  ),
                                           ),
                                         ),
                                         child: Center(
@@ -5713,9 +5810,6 @@ class _CustomSegmentedTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final screenWidth = constraints.maxWidth;
-        final isCompact = screenWidth < 360;
-
         return Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
@@ -5745,26 +5839,26 @@ class _CustomSegmentedTabBar extends StatelessWidget {
                         index: 0,
                         currentIndex: currentIndex,
                         icon: Icons.calendar_month_rounded,
-                        label: isCompact ? 'Logs' : 'Daily Logs',
+                        label: 'ui.sheet_tab_logs'.tr2,
                       ),
                       _buildTabItem(
                         index: 1,
                         currentIndex: currentIndex,
                         icon: Icons.people_alt_rounded,
-                        label: 'Members',
+                        label: 'ui.sheet_tab_members'.tr2,
                       ),
                       _buildTabItem(
                         index: 2,
                         currentIndex: currentIndex,
                         icon: Icons.account_balance_wallet_rounded,
-                        label: 'Deposits',
+                        label: 'ui.sheet_tab_deposits'.tr2,
                         countBadge: depositCount > 0 ? depositCount : null,
                       ),
                       _buildTabItem(
                         index: 3,
                         currentIndex: currentIndex,
                         icon: Icons.rule_folder_rounded,
-                        label: isCompact ? 'Requests' : 'Approvals',
+                        label: 'ui.sheet_tab_approvals'.tr2,
                         isApproval: true,
                         countBadge: pendingCount > 0 ? pendingCount : null,
                       ),

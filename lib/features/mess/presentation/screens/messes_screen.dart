@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/mess_cubit.dart';
@@ -52,11 +54,11 @@ class _MessesViewState extends State<_MessesView> {
           leading: AppBackButton(
             onPressed: _backToDashboard,
           ),
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Mess Overview',
+              'ui.messes_overview'.tr2,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
@@ -64,7 +66,7 @@ class _MessesViewState extends State<_MessesView> {
               ),
             ),
             Text(
-              'Your messes & active ledgers',
+              'ui.messes_subtitle'.tr2,
               style: TextStyle(
                 fontSize: 11,
                 color: AppColors.inkFaded,
@@ -141,7 +143,7 @@ class _MessesViewState extends State<_MessesView> {
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.brandDark,
                         ),
-                        child: const Text('Try Again'),
+                        child: Text('ui.try_again'.tr2),
                       ),
                     ],
                   ),
@@ -175,8 +177,8 @@ class _MessesViewState extends State<_MessesView> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          const Text(
-                            'No Mess Joined Yet',
+                          Text(
+                            'ui.messes_empty_title'.tr2,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
@@ -184,8 +186,8 @@ class _MessesViewState extends State<_MessesView> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            'Create a mess or ask your manager for an invite to start managing meals and expenses.',
+                          Text(
+                            'ui.messes_empty_sub'.tr2,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
@@ -208,7 +210,7 @@ class _MessesViewState extends State<_MessesView> {
                                 },
                                 icon: const Icon(Icons.add_rounded, size: 18),
                                 label: Text(
-                                  state.isIndividual ? 'Setup New Mess' : 'Create Mess',
+                                  state.isIndividual ? 'ui.messes_setup_new'.tr2 : 'ui.messes_create'.tr2,
                                   style: const TextStyle(fontWeight: FontWeight.w800),
                                 ),
                                 style: FilledButton.styleFrom(
@@ -259,7 +261,7 @@ class _MessesViewState extends State<_MessesView> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '${messes.length} ${messes.length == 1 ? 'Mess' : 'Messes'}',
+                              '${bnDigits(messes.length)} ${messes.length == 1 ? 'ui.messes_mess'.tr2 : 'ui.messes_messes'.tr2}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
@@ -268,7 +270,7 @@ class _MessesViewState extends State<_MessesView> {
                             ),
                             const Spacer(),
                             Text(
-                              '${messes.where((m) => m.canManage).length} manageable',
+                              '${bnDigits(messes.where((m) => m.canManage).length)} ${'ui.messes_manageable'.tr2}',
                               style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 12,
@@ -279,8 +281,8 @@ class _MessesViewState extends State<_MessesView> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        'YOUR MESSES',
+                      Text(
+                        'ui.messes_your_messes'.tr2,
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w900,
@@ -340,9 +342,9 @@ class _MessesViewState extends State<_MessesView> {
                 }
               },
               icon: const Icon(Icons.add_rounded, color: Colors.white),
-              label: const Text(
-                'New Mess',
-                style: TextStyle(
+              label: Text(
+                'ui.messes_new_mess'.tr2,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -462,12 +464,12 @@ class _MessCard extends StatelessWidget {
               children: [
                 _chip(
                   Icons.people_outline_rounded,
-                  '${mess.membersCount} members',
+                  '${bnDigits(mess.membersCount)} ${'ui.messes_members'.tr2}',
                 ),
                 const SizedBox(width: 8),
                 _chip(
                   Icons.calendar_month_rounded,
-                  '${mess.monthsCount} months',
+                  '${bnDigits(mess.monthsCount)} ${'ui.messes_months'.tr2}',
                 ),
                 const Spacer(),
                 const Icon(

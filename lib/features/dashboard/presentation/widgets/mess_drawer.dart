@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/sign_out_dialog.dart';
 import '../../../ads/presentation/screens/my_ads_screen.dart';
 import '../../../bazar_schedule/presentation/screens/bazar_schedule_screen.dart';
@@ -13,6 +15,7 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
 import '../../../profile/presentation/screens/account_screen.dart';
+import '../../../settings/presentation/screens/settings_screen.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
 import '../../data/models/dashboard_model.dart';
@@ -143,8 +146,8 @@ class MessDrawer extends StatelessWidget {
                   _drawerTile(
                     id: 'dashboard',
                     icon: Icons.dashboard_rounded,
-                    title: 'Overview',
-                    subtitle: 'Dashboard & stats',
+                    title: 'ui.drawer_overview'.tr2,
+                    subtitle: 'ui.drawer_overview_sub'.tr2,
                     context: context,
                   ),
                   // Show active mess even when we only have a fallback (Members/Mess route)
@@ -153,7 +156,7 @@ class MessDrawer extends StatelessWidget {
                       id: 'current_mess',
                       icon: Icons.grid_view_rounded,
                       title: activeMess.name,
-                      subtitle: 'Monthly sheet & daily meals',
+                      subtitle: 'ui.drawer_current_mess_sub'.tr2,
                       context: context,
                     )
                   else if (fallbackMessName != null &&
@@ -162,38 +165,38 @@ class MessDrawer extends StatelessWidget {
                       id: 'current_mess',
                       icon: Icons.grid_view_rounded,
                       title: fallbackMessName,
-                      subtitle: 'Monthly sheet & daily meals',
+                      subtitle: 'ui.drawer_current_mess_sub'.tr2,
                       context: context,
                     ),
                   _drawerTile(
                     id: 'members',
                     icon: Icons.people_alt_rounded,
-                    title: 'Members',
-                    subtitle: 'Member list & roster',
+                    title: 'ui.drawer_members'.tr2,
+                    subtitle: 'ui.drawer_members_sub'.tr2,
                     context: context,
                   ),
                   _drawerTile(
                     id: 'bazar_schedule',
                     icon: Icons.calendar_month_rounded,
-                    title: 'Bazar Schedule',
-                    subtitle: 'Shopping duty roster',
+                    title: 'ui.drawer_bazar_schedule'.tr2,
+                    subtitle: 'ui.drawer_bazar_sub'.tr2,
                     context: context,
                   ),
 
                   const SizedBox(height: 14),
-                  _buildSectionLabel('SEATS'),
+                  _buildSectionLabel('ui.drawer_seats'.tr2),
                   _drawerTile(
                     id: 'my_ads',
                     icon: Icons.home_work_rounded,
-                    title: 'My Seat Ads',
-                    subtitle: 'Manage posted seat listings',
+                    title: 'ui.drawer_my_ads'.tr2,
+                    subtitle: 'ui.drawer_my_ads_sub'.tr2,
                     context: context,
                   ),
                   _drawerTile(
                     id: 'find_mess',
                     icon: Icons.search_rounded,
-                    title: 'Go Home',
-                    subtitle: 'Browse live seat ads',
+                    title: 'ui.drawer_go_home'.tr2,
+                    subtitle: 'ui.drawer_go_home_sub'.tr2,
                     context: context,
                   ),
                 ]
@@ -202,38 +205,40 @@ class MessDrawer extends StatelessWidget {
                   _drawerTile(
                     id: 'dashboard',
                     icon: Icons.dashboard_rounded,
-                    title: 'Overview',
-                    subtitle: 'Dashboard & stats',
+                    title: 'ui.drawer_overview'.tr2,
+                    subtitle: 'ui.drawer_overview_sub'.tr2,
                     context: context,
                   ),
                   _drawerTile(
                     id: 'messes',
                     icon: Icons.archive_rounded,
-                    title: 'Messes',
+                    title: 'ui.drawer_messes'.tr2,
                     subtitle: drawerMesses.isNotEmpty
-                        ? 'All managed messes (${drawerMesses.length})'
-                        : 'All managed messes',
+                        ? "${'ui.drawer_all_managed'.tr2} (${bnDigits(drawerMesses.length)})"
+                        : 'ui.drawer_all_managed'.tr2,
                     context: context,
                   ),
                   _drawerTile(
                     id: 'members',
                     icon: Icons.people_alt_rounded,
-                    title: 'Members',
-                    subtitle: 'Member list & roster',
+                    title: 'ui.drawer_members'.tr2,
+                    subtitle: 'ui.drawer_members_sub'.tr2,
                     context: context,
                   ),
                   _drawerTile(
                     id: 'bazar_schedule',
                     icon: Icons.calendar_month_rounded,
-                    title: 'Bazar Schedule',
-                    subtitle: 'Shopping duty roster',
+                    title: 'ui.drawer_bazar_schedule'.tr2,
+                    subtitle: 'ui.drawer_bazar_sub'.tr2,
                     context: context,
                   ),
 
                   // Messes list: on mess selected, open that specific mess details screen
                   if (drawerMesses.isNotEmpty) ...[
                     const SizedBox(height: 14),
-                    _buildSectionLabel('YOUR MESSES (${drawerMesses.length})'),
+                    _buildSectionLabel(
+                      '${'ui.drawer_your_messes'.tr2} (${bnDigits(drawerMesses.length)})',
+                    ),
                     for (final m in drawerMesses) ...[
                       _buildMessDetailTile(
                         context: context,
@@ -244,19 +249,19 @@ class MessDrawer extends StatelessWidget {
                   ],
 
                   const SizedBox(height: 14),
-                  _buildSectionLabel('SEATS'),
+                  _buildSectionLabel('ui.drawer_seats'.tr2),
                   _drawerTile(
                     id: 'my_ads',
                     icon: Icons.home_work_rounded,
-                    title: 'My Seat Ads',
-                    subtitle: 'Manage posted seat listings',
+                    title: 'ui.drawer_my_ads'.tr2,
+                    subtitle: 'ui.drawer_my_ads_sub'.tr2,
                     context: context,
                   ),
                   _drawerTile(
                     id: 'find_mess',
                     icon: Icons.search_rounded,
-                    title: 'Find Seats',
-                    subtitle: 'Browse live seat ads',
+                    title: 'ui.drawer_find_seats'.tr2,
+                    subtitle: 'ui.drawer_go_home_sub'.tr2,
                     context: context,
                   ),
                 ]
@@ -265,14 +270,14 @@ class MessDrawer extends StatelessWidget {
                   _drawerTile(
                     id: 'dashboard',
                     icon: Icons.dashboard_rounded,
-                    title: 'Overview',
-                    subtitle: 'Dashboard & stats',
+                    title: 'ui.drawer_overview'.tr2,
+                    subtitle: 'ui.drawer_overview_sub'.tr2,
                     context: context,
                   ),
                   _drawerTile(
                     id: 'messes',
                     icon: Icons.archive_rounded,
-                    title: 'My Messes',
+                    title: 'ui.drawer_my_messes'.tr2,
                     subtitle: 'Joined messes',
                     context: context,
                   ),
@@ -280,15 +285,15 @@ class MessDrawer extends StatelessWidget {
                     _drawerTile(
                       id: 'bazar_schedule',
                       icon: Icons.calendar_month_rounded,
-                      title: 'Bazar Schedule',
-                      subtitle: 'Shopping duty roster',
+                      title: 'ui.drawer_bazar_schedule'.tr2,
+                      subtitle: 'ui.drawer_bazar_sub'.tr2,
                       context: context,
                     ),
 
                   if (drawerMesses.isNotEmpty) ...[
                     const SizedBox(height: 14),
                     _buildSectionLabel(
-                      'JOINED MESSES (${drawerMesses.length})',
+                      "${'ui.drawer_joined_messes'.tr2} (${bnDigits(drawerMesses.length)})",
                     ),
                     for (final m in drawerMesses) ...[
                       _buildMessDetailTile(
@@ -300,23 +305,30 @@ class MessDrawer extends StatelessWidget {
                   ],
 
                   const SizedBox(height: 14),
-                  _buildSectionLabel('SEATS'),
+                  _buildSectionLabel('ui.drawer_seats'.tr2),
                   _drawerTile(
                     id: 'find_mess',
                     icon: Icons.search_rounded,
-                    title: 'Find Seats',
-                    subtitle: 'Browse live seat ads',
+                    title: 'ui.drawer_find_seats'.tr2,
+                    subtitle: 'ui.drawer_go_home_sub'.tr2,
                     context: context,
                   ),
                 ],
 
                 const SizedBox(height: 14),
-                _buildSectionLabel('ACCOUNT'),
+                _buildSectionLabel('ui.drawer_account'.tr2),
                 _drawerTile(
                   id: 'account',
                   icon: Icons.person_outline_rounded,
-                  title: 'My Account',
-                  subtitle: 'Profile & preferences',
+                  title: 'ui.drawer_my_account'.tr2,
+                  subtitle: 'ui.drawer_account_sub'.tr2,
+                  context: context,
+                ),
+                _drawerTile(
+                  id: 'settings',
+                  icon: Icons.settings_outlined,
+                  title: 'ui.drawer_settings'.tr2,
+                  subtitle: 'ui.drawer_settings_sub'.tr2,
                   context: context,
                 ),
               ],
@@ -403,7 +415,7 @@ class MessDrawer extends StatelessWidget {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        '${mess.membersCount} members • ${mess.code}',
+                        '${bnDigits(mess.membersCount)} ${'ui.dash_members'.tr2} • ${mess.code}',
                         style: const TextStyle(
                           fontSize: 10.5,
                           color: AppColors.inkFaded,
@@ -897,7 +909,11 @@ class MessDrawer extends StatelessWidget {
             return;
           }
           Navigator.pop(context); // Close drawer
-          if (id == 'account') {
+          if (id == 'settings') {
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+          } else if (id == 'account') {
             if (activeSection != 'account') {
               Navigator.of(
                 context,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../ads/presentation/cubit/ads_cubit.dart';
 import '../../../ads/presentation/screens/ads_screen.dart';
@@ -53,15 +54,18 @@ class _MainShellScreenState extends State<MainShellScreen> {
     ProfileScreen(),
   ];
 
-  static const _navItems = [
-    _NavItem(asset: 'assets/icons/nav_home.svg', label: 'Home'),
+  static List<_NavItem> _navItems(BuildContext context) => [
+    _NavItem(asset: 'assets/icons/nav_home.svg', label: 'ui.nav_home'.tr2),
     _NavItem(
       asset: 'assets/icons/nav_seats.svg',
-      label: 'Find Seats',
+      label: 'ui.nav_find_seats'.tr2,
       badge: 'LIVE',
     ),
-    _NavItem(asset: 'assets/icons/nav_blog.svg', label: 'Blog'),
-    _NavItem(asset: 'assets/icons/nav_profile.svg', label: 'Profile'),
+    _NavItem(asset: 'assets/icons/nav_blog.svg', label: 'ui.nav_blog'.tr2),
+    _NavItem(
+      asset: 'assets/icons/nav_profile.svg',
+      label: 'ui.nav_profile'.tr2,
+    ),
   ];
 
   @override
@@ -74,7 +78,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
     if (index == 3) {
       final auth = context.read<AuthCubit>().state;
       if (auth is! AuthAuthenticated) {
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
         return;
       }
     }
@@ -116,16 +122,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
               SystemNavigator.pop();
             }
           },
-          child: Scaffold(
-            extendBody: true,
-            body: IndexedStack(
-              index: _currentIndex,
-              children: _screens,
-            ),
-            bottomNavigationBar: _FloatingNavBar(
-              currentIndex: _currentIndex,
-              items: _navItems,
-              onTap: _onTabSelected,
+          child: ValueListenableBuilder<int>(
+            valueListenable: AppTranslations.notifier,
+            builder: (context, _, _) => Scaffold(
+              extendBody: true,
+              body: IndexedStack(index: _currentIndex, children: _screens),
+              bottomNavigationBar: _FloatingNavBar(
+                currentIndex: _currentIndex,
+                items: _navItems(context),
+                onTap: _onTabSelected,
+              ),
             ),
           ),
         ),

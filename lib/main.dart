@@ -6,6 +6,8 @@ import 'app.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'core/locale/app_translations.dart';
+import 'core/locale/locale_service.dart';
 import 'core/logger/app_logger.dart';
 import 'core/network/dio_client.dart';
 import 'core/services/push_notification_service.dart';
@@ -50,7 +52,12 @@ Future<void> main() async {
 
   await DioClient.hydrateAuth();
   await PushNotificationService.initialize();
-  runApp(const MessMaxApp());
+  final initialLocale = await LocaleService.loadInitialLocale();
+  // Preload API translations for initial locale (SharedPreferences cache fallback if offline)
+  await AppTranslations.load(initialLocale.languageCode);
+  // Warm cache for other locale in background
+  AppTranslations.preloadAll();
+  runApp(MessMaxApp(initialLocale: initialLocale));
 }
 
 /// Logs every bloc/cubit event, transition and error through [AppLogger].

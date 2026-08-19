@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../core/locale/locale_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -12,6 +14,7 @@ import '../../data/repositories/account_repository.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/delete_account_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
+import '../../../settings/presentation/screens/settings_screen.dart';
 import '../../../../features/dashboard/data/models/dashboard_model.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
 
@@ -47,7 +50,7 @@ class _AccountScreenState extends State<AccountScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick avatar image: $e')),
+        SnackBar(content: Text('${'ui.account_pick_avatar_failed'.tr2}: $e')),
       );
     }
   }
@@ -105,12 +108,12 @@ class _AccountScreenState extends State<AccountScreen> {
     if (name.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Name cannot be empty')));
+      ).showSnackBar(SnackBar(content: Text('ui.account_name_empty'.tr2)));
       return;
     }
     if (email.isEmpty || !email.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid email address')),
+        SnackBar(content: Text('ui.account_email_invalid'.tr2)),
       );
       return;
     }
@@ -129,13 +132,13 @@ class _AccountScreenState extends State<AccountScreen> {
       context.read<AuthCubit>().checkAuth();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile & avatar updated successfully!')),
+        SnackBar(content: Text('ui.account_profile_updated'.tr2)),
       );
       _loadAccountDetails(forceRefresh: true);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profile update failed: ${e.toString()}')),
+        SnackBar(content: Text('${'ui.account_profile_failed'.tr2}: ${e.toString()}')),
       );
     } finally {
       if (mounted) setState(() => _isSavingProfile = false);
@@ -149,21 +152,21 @@ class _AccountScreenState extends State<AccountScreen> {
 
     if (current.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter your current password')),
+        SnackBar(content: Text('ui.account_current_required'.tr2)),
       );
       return;
     }
     if (newPass.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('New password must be at least 6 characters'),
+        SnackBar(
+          content: Text('ui.account_new_pass_short'.tr2),
         ),
       );
       return;
     }
     if (newPass != confirm) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New passwords do not match')),
+        SnackBar(content: Text('ui.account_pass_mismatch'.tr2)),
       );
       return;
     }
@@ -180,12 +183,12 @@ class _AccountScreenState extends State<AccountScreen> {
       _newPassController.clear();
       _confirmPassController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password updated successfully!')),
+        SnackBar(content: Text('ui.account_pass_updated'.tr2)),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password update failed: ${e.toString()}')),
+        SnackBar(content: Text('${'ui.account_pass_failed'.tr2}: ${e.toString()}')),
       );
     } finally {
       if (mounted) setState(() => _isUpdatingPassword = false);
@@ -216,15 +219,45 @@ class _AccountScreenState extends State<AccountScreen> {
           leading: AppBackButton(
             onPressed: _backToDashboard,
           ),
-          title: const Text(
-            'My Account',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            color: AppColors.ink,
+          title: Text(
+            'ui.my_account'.tr2,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Center(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.paper,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.paperLine),
+                      ),
+                      child: const Icon(
+                        Icons.settings_rounded,
+                        color: AppColors.ink,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
       body: SafeArea(
         child: _isLoading
             ? const Center(
@@ -240,6 +273,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildUserHeaderCard(context),
+                      const SizedBox(height: 20),
+                      _buildLanguageCard(context),
                       const SizedBox(height: 20),
                       _buildProfileEditCard(),
                       const SizedBox(height: 20),
@@ -430,11 +465,11 @@ class _AccountScreenState extends State<AccountScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.badge_outlined, color: AppColors.brandDark, size: 20),
+            children: [
+              const Icon(Icons.badge_outlined, color: AppColors.brandDark, size: 20),
               SizedBox(width: 8),
               Text(
-                'Personal Profile Details',
+                'ui.account_personal_title'.tr2,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
@@ -444,8 +479,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            'FULL NAME',
+          Text(
+            'ui.account_full_name'.tr2,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -456,8 +491,8 @@ class _AccountScreenState extends State<AccountScreen> {
           TextField(
             controller: _nameController,
             textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
-              hintText: 'Your name',
+            decoration: InputDecoration(
+              hintText: 'ui.account_name_hint'.tr2,
               prefixIcon: Icon(
                 Icons.person_outline_rounded,
                 size: 20,
@@ -466,8 +501,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'EMAIL ADDRESS',
+          Text(
+            'ui.account_email_label'.tr2,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -478,8 +513,8 @@ class _AccountScreenState extends State<AccountScreen> {
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              hintText: 'you@example.com',
+            decoration: InputDecoration(
+              hintText: 'ui.account_email_hint'.tr2,
               prefixIcon: Icon(
                 Icons.email_outlined,
                 size: 20,
@@ -488,8 +523,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'AVATAR / PROFILE PHOTO',
+          Text(
+            'ui.account_avatar_label'.tr2,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -531,8 +566,8 @@ class _AccountScreenState extends State<AccountScreen> {
                   Expanded(
                     child: Text(
                       _selectedAvatarPath != null
-                          ? 'New photo selected (${_selectedAvatarPath!.split('/').last})'
-                          : 'Tap to select new profile photo',
+                          ? '${'ui.account_photo_selected'.tr2} (${_selectedAvatarPath!.split('/').last})'
+                          : 'ui.account_photo_tap'.tr2,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: _selectedAvatarPath != null
@@ -572,7 +607,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Save Profile Details'),
+                  : Text('ui.account_save_profile'.tr2),
             ),
           ),
         ],
@@ -599,15 +634,15 @@ class _AccountScreenState extends State<AccountScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(
+            children: [
+              const Icon(
                 Icons.lock_reset_rounded,
                 color: AppColors.brandDark,
                 size: 20,
               ),
               SizedBox(width: 8),
               Text(
-                'Change Password',
+                'ui.account_change_pass_title'.tr2,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
@@ -617,8 +652,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            'CURRENT PASSWORD',
+          Text(
+            'ui.account_current_pass'.tr2,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -650,8 +685,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'NEW PASSWORD',
+          Text(
+            'ui.account_new_pass'.tr2,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -663,7 +698,7 @@ class _AccountScreenState extends State<AccountScreen> {
             controller: _newPassController,
             obscureText: _obscureNew,
             decoration: InputDecoration(
-              hintText: 'At least 6 characters',
+              hintText: 'ui.account_new_pass_hint'.tr2,
               prefixIcon: const Icon(
                 Icons.key_rounded,
                 size: 20,
@@ -682,8 +717,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'CONFIRM NEW PASSWORD',
+          Text(
+            'ui.account_confirm_new_pass'.tr2,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -695,7 +730,7 @@ class _AccountScreenState extends State<AccountScreen> {
             controller: _confirmPassController,
             obscureText: _obscureConfirm,
             decoration: InputDecoration(
-              hintText: 'Repeat new password',
+              hintText: 'ui.account_confirm_hint'.tr2,
               prefixIcon: const Icon(
                 Icons.check_circle_outline_rounded,
                 size: 20,
@@ -731,7 +766,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Update Password'),
+                  : Text('ui.account_update_pass'.tr2),
             ),
           ),
         ],
@@ -761,15 +796,15 @@ class _AccountScreenState extends State<AccountScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
-                children: const [
-                  Icon(
+                children: [
+                  const Icon(
                     Icons.apartment_rounded,
                     color: AppColors.brandDark,
                     size: 20,
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'My Messes',
+                    'ui.account_my_messes'.tr2,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
@@ -785,7 +820,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '${messes.length} Total',
+                  '${messes.length} ${'ui.account_total'.tr2}',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -828,7 +863,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ),
                         Text(
-                          '${messes[i].membersCount} Members • Role: ${messes[i].role.toUpperCase()}',
+                          '${messes[i].membersCount} ${'ui.messes_members'.tr2} • ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
                           style: const TextStyle(
                             fontSize: 11.5,
                             color: AppColors.inkFaded,
@@ -863,15 +898,15 @@ class _AccountScreenState extends State<AccountScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(
+            children: [
+              const Icon(
                 Icons.warning_amber_rounded,
                 color: Color(0xFFA02626),
                 size: 20,
               ),
               SizedBox(width: 8),
               Text(
-                'Danger Zone',
+                'ui.account_danger_zone'.tr2,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
@@ -881,8 +916,8 @@ class _AccountScreenState extends State<AccountScreen> {
             ],
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Deleting your account is permanent. All your personal data, mess memberships, and seat listings will be immediately deleted.',
+          Text(
+            'ui.account_danger_desc'.tr2,
             style: TextStyle(
               fontSize: 12.5,
               color: Color(0xFF852222),
@@ -905,8 +940,8 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               ),
               icon: const Icon(Icons.delete_forever_rounded, size: 18),
-              label: const Text(
-                'Delete Account',
+              label: Text(
+                'ui.account_delete_btn'.tr2,
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
               ),
             ),
@@ -943,8 +978,8 @@ class _AccountScreenState extends State<AccountScreen> {
         (_) => false,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Your account has been deleted successfully.'),
+        SnackBar(
+          content: Text('ui.account_deleted'.tr2),
           backgroundColor: AppColors.ink,
         ),
       );
@@ -960,5 +995,189 @@ class _AccountScreenState extends State<AccountScreen> {
         ),
       );
     }
+  }
+
+  Widget _buildLanguageCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.paperRaised,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.paperLine),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.brandSoft,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: const Icon(
+                  Icons.translate_rounded,
+                  color: AppColors.brandDark,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ui.language'.tr2,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    Text(
+                      'ui.change_language'.tr2,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.inkFaded,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              BlocBuilder<LocaleCubit, Locale>(
+                builder: (context, locale) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandSoft,
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: Text(
+                      locale.languageCode == 'bn'
+                          ? 'ui.bengali'.tr2
+                          : 'ui.english'.tr2,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.brandDark,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          BlocBuilder<LocaleCubit, Locale>(
+            builder: (context, locale) {
+              final isEn = locale.languageCode == 'en';
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildLangOption(
+                      title: 'English',
+                      subtitle: 'English',
+                      selected: isEn,
+                      onTap: () => context.read<LocaleCubit>().setLocale('en'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildLangOption(
+                      title: 'বাংলা',
+                      subtitle: 'Bengali',
+                      selected: !isEn,
+                      onTap: () => context.read<LocaleCubit>().setLocale('bn'),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLangOption({
+    required String title,
+    required String subtitle,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.brandDark : AppColors.paper,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? AppColors.brandDark : AppColors.paperLine,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: selected
+                    ? Colors.white.withValues(alpha: 0.18)
+                    : AppColors.paperRaised,
+                border: Border.all(
+                  color: selected ? Colors.white : AppColors.paperLine,
+                  width: selected ? 2 : 1,
+                ),
+              ),
+              child: selected
+                  ? const Icon(Icons.check_rounded, size: 11, color: Colors.white)
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: selected ? Colors.white : AppColors.ink,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: selected
+                          ? Colors.white.withValues(alpha: 0.7)
+                          : AppColors.inkFaded,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../cubit/notification_cubit.dart';
 import '../cubit/notification_state.dart';
@@ -246,19 +248,19 @@ class _DashboardNotificationsScreenState
     if (isPending) {
       badgeBg = const Color(0xFFFFF3E0);
       badgeColor = const Color(0xFFE65100);
-      statusLabel = 'Pending Review';
+      statusLabel = 'ui.dash_status_pending'.tr2;
     } else if (isApproved) {
       badgeBg = const Color(0xFFE8F5E9);
       badgeColor = const Color(0xFF2E7D32);
-      statusLabel = 'Approved';
+      statusLabel = 'ui.dash_status_approved'.tr2;
     } else if (isDeclined) {
       badgeBg = const Color(0xFFFFEBEE);
       badgeColor = const Color(0xFFC62828);
-      statusLabel = 'Declined';
+      statusLabel = 'ui.dash_status_declined'.tr2;
     } else {
       badgeBg = const Color(0xFFEDE7F6);
       badgeColor = const Color(0xFF512DA8);
-      statusLabel = 'Notice';
+      statusLabel = 'ui.dash_status_notice'.tr2;
     }
 
     IconData typeIcon;
@@ -542,16 +544,19 @@ class _DashboardNotificationsScreenState
                                   ),
                                   foregroundColor: const Color(0xFFC62828),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.close_rounded, size: 18),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      'Decline',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w800,
+                                    const Icon(Icons.close_rounded, size: 18),
+                                    const SizedBox(width: 6),
+                                    ValueListenableBuilder<int>(
+                                      valueListenable: AppTranslations.notifier,
+                                      builder: (context, _, _) => Text(
+                                        'ui.decline'.tr2,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -577,16 +582,19 @@ class _DashboardNotificationsScreenState
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.check_rounded, size: 18),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      'Approve',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w800,
+                                    const Icon(Icons.check_rounded, size: 18),
+                                    const SizedBox(width: 6),
+                                    ValueListenableBuilder<int>(
+                                      valueListenable: AppTranslations.notifier,
+                                      builder: (context, _, _) => Text(
+                                        'ui.approve'.tr2,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -655,12 +663,15 @@ class _DashboardNotificationsScreenState
               children: [
                 Row(
                   children: [
-                    const Text(
-                      'Activity & Requests',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.ink,
+                    ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        'ui.dash_notif_title'.tr2,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.ink,
+                        ),
                       ),
                     ),
                     if (unread > 0) ...[
@@ -673,7 +684,7 @@ class _DashboardNotificationsScreenState
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          '$unread new',
+                          "${bnDigits(unread)} ${"ui.dash_notif_new".tr2}",
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w800,
@@ -684,12 +695,15 @@ class _DashboardNotificationsScreenState
                     ],
                   ],
                 ),
-                const Text(
-                  'Meal off requests, deposits & duties',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.inkFaded,
-                    fontWeight: FontWeight.w600,
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.dash_notif_subtitle'.tr2,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.inkFaded,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -714,33 +728,33 @@ class _DashboardNotificationsScreenState
                 },
                 itemBuilder: (context) => [
                   if (unread > 0)
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'read_all',
                       child: Row(
                         children: [
-                          Icon(Icons.done_all_rounded, size: 18, color: AppColors.brandDark),
+                          const Icon(Icons.done_all_rounded, size: 18, color: AppColors.brandDark),
                           SizedBox(width: 10),
-                          Text('Mark all as read', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_mark_all'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
                         ],
                       ),
                     ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'clear_read',
                     child: Row(
                       children: [
-                        Icon(Icons.cleaning_services_rounded, size: 18, color: AppColors.inkFaded),
+                        const Icon(Icons.cleaning_services_rounded, size: 18, color: AppColors.inkFaded),
                         SizedBox(width: 10),
-                        Text('Clear read', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_clear_read'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'clear_all',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_sweep_rounded, size: 18, color: Color(0xFFEF4444)),
+                        const Icon(Icons.delete_sweep_rounded, size: 18, color: Color(0xFFEF4444)),
                         SizedBox(width: 10),
-                        Text('Clear all', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFEF4444))),
+                        ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_clear_all'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFEF4444)))),
                       ],
                     ),
                   ),

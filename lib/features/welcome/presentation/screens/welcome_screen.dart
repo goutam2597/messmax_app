@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
@@ -171,40 +172,47 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                       ),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'UNIVERSAL MESS NETWORK',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 1.6,
-                                      color: AppColors.brandDark,
+                                  child: ValueListenableBuilder<int>(
+                                    valueListenable: AppTranslations.notifier,
+                                    builder: (context, _, _) => Text(
+                                      'ui.welcome_network'.tr2,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1.6,
+                                        color: AppColors.brandDark,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 14),
-                                const Text(
-                                  'Manage Messes, Meals & Find Seats',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    height: 1.25,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.ink,
-                                    letterSpacing: -0.4,
+                                ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Text(
+                                    'ui.welcome_title'.tr2,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      height: 1.25,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.ink,
+                                      letterSpacing: -0.4,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                  child: Text(
-                                    'The complete all-in-one ecosystem for mess members, managers & seat seekers across Bangladesh.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 13.5,
-                                      height: 1.45,
-                                      color: AppColors.inkFaded,
+                                ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    child: Text(
+                                      'ui.welcome_subtitle'.tr2,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        height: 1.45,
+                                        color: AppColors.inkFaded,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -244,30 +252,36 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _PrimaryActionButton(
-                              icon: Icons.travel_explore_rounded,
-                              label: AppStrings.findMesses,
-                              onPressed: _onFindMesses,
+                            ValueListenableBuilder<int>(
+                              valueListenable: AppTranslations.notifier,
+                              builder: (context, _, _) => _PrimaryActionButton(
+                                icon: Icons.travel_explore_rounded,
+                                label: AppStrings.findMesses,
+                                onPressed: _onFindMesses,
+                              ),
                             ),
                             const SizedBox(height: 10),
-                            OutlinedButton.icon(
-                              onPressed: _onCreateMess,
-                              icon: const Icon(
-                                Icons.add_circle_outline_rounded,
-                                size: 18,
-                              ),
-                              label: Text(AppStrings.createMess),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.ink,
-                                side: const BorderSide(
-                                  color: AppColors.paperLine,
-                                  width: 1.4,
+                            ValueListenableBuilder<int>(
+                              valueListenable: AppTranslations.notifier,
+                              builder: (context, _, _) => OutlinedButton.icon(
+                                onPressed: _onCreateMess,
+                                icon: const Icon(
+                                  Icons.add_circle_outline_rounded,
+                                  size: 18,
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                label: Text(AppStrings.createMess),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.ink,
+                                  side: const BorderSide(
+                                    color: AppColors.paperLine,
+                                    width: 1.4,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                 ),
                               ),
                             ),
@@ -342,7 +356,7 @@ class _OrbitingHero extends StatelessWidget {
 
   final AnimationController controller;
 
-  static const _orbitIcons = [
+  static final _orbitIcons = [
     (Icons.rice_bowl_rounded, AppStrings.featureMealCount),
     (Icons.shopping_basket_rounded, AppStrings.featureBazarLedger),
     (Icons.savings_rounded, AppStrings.featureDeposits),
@@ -536,7 +550,7 @@ class _PrimaryActionButton extends StatelessWidget {
 class _FeatureChips extends StatelessWidget {
   const _FeatureChips();
 
-  static const _items = [
+  static final _items = [
     (Icons.rice_bowl_rounded, AppStrings.featureMealCount),
     (Icons.shopping_basket_rounded, AppStrings.featureBazarLedger),
     (Icons.savings_rounded, AppStrings.featureDeposits),
@@ -600,15 +614,15 @@ class _LoginLink extends StatelessWidget {
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          const Text(
+          Text(
             '${AppStrings.alreadyHaveAccount} ',
-            style: TextStyle(fontSize: 13.5, color: AppColors.inkFaded),
+            style: const TextStyle(fontSize: 13.5, color: AppColors.inkFaded),
           ),
           GestureDetector(
             onTap: onTap,
-            child: const Text(
+            child: Text(
               AppStrings.login,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w800,
                 color: AppColors.brandDark,

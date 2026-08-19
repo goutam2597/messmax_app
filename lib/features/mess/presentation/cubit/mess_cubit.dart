@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/cache_manager.dart';
 import '../../data/repositories/mess_repository.dart';
 import 'mess_state.dart';
 
@@ -32,11 +33,17 @@ class MessCubit extends Cubit<MessState> {
   }
 
   Future<void> loadMess(int id, {bool forceRefresh = false}) async {
-    final cached = _repo.getCachedMess(id);
-    if (cached != null && !forceRefresh) {
-      emit(MessDetailLoaded(cached));
-      return;
+    // In forceRefresh mode, bypass in-memory cache and push to loading so the
+    // spinner appears instead of instantly re-rendering stale data.
+    // The repo will also receive forceRefresh=true so it must skip _messDetailCache.
+    if (!forceRefresh) {
+      final cachedImmediate = _repo.getCachedMess(id);
+      if (cachedImmediate != null) {
+        emit(MessDetailLoaded(cachedImmediate));
+        return;
+      }
     }
+    final cachedAtCatch = _repo.getCachedMess(id);
     if (state is! MessDetailLoaded) {
       emit(MessLoading());
     }
@@ -44,8 +51,8 @@ class MessCubit extends Cubit<MessState> {
       final d = await _repo.fetchMess(id, forceRefresh: forceRefresh);
       emit(MessDetailLoaded(d));
     } catch (e) {
-      if (cached != null) {
-        emit(MessDetailLoaded(cached));
+      if (cachedAtCatch != null) {
+        emit(MessDetailLoaded(cachedAtCatch));
       } else {
         emit(MessError(e.toString().replaceAll('Exception: ', '')));
       }
@@ -114,6 +121,32 @@ class MessCubit extends Cubit<MessState> {
       return true;
     } catch (e) {
       emit(MessError(e.toString().replaceAll('Exception: ', '')));
+      return false;
+    }
+  }
+
+  Future<bool> deleteMonth(int messId, int monthId) async {
+    try {
+      await _repo.deleteMonth(messId, monthId);
+      CacheManager.clearAll();
+      await loadMess(messId, forceRefresh: true);
+      return true;
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(MessError(msg));
+      return false;
+    }
+  }
+
+  Future<bool> activateMonth(int messId, int monthId) async {
+    try {
+      await _repo.activateMonth(messId, monthId);
+      CacheManager.clearAll();
+      await loadMess(messId, forceRefresh: true);
+      return true;
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(MessError(msg));
       return false;
     }
   }

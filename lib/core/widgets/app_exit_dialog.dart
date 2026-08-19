@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../locale/app_translations.dart';
 import '../theme/app_colors.dart';
 
 /// Premium confirmation dialog when user is at the root of the app and presses back.
@@ -68,25 +69,31 @@ class AppExitDialog extends StatelessWidget {
               const SizedBox(height: 18),
 
               // Title
-              const Text(
-                'Exit MessMax?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.ink,
-                  letterSpacing: -0.3,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.exit_title'.tr2,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
 
               // Message
-              const Text(
-                'Are you sure you want to close and exit the application?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  color: AppColors.inkFaded,
-                  height: 1.45,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.exit_message'.tr2,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    color: AppColors.inkFaded,
+                    height: 1.45,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -110,11 +117,14 @@ class AppExitDialog extends StatelessWidget {
                         fixedSize: const Size.fromHeight(48),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.cancel'.tr2,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -135,11 +145,14 @@ class AppExitDialog extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                       icon: const Icon(Icons.check_rounded, size: 18),
-                      label: const Text(
-                        'Exit',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
+                      label: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.exit_confirm'.tr2,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/signup_role_dialog.dart';
@@ -35,13 +36,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final pass = _password.text;
     if (email.isEmpty || !email.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid email address')),
+        SnackBar(content: Text('auth.invalid_email'.tr2)),
       );
       return;
     }
     if (pass.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 6 characters')),
+        SnackBar(content: Text('auth.password_too_short'.tr2)),
       );
       return;
     }
@@ -104,19 +105,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const AppAuthHeader(
-                        title: 'Welcome Back',
-                        subtitle: 'Sign in to manage meals & post seats',
+                      AppAuthHeader(
+                        title: 'auth.welcome_back'.tr2,
+                        subtitle: 'auth.sign_in_to_messmax'.tr2,
                       ),
                       const SizedBox(height: 16),
                       _marketingStrip(),
                       const SizedBox(height: 18),
                       _card(),
                       const SizedBox(height: 16),
-                      const Text(
-                        'MessMax keeps your ledger: meals, bazar, and monthly settlement — just like the paper sheet, but always in sync.',
+                      Text(
+                        'auth.ledger_tagline'.tr2,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11.5,
                           color: AppColors.inkFaded,
                           height: 1.4,
@@ -148,16 +149,19 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          _miniStat('Bazar', 'Ledger'),
-          _divider(),
-          _miniStat('Meals', 'Count'),
-          _divider(),
-          _miniStat('Rate', 'Auto', highlight: true),
-          _divider(),
-          _miniStat('Rest', 'Sync', highlight: true),
-        ],
+      child: ValueListenableBuilder<int>(
+        valueListenable: AppTranslations.notifier,
+        builder: (context, _, _) => Row(
+          children: [
+            _miniStat('auth.strip_bazar'.tr2, 'auth.strip_ledger'.tr2),
+            _divider(),
+            _miniStat('auth.strip_meals'.tr2, 'auth.strip_count'.tr2),
+            _divider(),
+            _miniStat('auth.strip_rate'.tr2, 'auth.strip_auto'.tr2, highlight: true),
+            _divider(),
+            _miniStat('auth.strip_rest'.tr2, 'auth.strip_sync'.tr2, highlight: true),
+          ],
+        ),
       ),
     );
   }
@@ -228,14 +232,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 AuthErrorBanner(message: err),
                 const SizedBox(height: 16),
               ],
-              const FieldLabel('Email Address'),
+              FieldLabel('auth.email'.tr2),
               const SizedBox(height: 6),
               TextField(
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: 'you@example.com',
-                  prefixIcon: Icon(
+                decoration: InputDecoration(
+                  hintText: 'auth.email_hint'.tr2,
+                  prefixIcon: const Icon(
                     Icons.email_outlined,
                     size: 20,
                     color: AppColors.inkFaded,
@@ -243,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              const FieldLabel('Password'),
+              FieldLabel('auth.password'.tr2),
               const SizedBox(height: 6),
               TextField(
                 controller: _password,
@@ -269,28 +273,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              FilledButton(
-                onPressed: isAnyLoading ? null : _submit,
-                child: isEmailLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Sign In'),
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => FilledButton(
+                  onPressed: isAnyLoading ? null : _submit,
+                  child: isEmailLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text('auth.sign_in'.tr2),
+                ),
               ),
               const SizedBox(height: 16),
               Row(
-                children: const [
-                  Expanded(child: Divider(color: AppColors.paperLine)),
+                children: [
+                  const Expanded(child: Divider(color: AppColors.paperLine)),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      'OR',
-                      style: TextStyle(
+                      'auth.or'.tr2,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.5,
@@ -298,39 +305,45 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  Expanded(child: Divider(color: AppColors.paperLine)),
+                  const Expanded(child: Divider(color: AppColors.paperLine)),
                 ],
               ),
               const SizedBox(height: 16),
-              GoogleSignInButton(
-                loading: isGoogleLoading,
-                onPressed: isAnyLoading
-                    ? null
-                    : () => _googleWithPick(),
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => GoogleSignInButton(
+                  loading: isGoogleLoading,
+                  onPressed: isAnyLoading
+                      ? null
+                      : () => _googleWithPick(),
+                ),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'New here? ',
-                    style: TextStyle(fontSize: 13, color: AppColors.inkFaded),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${'auth.new_here'.tr2} ',
+                      style: const TextStyle(fontSize: 13, color: AppColors.inkFaded),
                     ),
-                    child: const Text(
-                      'Create account',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.brandDark,
-                        decoration: TextDecoration.underline,
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                      ),
+                      child: Text(
+                        'auth.create_account_free'.tr2,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.brandDark,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

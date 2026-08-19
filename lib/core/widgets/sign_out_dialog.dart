@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../locale/app_translations.dart';
 import '../theme/app_colors.dart';
 
 /// Premium, high-converting Sign Out confirmation dialog for MessMax.
@@ -79,25 +80,31 @@ class SignOutDialog extends StatelessWidget {
               const SizedBox(height: 18),
 
               // 2. Title & Message
-              const Text(
-                'Sign Out?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                  letterSpacing: -0.5,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.sign_out_title'.tr2,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                    letterSpacing: -0.5,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Are you sure you want to sign out? You will need to log back in to manage your mess, meals, or seat listings.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.inkFaded,
-                  height: 1.45,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.sign_out_message'.tr2,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.inkFaded,
+                    height: 1.45,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
 
               // 3. User Badge (if available)
@@ -176,11 +183,14 @@ class SignOutDialog extends StatelessWidget {
                         ),
                         backgroundColor: AppColors.paper,
                       ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13.5,
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.cancel'.tr2,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                          ),
                         ),
                       ),
                     ),
@@ -202,11 +212,14 @@ class SignOutDialog extends StatelessWidget {
                         shadowColor: AppColors.danger.withValues(alpha: 0.35),
                       ),
                       icon: const Icon(Icons.logout_rounded, size: 16),
-                      label: const Text(
-                        'Sign Out',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13.5,
+                      label: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.sign_out'.tr2,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13.5,
+                          ),
                         ),
                       ),
                     ),

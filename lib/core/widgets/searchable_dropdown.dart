@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../locale/app_translations.dart';
 import '../theme/app_colors.dart';
 
 /// Fetcher signature: returns a page of items plus whether more pages exist.
@@ -221,12 +222,15 @@ class _SearchPickerSheetState extends State<_SearchPickerSheet> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      'Select ${widget.hint.split(' ').last}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.ink,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        'ui.searchable_select_prefix'.tr2.replaceAll('{hint}', widget.hint.split(' ').last),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.ink,
+                        ),
                       ),
                     ),
                   ),
@@ -247,7 +251,7 @@ class _SearchPickerSheetState extends State<_SearchPickerSheet> {
                 controller: _searchController,
                 onChanged: _onSearchChanged,
                 decoration: InputDecoration(
-                  hintText: 'Search…',
+                  hintText: 'ui.search_placeholder'.tr2,
                   hintStyle: const TextStyle(
                     color: AppColors.inkFaded,
                     fontSize: 13.5,
@@ -315,15 +319,18 @@ class _SearchPickerSheetState extends State<_SearchPickerSheet> {
 
     if (_items.isEmpty) {
       entries.add(
-        const Padding(
+        Padding(
           padding: EdgeInsets.all(24),
           child: Center(
-            child: Text(
-              'No matches',
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.inkFaded,
+            child: ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => Text(
+                'ui.no_matches'.tr2,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.inkFaded,
+                ),
               ),
             ),
           ),
@@ -363,12 +370,15 @@ class _SearchPickerSheetState extends State<_SearchPickerSheet> {
                         vertical: 6,
                       ),
                     ),
-                    child: const Text(
-                      'Show more',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.accentDark,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        'ui.show_more'.tr2,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.accentDark,
+                        ),
                       ),
                     ),
                   ),

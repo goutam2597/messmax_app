@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
@@ -132,8 +134,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                               children: [
                                 Text(
                                   prefilledSchedule != null
-                                      ? 'Edit Duty Assignment'
-                                      : 'Assign Bazar Duty',
+                                      ? 'ui.bazar_edit_title'.tr2
+                                      : 'ui.bazar_assign_title'.tr2,
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w900,
@@ -142,7 +144,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 ),
                                 const SizedBox(height: 1),
                                 Text(
-                                  '${data.monthLabel} · Single day or date range',
+                                  '${data.monthLabel} · ${'ui.bazar_single_day_range'.tr2}',
                                   style: const TextStyle(
                                     fontSize: 11.5,
                                     color: AppColors.inkFaded,
@@ -195,8 +197,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'FROM DATE *',
+                                      Text(
+                                        'ui.bazar_from_date'.tr2,
                                         style: TextStyle(
                                           fontSize: 10.5,
                                           fontWeight: FontWeight.w800,
@@ -283,8 +285,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'TO DATE (OPTIONAL)',
+                                      Text(
+                                        'ui.bazar_to_date'.tr2,
                                         style: TextStyle(
                                           fontSize: 10.5,
                                           fontWeight: FontWeight.w800,
@@ -382,8 +384,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             const SizedBox(height: 14),
 
                             // --- QUICK PRESETS CHIPS ---
-                            const Text(
-                              'QUICK PRESETS',
+                            Text(
+                              'ui.bazar_quick_presets'.tr2,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
@@ -396,7 +398,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                               child: Row(
                                 children: [
                                   ActionChip(
-                                    label: const Text('Today'),
+                                    label: Text('ui.bazar_today'.tr2),
                                     avatar: const Icon(
                                       Icons.today_rounded,
                                       size: 14,
@@ -417,9 +419,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          const SnackBar(
+                                          SnackBar(
                                             content: Text(
-                                              'Current day is not in this month schedule',
+                                              'ui.bazar_current_not_in_month'.tr2,
                                             ),
                                           ),
                                         );
@@ -428,7 +430,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                   ),
                                   const SizedBox(width: 8),
                                   ActionChip(
-                                    label: const Text('Tomorrow'),
+                                    label: Text('ui.bazar_tomorrow'.tr2),
                                     avatar: const Icon(
                                       Icons.fast_forward_rounded,
                                       size: 14,
@@ -451,9 +453,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          const SnackBar(
+                                          SnackBar(
                                             content: Text(
-                                              'Tomorrow is outside this schedule month',
+                                              'ui.bazar_tomorrow_outside'.tr2,
                                             ),
                                           ),
                                         );
@@ -462,7 +464,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                   ),
                                   const SizedBox(width: 8),
                                   ActionChip(
-                                    label: const Text('Next 3 Days'),
+                                    label: Text('ui.bazar_next3'.tr2),
                                     avatar: const Icon(
                                       Icons.date_range_rounded,
                                       size: 14,
@@ -493,7 +495,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                   ),
                                   const SizedBox(width: 8),
                                   ActionChip(
-                                    label: const Text('Whole Week (7d)'),
+                                    label: Text('ui.bazar_week'.tr2),
                                     avatar: const Icon(
                                       Icons.view_week_rounded,
                                       size: 14,
@@ -528,8 +530,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             const SizedBox(height: 16),
 
                             // --- ASSIGNEE (MEMBER / STAFF) ---
-                            const Text(
-                              'SELECT MESS MEMBER',
+                            Text(
+                              'ui.bazar_select_member'.tr2,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
@@ -539,8 +541,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             const SizedBox(height: 6),
                             DropdownButtonFormField<int?>(
                               initialValue: selectedMemberId,
-                              decoration: const InputDecoration(
-                                hintText: 'Choose mess member...',
+                              decoration: InputDecoration(
+                                hintText: 'ui.bazar_member_hint'.tr2,
                                 prefixIcon: Icon(
                                   Icons.person_rounded,
                                   size: 20,
@@ -548,10 +550,10 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 ),
                               ),
                               items: [
-                                const DropdownMenuItem<int?>(
+                                DropdownMenuItem<int?>(
                                   value: null,
                                   child: Text(
-                                    '— None (Use Staff Name Below) —',
+                                    'ui.bazar_none_staff'.tr2,
                                   ),
                                 ),
                                 ...data.members.map(
@@ -573,8 +575,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             const SizedBox(height: 12),
 
                             // --- OR STAFF NAME ---
-                            const Text(
-                              'OR CUSTOM STAFF / BUYER NAME',
+                            Text(
+                              'ui.bazar_staff_name_label'.tr2,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
@@ -584,8 +586,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             const SizedBox(height: 6),
                             TextField(
                               controller: staffController,
-                              decoration: const InputDecoration(
-                                hintText: 'e.g. Bua, Cook Abdul, Manager',
+                              decoration: InputDecoration(
+                                hintText: 'ui.bazar_staff_hint'.tr2,
                                 prefixIcon: Icon(
                                   Icons.badge_rounded,
                                   size: 20,
@@ -602,8 +604,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             const SizedBox(height: 14),
 
                             // --- NOTE / INSTRUCTIONS ---
-                            const Text(
-                              'DUTY NOTE / SHOPPING LIST (OPTIONAL)',
+                            Text(
+                              'ui.bazar_note_label'.tr2,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
@@ -613,9 +615,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             const SizedBox(height: 6),
                             TextField(
                               controller: noteController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText:
-                                    'e.g. Buy fish, vegetables, and 5kg Miniket rice',
+                                    'ui.bazar_note_hint'.tr2,
                                 prefixIcon: Icon(
                                   Icons.notes_rounded,
                                   size: 20,
@@ -632,9 +634,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 onPressed: () {
                                   if (selectedFromDate == null) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
+                                      SnackBar(
                                         content: Text(
-                                          'Please select From Date',
+                                          'ui.bazar_select_from_date'.tr2,
                                         ),
                                       ),
                                     );
@@ -647,9 +649,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                   if (selectedMemberId == null &&
                                       staff.isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
+                                      SnackBar(
                                         content: Text(
-                                          'Select a member or enter staff name',
+                                          'ui.bazar_select_member_or_staff'.tr2,
                                         ),
                                       ),
                                     );
@@ -675,8 +677,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 ),
                                 label: Text(
                                   prefilledSchedule != null
-                                      ? 'Save Changes'
-                                      : 'Add Assignment',
+                                      ? 'ui.bazar_save_changes'.tr2
+                                      : 'ui.bazar_add_assignment'.tr2,
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w900,
@@ -772,8 +774,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Notify Assignee via Email',
+                                Text(
+                                  'ui.bazar_notify_title'.tr2,
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w900,
@@ -827,8 +829,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'RECIPIENT EMAIL *',
+                            Text(
+                              'ui.bazar_recipient_email'.tr2,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
@@ -839,8 +841,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             TextField(
                               controller: emailController,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                hintText: 'member@example.com',
+                              decoration: InputDecoration(
+                                hintText: 'ui.bazar_email_hint'.tr2,
                                 prefixIcon: Icon(
                                   Icons.email_outlined,
                                   size: 20,
@@ -850,8 +852,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             ),
                             const SizedBox(height: 14),
 
-                            const Text(
-                              'ADDITIONAL NOTES / INSTRUCTIONS',
+                            Text(
+                              'ui.bazar_additional_notes'.tr2,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
@@ -862,9 +864,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             TextField(
                               controller: notesController,
                               maxLines: 3,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText:
-                                    'e.g. Please bring 5kg Ruhi fish, onions, and oil',
+                                    'ui.bazar_notify_note_hint'.tr2,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -882,9 +884,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            const SnackBar(
+                                            SnackBar(
                                               content: Text(
-                                                'Please enter a valid email address',
+                                                'ui.bazar_invalid_email'.tr2,
                                               ),
                                             ),
                                           );
@@ -919,8 +921,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                     : const Icon(Icons.send_rounded, size: 18),
                                 label: Text(
                                   isSendingNotify
-                                      ? 'Sending...'
-                                      : 'Send SMTP Notification',
+                                      ? 'ui.bazar_sending'.tr2
+                                      : 'ui.bazar_send_smtp'.tr2,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 14,
@@ -985,8 +987,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Bazar Schedule',
+                                Text(
+                                  'ui.bazar_schedule_title'.tr2,
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
@@ -994,7 +996,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                   ),
                 ),
                 Text(
-                  mess != null ? mess.name : 'Shopping Rota',
+                  mess != null ? mess.name : 'ui.bazar_shopping_rota'.tr2,
                   style: const TextStyle(
                     fontSize: 11.5,
                     color: AppColors.inkFaded,
@@ -1098,7 +1100,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             .read<BazarScheduleCubit>()
                             .loadSchedule(forceRefresh: true),
                         icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('Try Again'),
+                        label: Text('ui.try_again'.tr2),
                       ),
                     ],
                   ),
@@ -1130,7 +1132,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                       // --- 2. MANAGER ACTIONS TOOLBAR ---
                       _buildSectionHeader(
                         Icons.list_alt_rounded,
-                        'SHOPPING ROTA (${data.assignedCount}/${data.daysInMonth} DAYS ASSIGNED)',
+                        '${'ui.bazar_rota_header'.tr2} (${bnDigits(data.assignedCount)}/${bnDigits(data.daysInMonth)} ${'ui.bazar_days_assigned'.tr2})',
                       ),
                     const SizedBox(height: 10),
                     if (data.canManage)
@@ -1241,7 +1243,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Rota schedule • ${data.mess.code}',
+                      '${'ui.bazar_rota_subtitle'.tr2} • ${data.mess.code}',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white70,
@@ -1315,7 +1317,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '${data.assignedCount} Days Assigned',
+                      '${bnDigits(data.assignedCount)} ${'ui.bazar_days_assigned'.tr2}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -1338,7 +1340,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '${data.unassignedCount} Days Open',
+                      '${bnDigits(data.unassignedCount)} ${'ui.bazar_days_open'.tr2}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -1368,7 +1370,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           FilledButton.icon(
             onPressed: () => _showAddEditModal(context, data),
             icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('Assign Duty'),
+            label: Text('ui.bazar_assign_duty'.tr2),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.brandDark,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -1394,7 +1396,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     ),
             ),
             icon: const Icon(Icons.mail_outline_rounded, size: 16),
-            label: const Text('Send Email'),
+            label: Text('ui.bazar_send_email'.tr2),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               minimumSize: Size.zero,
@@ -1408,7 +1410,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           OutlinedButton.icon(
             onPressed: () => _showBroadcastModal(context, data),
             icon: const Icon(Icons.campaign_outlined, size: 16),
-            label: const Text('Announce'),
+            label: Text('ui.bazar_announce'.tr2),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               minimumSize: Size.zero,
@@ -1424,11 +1426,10 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               onPressed: () async {
                 final confirm = await ConfirmDeleteDialog.show(
                   context,
-                  title: 'Clear Entire Month?',
+                  title: 'ui.confirm_clear_month_title'.tr2,
                   itemName: data.monthLabel,
-                  message:
-                      'Are you sure you want to remove all bazar duties and assignments for ${data.monthLabel}? This cannot be undone.',
-                  confirmLabel: 'Clear Month',
+                  message: 'ui.confirm_clear_month_message'.tr2.replaceAll('{month}', data.monthLabel),
+                  confirmLabel: 'ui.confirm_clear_month_label'.tr2,
                   icon: Icons.delete_sweep_outlined,
                 );
                 if (confirm == true && context.mounted) {
@@ -1484,7 +1485,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           ),
           const SizedBox(height: 14),
           Text(
-            'No Assignments Yet for ${data.monthLabel}',
+            '${'ui.bazar_no_assignments'.tr2} ${data.monthLabel}',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,
@@ -1492,8 +1493,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Add one date or date range at a time using the calendar picker above.',
+          Text(
+            'ui.bazar_no_assignments_sub'.tr2,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12.5, color: AppColors.inkFaded),
           ),
@@ -1502,7 +1503,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             FilledButton.icon(
               onPressed: () => _showAddEditModal(context, data),
               icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('Assign First Duty'),
+              label: Text('ui.bazar_assign_first'.tr2),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.brandDark,
                 padding: const EdgeInsets.symmetric(
@@ -1589,9 +1590,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     color: const Color(0xFF0F9F59).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
-                    'TODAY',
-                    style: TextStyle(
+                  child: Text(
+                    'ui.bazar_today_badge'.tr2,
+                    style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFF0F9F59),
@@ -1644,12 +1645,10 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                         if (item.id != null) {
                           final confirm = await ConfirmDeleteDialog.show(
                             context,
-                            title: 'Remove Bazar Duty?',
-                            itemName:
-                                member?.name ?? item.memberName ?? 'Member',
-                            message:
-                                'Are you sure you want to remove this assigned duty on day ${item.day}?',
-                            confirmLabel: 'Remove Duty',
+                            title: 'ui.confirm_remove_bazar_title'.tr2,
+                            itemName: member?.name ?? item.memberName ?? 'Member',
+                            message: 'ui.confirm_remove_bazar_message'.tr2.replaceAll('{day}', item.day.toString()),
+                            confirmLabel: 'ui.bazar_remove_duty'.tr2,
                             icon: Icons.assignment_late_outlined,
                           );
                           if (confirm == true && context.mounted) {
@@ -1689,7 +1688,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                       children: [
                         Flexible(
                           child: Text(
-                            item.displayName ?? 'Staff',
+                            item.displayName ?? 'ui.bazar_staff'.tr2,
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
@@ -1752,16 +1751,16 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
-                  children: [
-                    Icon(
-                      Icons.sticky_note_2_outlined,
-                      size: 14,
-                      color: AppColors.brandDark,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'NOTES / INSTRUCTIONS',
+          Row(
+            children: [
+              const Icon(
+                Icons.sticky_note_2_outlined,
+                size: 14,
+                color: AppColors.brandDark,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'ui.bazar_notes_instructions'.tr2,
                       style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w900,
@@ -1775,7 +1774,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                 Text(
                   item.note != null && item.note!.isNotEmpty
                       ? item.note!
-                      : 'No instructions — manager can add what to bring via Edit or Notify.',
+                      : 'ui.bazar_no_instructions'.tr2,
                   style: TextStyle(
                     fontSize: 12,
                     color: item.note != null && item.note!.isNotEmpty
@@ -1851,8 +1850,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Broadcast Announcement',
+                                Text(
+                                  'ui.bazar_broadcast_title'.tr2,
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w900,
@@ -1861,7 +1860,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 ),
                                 const SizedBox(height: 1),
                                 Text(
-                                  'SMTP broadcast to all ${data.members.length} members',
+                                  '${'ui.bazar_broadcast_sub'.tr2} ${bnDigits(data.members.length)} ${'ui.members_total'.tr2}',
                                   style: const TextStyle(
                                     fontSize: 11.5,
                                     color: AppColors.inkFaded,
@@ -1906,8 +1905,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'EMAIL SUBJECT',
+                            Text(
+                              'ui.bazar_email_subject'.tr2,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
@@ -1927,8 +1926,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             ),
                             const SizedBox(height: 14),
 
-                            const Text(
-                              'ANNOUNCEMENT MESSAGE *',
+                            Text(
+                              'ui.bazar_announcement_msg'.tr2,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
@@ -1939,9 +1938,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             TextField(
                               controller: messageController,
                               maxLines: 4,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText:
-                                    'Write important mess announcement for all members...',
+                                    'ui.bazar_announcement_hint'.tr2,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -1958,9 +1957,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            const SnackBar(
+                                            SnackBar(
                                               content: Text(
-                                                'Please write an announcement message',
+                                                'ui.bazar_announcement_empty'.tr2,
                                               ),
                                             ),
                                           );
@@ -1997,8 +1996,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                       ),
                                 label: Text(
                                   isSendingBroadcast
-                                      ? 'Broadcasting...'
-                                      : 'Send Broadcast to All Members',
+                                      ? 'ui.bazar_broadcasting'.tr2
+                                      : 'ui.bazar_send_broadcast'.tr2,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 14,
@@ -2060,12 +2059,12 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.campaign_outlined, color: Color(0xFFFFD1A3), size: 22),
-              SizedBox(width: 8),
+              const Icon(Icons.campaign_outlined, color: Color(0xFFFFD1A3), size: 22),
+              const SizedBox(width: 8),
               Text(
-                'ANNOUNCEMENT TO ALL MEMBERS',
+                'ui.bazar_announce_all'.tr2,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
@@ -2077,12 +2076,12 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           ),
           const SizedBox(height: 6),
           Text(
-            'One message to every member of ${data.mess.name} — everyone gets the same email (staff rows skipped).',
+            '${'ui.bazar_announce_desc'.tr2} ${data.mess.name} — ${'ui.bazar_announce_desc2'.tr2}',
             style: const TextStyle(fontSize: 11.5, color: Colors.white70),
           ),
           const SizedBox(height: 4),
           Text(
-            '${data.members.length} members · ${data.members.where((m) => m.email != null && m.email!.isNotEmpty).length} with email · ${data.assignedCount} day(s) scheduled in ${data.monthLabel}',
+            '${bnDigits(data.members.length)} ${'ui.members_total'.tr2} · ${bnDigits(data.members.where((m) => m.email != null && m.email!.isNotEmpty).length)} ${'ui.bazar_with_email'.tr2} · ${bnDigits(data.assignedCount)} ${'ui.bazar_days_scheduled'.tr2} ${data.monthLabel}',
             style: const TextStyle(
               fontSize: 10.5,
               color: Colors.white54,
@@ -2092,9 +2091,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           const SizedBox(height: 14),
 
           // SUBJECT
-          const Text(
-            'SUBJECT',
-            style: TextStyle(
+          Text(
+            'ui.bazar_email_subject'.tr2,
+            style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w900,
               color: Colors.white,
@@ -2107,7 +2106,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white.withValues(alpha: 0.1),
-              hintText: 'e.g. Bazar instructions for ${data.monthLabel}',
+              hintText: '${'ui.bazar_subject_hint'.tr2} ${data.monthLabel}',
               hintStyle: const TextStyle(color: Colors.white38),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -2126,9 +2125,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           const SizedBox(height: 12),
 
           // MESSAGE
-          const Text(
-            'MESSAGE *',
-            style: TextStyle(
+          Text(
+            'ui.bazar_announcement_msg'.tr2,
+            style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w900,
               color: Colors.white,
@@ -2170,9 +2169,9 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                       final msg = _announcementMessageController.text.trim();
                       if (msg.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              'Please enter an announcement message',
+                              'ui.bazar_announcement_empty'.tr2,
                             ),
                           ),
                         );
@@ -2213,12 +2212,12 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                         ),
                       ),
                     )
-                  : const Row(
+                  : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.send_rounded, size: 16),
-                        SizedBox(width: 8),
-                        Text('Send announcement to all members'),
+                        const Icon(Icons.send_rounded, size: 16),
+                        const SizedBox(width: 8),
+                        Text('ui.bazar_send_broadcast'.tr2),
                       ],
                     ),
             ),

@@ -138,6 +138,7 @@ class MessMonthLite extends Equatable {
   final String label;
   final String cycleLabel;
   final bool isClosed;
+  final bool isActive;
   final String managerLabel;
   final int daysInMonth;
 
@@ -148,6 +149,7 @@ class MessMonthLite extends Equatable {
     required this.label,
     this.cycleLabel = '',
     this.isClosed = false,
+    this.isActive = false,
     this.managerLabel = '',
     this.daysInMonth = 31,
   });
@@ -162,13 +164,14 @@ class MessMonthLite extends Equatable {
           .replaceAll(r'\u2192', '→')
           .replaceAll('\\u2192', '→'),
       isClosed: json['is_closed'] as bool? ?? false,
+      isActive: json['is_active'] as bool? ?? false,
       managerLabel: json['manager_label'] as String? ?? '',
       daysInMonth: (json['days_in_month'] as num?)?.toInt() ?? 31,
     );
   }
 
   @override
-  List<Object?> get props => [id, year, month, label];
+  List<Object?> get props => [id, year, month, label, cycleLabel, isClosed, isActive, managerLabel, daysInMonth];
 }
 
 class MessDetailModel extends Equatable {
@@ -177,6 +180,7 @@ class MessDetailModel extends Equatable {
   final bool canManage;
   final List<MessMemberLite> members;
   final List<MessMonthLite> months;
+  final int? activeMonthId;
   final Map<String, dynamic>? currentMonth;
   final Map<String, dynamic>? sheetSummary;
   final List<dynamic> pendingInvites;
@@ -188,6 +192,7 @@ class MessDetailModel extends Equatable {
     this.canManage = false,
     this.members = const [],
     this.months = const [],
+    this.activeMonthId,
     this.currentMonth,
     this.sheetSummary,
     this.pendingInvites = const [],
@@ -204,6 +209,7 @@ class MessDetailModel extends Equatable {
       canManage: json['can_manage'] as bool? ?? false,
       members: membersList.map((e) => MessMemberLite.fromJson(e as Map<String, dynamic>)).toList(),
       months: monthsList.map((e) => MessMonthLite.fromJson(e as Map<String, dynamic>)).toList(),
+      activeMonthId: (json['active_month_id'] as num?)?.toInt(),
       currentMonth: json['current_month'] as Map<String, dynamic>?,
       sheetSummary: json['sheet_summary'] as Map<String, dynamic>?,
       pendingInvites: (json['pending_invites'] as List<dynamic>?) ?? const [],
@@ -227,7 +233,7 @@ class MessDetailModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [mess, myRole, canManage, members, months];
+  List<Object?> get props => [mess, myRole, canManage, members, months, activeMonthId, currentMonth, sheetSummary, pendingInvites, canCreateMonth];
 }
 
 class MemberSettlementModel extends Equatable {

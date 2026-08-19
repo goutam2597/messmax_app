@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/app_config.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/messmax_app_bar.dart';
 import '../../../../core/widgets/sign_out_dialog.dart';
@@ -32,7 +33,11 @@ class ProfileScreen extends StatelessWidget {
             body: SafeArea(
               child: Column(
                 children: [
-                  const MessMaxAppBar(title: 'My Profile & Mess'),
+                  ValueListenableBuilder<int>(
+                    valueListenable: AppTranslations.notifier,
+                    builder: (context, _, _) =>
+                        MessMaxAppBar(title: 'ui.profile_title'.tr2),
+                  ),
                   Expanded(child: Center(child: _loadingHeader())),
                 ],
               ),
@@ -48,7 +53,11 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const MessMaxAppBar(title: 'My Profile & Mess'),
+                    ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) =>
+                          MessMaxAppBar(title: 'ui.profile_title'.tr2),
+                    ),
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(28),
@@ -85,22 +94,28 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'Sign in required',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.ink,
+                          ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => Text(
+                              'ui.sign_in_required'.tr2,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.ink,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            'Sign in to continue.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.inkFaded,
-                              height: 1.4,
+                          ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => Text(
+                              'ui.sign_in_to_continue'.tr2,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.inkFaded,
+                                height: 1.4,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -109,9 +124,14 @@ class ProfileScreen extends StatelessWidget {
                             child: FilledButton.icon(
                               onPressed: () => _goLogin(context),
                               icon: const Icon(Icons.login_rounded, size: 18),
-                              label: const Text(
-                                'Go to Login',
-                                style: TextStyle(fontWeight: FontWeight.w800),
+                              label: ValueListenableBuilder<int>(
+                                valueListenable: AppTranslations.notifier,
+                                builder: (context, _, _) => Text(
+                                  'ui.go_to_login'.tr2,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
                               ),
                               style: FilledButton.styleFrom(
                                 backgroundColor: AppColors.brandDark,
@@ -138,11 +158,14 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               (_) => false,
                             ),
-                        child: const Text(
-                          'Back to Home',
-                          style: TextStyle(
-                            color: AppColors.brandDark,
-                            fontWeight: FontWeight.w700,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            'ui.back_to_home'.tr2,
+                            style: const TextStyle(
+                              color: AppColors.brandDark,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
@@ -161,7 +184,11 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const MessMaxAppBar(title: 'My Profile & Mess'),
+                  ValueListenableBuilder<int>(
+                    valueListenable: AppTranslations.notifier,
+                    builder: (context, _, _) =>
+                        MessMaxAppBar(title: 'ui.profile_title'.tr2),
+                  ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                     child: Column(
@@ -173,47 +200,68 @@ class ProfileScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         _quickActionsAuthed(context),
                         const SizedBox(height: 24),
-                        _sectionTitle('ACCOUNT & SETTINGS'),
-                        _menuGroup(context, [
-                          (
-                            icon: Icons.person_outline_rounded,
-                            title: 'Personal Information',
-                            subtitle: 'Manage name and email',
-                          ),
-                          (
-                            icon: Icons.notifications_none_rounded,
-                            title: 'Notification Preferences',
-                            subtitle: 'Meal off, bazar and seat alerts',
-                          ),
-                        ]),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) =>
+                              _sectionTitle('ui.account_settings'.tr2),
+                        ),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => _menuGroup(context, [
+                            (
+                              icon: Icons.person_outline_rounded,
+                              title: 'ui.personal_information'.tr2,
+                              subtitle: 'ui.personal_info_sub'.tr2,
+                            ),
+                            (
+                              icon: Icons.notifications_none_rounded,
+                              title: 'ui.notification_preferences'.tr2,
+                              subtitle: 'ui.notification_sub'.tr2,
+                            ),
+                          ]),
+                        ),
                         const SizedBox(height: 20),
-                        _sectionTitle('MESS MANAGEMENT'),
-                        _menuGroup(context, [
-                          (
-                            icon: Icons.storefront_rounded,
-                            title: 'My Posted Seat Listings',
-                            subtitle: 'View and edit seat ads',
-                          ),
-                          (
-                            icon: Icons.event_note_rounded,
-                            title: 'Bazar Roster & Meal Schedule',
-                            subtitle: 'Assign shopping days',
-                          ),
-                        ]),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) =>
+                              _sectionTitle('ui.mess_management'.tr2),
+                        ),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => _menuGroup(context, [
+                            (
+                              icon: Icons.storefront_rounded,
+                              title: 'ui.my_posted_seats'.tr2,
+                              subtitle: 'ui.view_edit_seats'.tr2,
+                            ),
+                            (
+                              icon: Icons.event_note_rounded,
+                              title: 'ui.bazar_roster'.tr2,
+                              subtitle: 'ui.assign_shopping'.tr2,
+                            ),
+                          ]),
+                        ),
                         const SizedBox(height: 20),
-                        _sectionTitle('HELP & LEGAL'),
-                        _menuGroup(context, [
-                          (
-                            icon: Icons.help_outline_rounded,
-                            title: 'Help Center & Support',
-                            subtitle: 'FAQs and support team',
-                          ),
-                          (
-                            icon: Icons.shield_outlined,
-                            title: 'Privacy Policy & Terms',
-                            subtitle: 'Data usage and safety rules',
-                          ),
-                        ]),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) =>
+                              _sectionTitle('ui.help_legal'.tr2),
+                        ),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => _menuGroup(context, [
+                            (
+                              icon: Icons.help_outline_rounded,
+                              title: 'ui.help_center'.tr2,
+                              subtitle: 'ui.help_sub'.tr2,
+                            ),
+                            (
+                              icon: Icons.shield_outlined,
+                              title: 'ui.privacy_terms'.tr2,
+                              subtitle: 'ui.privacy_sub'.tr2,
+                            ),
+                          ]),
+                        ),
                         const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
@@ -225,7 +273,10 @@ class ProfileScreen extends StatelessWidget {
                                 userName: authState.user.name,
                               );
                               if (confirmed == true && context.mounted) {
-                                final rootNav = Navigator.of(context, rootNavigator: true);
+                                final rootNav = Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                );
                                 await context.read<AuthCubit>().logout();
                                 rootNav.pushAndRemoveUntil(
                                   MaterialPageRoute(
@@ -248,9 +299,14 @@ class ProfileScreen extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             icon: const Icon(Icons.logout_rounded, size: 18),
-                            label: const Text(
-                              'Sign Out',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                            label: ValueListenableBuilder<int>(
+                              valueListenable: AppTranslations.notifier,
+                              builder: (context, _, _) => Text(
+                                'ui.sign_out'.tr2,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -258,12 +314,15 @@ class ProfileScreen extends StatelessWidget {
                         Center(
                           child: Column(
                             children: [
-                              const Text(
-                                'MessMax v1.0.0 \u2022 Universal Mess Network',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.inkFaded,
+                              ValueListenableBuilder<int>(
+                                valueListenable: AppTranslations.notifier,
+                                builder: (context, _, _) => Text(
+                                  'ui.app_version'.tr2,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.inkFaded,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -333,22 +392,31 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Open Manager Dashboard',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
+                      ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.open_manager_dashboard'.tr2,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Access meal ledger, bazar roster & mess drawer',
-                        style: TextStyle(fontSize: 11.5, color: Colors.white70),
+                      const SizedBox(height: 2),
+                      ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.dashboard_subtitle'.tr2,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Colors.white70,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -492,42 +560,42 @@ class ProfileScreen extends StatelessWidget {
   );
 
   Widget _quickActionsAuthed(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _actionCard(
-            context,
-            icon: Icons.add_circle_outline_rounded,
-            title: 'Post Seat Ad',
-            subtitle: 'Manager listing',
-            isAccent: true,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Post Seat Ad \u2014 coming soon'),
-                ),
-              );
-            },
+    return ValueListenableBuilder<int>(
+      valueListenable: AppTranslations.notifier,
+      // ignore: unnecessary_underscores
+      builder: (context, _, __) => Row(
+        children: [
+          Expanded(
+            child: _actionCard(
+              context,
+              icon: Icons.add_circle_outline_rounded,
+              title: 'ui.quick_post_seat'.tr2,
+              subtitle: 'ui.quick_post_seat_sub'.tr2,
+              isAccent: true,
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('ui.quick_post_seat_soon'.tr2)),
+                );
+              },
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _actionCard(
-            context,
-            icon: Icons.restaurant_menu_rounded,
-            title: 'Meal Counter',
-            subtitle: 'Daily chits',
-            isAccent: false,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Connect your mess account to track meals'),
-                ),
-              );
-            },
+          const SizedBox(width: 12),
+          Expanded(
+            child: _actionCard(
+              context,
+              icon: Icons.restaurant_menu_rounded,
+              title: 'ui.quick_meal_counter'.tr2,
+              subtitle: 'ui.quick_meal_counter_sub'.tr2,
+              isAccent: false,
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('ui.quick_meal_counter_soon'.tr2)),
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -638,11 +706,11 @@ class ProfileScreen extends StatelessWidget {
     ({IconData icon, String title, String subtitle}) item,
   ) => ListTile(
     onTap: () {
-      if (item.title == 'Personal Information') {
+      if (item.icon == Icons.person_outline_rounded) {
         Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
-      } else if (item.title == 'My Posted Seat Listings') {
+      } else if (item.icon == Icons.storefront_rounded) {
         Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));

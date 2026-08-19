@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/signup_role_dialog.dart';
@@ -42,13 +43,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your full name')),
+        SnackBar(content: Text('auth.full_name_required'.tr2)),
       );
       return;
     }
     if (email.isEmpty || !email.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid email address')),
+        SnackBar(content: Text('auth.invalid_email'.tr2)),
       );
       return;
     }
@@ -58,14 +59,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _submit() {
     if (_pass.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 6 characters')),
+        SnackBar(content: Text('auth.password_too_short'.tr2)),
       );
       return;
     }
     if (_pass.text != _confirm.text) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
+      ).showSnackBar(SnackBar(content: Text('auth.passwords_do_not_match'.tr2)));
       return;
     }
     context.read<AuthCubit>().register(
@@ -130,9 +131,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const AppAuthHeader(
-                  title: 'Create Account',
-                  subtitle: 'One account, unlimited mess management',
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => AppAuthHeader(
+                    title: 'auth.create_account'.tr2,
+                    subtitle: 'auth.one_account_unlimited'.tr2,
+                  ),
                 ),
                 const SizedBox(height: 22),
                 _stepperHeader(),
@@ -147,32 +151,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _stepperHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.paperLine),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              _stepBadge(1, 'Account Setup', _step >= 1, _step == 1),
-              Expanded(
-                child: Container(
-                  height: 3,
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: _step >= 2 ? AppColors.brand : AppColors.paperLine,
-                    borderRadius: BorderRadius.circular(2),
+    return ValueListenableBuilder<int>(
+      valueListenable: AppTranslations.notifier,
+      builder: (context, _, _) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.paperRaised,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.paperLine),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                _stepBadge(1, 'auth.step_account_setup'.tr2, _step >= 1, _step == 1),
+                Expanded(
+                  child: Container(
+                    height: 3,
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: _step >= 2 ? AppColors.brand : AppColors.paperLine,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              _stepBadge(2, 'Security', _step >= 2, _step == 2),
-            ],
-          ),
-        ],
+                _stepBadge(2, 'auth.step_security'.tr2, _step >= 2, _step == 2),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -252,14 +259,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
               ],
               if (_step == 1) ...[
-                const FieldLabel('Full Name'),
+                FieldLabel('auth.full_name'.tr2),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _name,
                   textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Goutam Sharma',
-                    prefixIcon: Icon(
+                  decoration: InputDecoration(
+                    hintText: 'auth.full_name_hint'.tr2,
+                    prefixIcon: const Icon(
                       Icons.person_outline_rounded,
                       size: 20,
                       color: AppColors.inkFaded,
@@ -267,14 +274,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                const FieldLabel('Email Address'),
+                FieldLabel('auth.email'.tr2),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _email,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    hintText: 'you@example.com',
-                    prefixIcon: Icon(
+                  decoration: InputDecoration(
+                    hintText: 'auth.email_hint'.tr2,
+                    prefixIcon: const Icon(
                       Icons.email_outlined,
                       size: 20,
                       color: AppColors.inkFaded,
@@ -282,82 +289,94 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: const [
-                    Text(
-                      'ACCOUNT TYPE',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                        color: AppColors.inkSoft,
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Row(
+                    children: [
+                      Text(
+                        'ui.account_type'.tr2,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          color: AppColors.inkSoft,
+                        ),
                       ),
-                    ),
-                    Text(
-                      ' *',
-                      style: TextStyle(
-                        color: AppColors.brandDark,
-                        fontWeight: FontWeight.bold,
+                      const Text(
+                        ' *',
+                        style: TextStyle(
+                          color: AppColors.brandDark,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: AccountTypeTile(
-                        title: 'Individual',
-                        subtitle: 'Single mess',
-                        icon: Icons.person_rounded,
-                        selected: _accountType == 'individual',
-                        onTap: () =>
-                            setState(() => _accountType = 'individual'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: AccountTypeTile(
-                        title: 'Hostel Owner',
-                        subtitle: 'Multi-mess owner',
-                        icon: Icons.business_rounded,
-                        selected: _accountType == 'hostel_owner',
-                        onTap: () =>
-                            setState(() => _accountType = 'hostel_owner'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                FilledButton(
-                  onPressed: isAnyLoading ? null : _toStep2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text('Continue to Security'),
-                      SizedBox(width: 6),
-                      Icon(Icons.arrow_forward_rounded, size: 18),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: const [
-                    Expanded(child: Divider(color: AppColors.paperLine)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.5,
-                          color: AppColors.inkFaded,
+                const SizedBox(height: 10),
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Row(
+                    children: [
+                      Expanded(
+                        child: AccountTypeTile(
+                          title: 'auth.individual'.tr2,
+                          subtitle: 'auth.single_mess'.tr2,
+                          icon: Icons.person_rounded,
+                          selected: _accountType == 'individual',
+                          onTap: () =>
+                              setState(() => _accountType = 'individual'),
                         ),
                       ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: AccountTypeTile(
+                          title: 'auth.hostel_owner'.tr2,
+                          subtitle: 'auth.many_messes'.tr2,
+                          icon: Icons.business_rounded,
+                          selected: _accountType == 'hostel_owner',
+                          onTap: () =>
+                              setState(() => _accountType = 'hostel_owner'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => FilledButton(
+                    onPressed: isAnyLoading ? null : _toStep2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('auth.continue_to_security'.tr2),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.arrow_forward_rounded, size: 18),
+                      ],
                     ),
-                    Expanded(child: Divider(color: AppColors.paperLine)),
-                  ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Row(
+                    children: [
+                      const Expanded(child: Divider(color: AppColors.paperLine)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'auth.or'.tr2,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.5,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider(color: AppColors.paperLine)),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 GoogleSignInButton(
@@ -365,26 +384,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: isAnyLoading ? null : () => _googleWithPick(),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Already have an account? ',
-                      style: TextStyle(fontSize: 13, color: AppColors.inkFaded),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).maybePop(),
-                      child: const Text(
-                        'Sign in',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.brandDark,
-                          decoration: TextDecoration.underline,
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${'auth.already_have_account'.tr2} ',
+                        style: const TextStyle(fontSize: 13, color: AppColors.inkFaded),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).maybePop(),
+                        child: Text(
+                          'auth.sign_in'.tr2,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.brandDark,
+                            decoration: TextDecoration.underline,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ] else ...[
                 Container(
@@ -429,37 +451,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.brandSoft,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _accountType == 'hostel_owner'
-                              ? 'OWNER'
-                              : 'INDIVIDUAL',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.brandDark,
+                      ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandSoft,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _accountType == 'hostel_owner'
+                                ? 'auth.hostel_owner'.tr2.toUpperCase()
+                                : 'auth.individual'.tr2.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.brandDark,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
-                const FieldLabel('Password'),
+                SizedBox(height: 18),
+                FieldLabel('auth.password'.tr2),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _pass,
                   obscureText: _obscure1,
                   decoration: InputDecoration(
-                    hintText: 'At least 6 characters',
+                    hintText: 'auth.password_hint'.tr2,
                     prefixIcon: const Icon(
                       Icons.lock_outline_rounded,
                       size: 20,
@@ -477,15 +502,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 14),
-                const FieldLabel('Confirm Password'),
+                SizedBox(height: 14),
+                FieldLabel('auth.confirm_password'.tr2),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _confirm,
                   obscureText: _obscure2,
                   onSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
-                    hintText: 'Repeat password',
+                    hintText: 'auth.confirm_password_hint'.tr2,
                     prefixIcon: const Icon(
                       Icons.lock_reset_rounded,
                       size: 20,
@@ -518,13 +543,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.check_circle_outline_rounded, size: 18),
-                            SizedBox(width: 8),
-                            Text('Create Account'),
-                          ],
+                      : ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.check_circle_outline_rounded, size: 18),
+                              const SizedBox(width: 8),
+                              Text('auth.create_account'.tr2),
+                            ],
+                          ),
                         ),
                 ),
               ],

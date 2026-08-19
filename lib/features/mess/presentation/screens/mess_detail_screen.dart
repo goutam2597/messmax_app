@@ -1,7 +1,10 @@
+import '../../../../core/locale/app_translations.dart';
+import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/network/cache_manager.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
@@ -26,9 +29,58 @@ class MessDetailScreen extends StatelessWidget {
   }
 }
 
-class _MessDetailView extends StatelessWidget {
+class _MessDetailView extends StatefulWidget {
   final int messId;
   const _MessDetailView({required this.messId});
+
+  @override
+  State<_MessDetailView> createState() => _MessDetailViewState();
+}
+
+class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
+  int get messId => widget.messId;
+
+  RouteObserver<PageRoute<dynamic>>? _observer;
+  PageRoute<dynamic>? _route;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final obs = ModalRoute.of(context)?.navigator?.widget.observers
+        .whereType<RouteObserver<PageRoute<dynamic>>>()
+        .firstOrNull;
+    // Fallback: try to locate the observer via the app's navigator if exposed as a singleton.
+    // If not found, we still get coverage via the didPop re-entry below; observer is bonus for sheet→detail back without pop.
+    _observer = obs;
+    final route = ModalRoute.of(context);
+    if (route is PageRoute<dynamic> && _observer != null) {
+      if (_route != route) {
+        if (_route != null) {
+          try {
+            _observer!.unsubscribe(this);
+          } catch (_) {}
+        }
+        _route = route;
+        _observer!.subscribe(this, route);
+      }
+    }
+  }
+
+  @override
+  void didPopNext() {
+    if (!mounted) return;
+    context.read<MessCubit>().loadMess(messId, forceRefresh: true);
+  }
+
+  @override
+  void dispose() {
+    if (_observer != null && _route != null) {
+      try {
+        _observer!.unsubscribe(this);
+      } catch (_) {}
+    }
+    super.dispose();
+  }
 
   void _backToDashboard(BuildContext context) {
     Navigator.of(context).pushAndRemoveUntil(
@@ -57,7 +109,7 @@ class _MessDetailView extends StatelessWidget {
             builder: (context, state) {
               final name = state is MessDetailLoaded
                   ? state.detail.mess.name
-                  : 'Mess Details';
+                  : 'ui.mess_details'.tr2;
               return Text(
                 name,
                 style: const TextStyle(
@@ -75,7 +127,10 @@ class _MessDetailView extends StatelessWidget {
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () => context.read<MessCubit>().loadMess(messId),
+                    onTap: () => context.read<MessCubit>().loadMess(
+                      messId,
+                      forceRefresh: true,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
                       width: 36,
@@ -140,10 +195,12 @@ class _MessDetailView extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         OutlinedButton.icon(
-                          onPressed: () =>
-                              context.read<MessCubit>().loadMess(messId),
+                          onPressed: () => context.read<MessCubit>().loadMess(
+                            messId,
+                            forceRefresh: true,
+                          ),
                           icon: const Icon(Icons.refresh_rounded, size: 15),
-                          label: const Text('Try Again'),
+                          label: Text('ui.try_again'.tr2),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.brandDark,
                             side: const BorderSide(color: AppColors.paperLine),
@@ -164,8 +221,13 @@ class _MessDetailView extends StatelessWidget {
 
                 return RefreshIndicator(
                   color: AppColors.brandDark,
-                  onRefresh: () async =>
-                      context.read<MessCubit>().loadMess(messId),
+                  onRefresh: () async {
+                    CacheManager.clearAll();
+                    await context.read<MessCubit>().loadMess(
+                      messId,
+                      forceRefresh: true,
+                    );
+                  },
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
@@ -204,7 +266,7 @@ class _MessDetailView extends StatelessWidget {
   }
 
   // ==========================================
-  // 1. HEADER CARD (Minimal & Clean)
+  // 1. HEADER HERO CARD (Polished Modern Look)
   // ==========================================
   Widget _buildHeaderCard(
     BuildContext context,
@@ -212,269 +274,332 @@ class _MessDetailView extends StatelessWidget {
     bool canManage,
   ) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.apartment_rounded,
-                  color: AppColors.brandDark,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Row: Avatar icon + Name/Location + Role badge
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      mess.name,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    if (mess.location.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on_outlined,
-                            size: 12,
-                            color: AppColors.inkFaded,
-                          ),
-                          const SizedBox(width: 3),
-                          Expanded(
-                            child: Text(
-                              mess.location,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.inkFaded,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.brandDark, AppColors.brand],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.brandDark.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: canManage ? AppColors.brandDark : AppColors.paper,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: canManage
-                        ? AppColors.brandDark
-                        : AppColors.paperLine,
-                  ),
-                ),
-                child: Text(
-                  mess.displayRole.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                    color: canManage ? Colors.white : AppColors.inkFaded,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.paperLine),
-          const SizedBox(height: 10),
-
-          // Meta Info Row
-          Row(
-            children: [
-              _buildMetaItem(
-                Icons.people_outline_rounded,
-                '${mess.membersCount} members',
-              ),
-              _buildDotDivider(),
-              _buildMetaItem(
-                Icons.calendar_month_outlined,
-                '${mess.monthsCount} sheets',
-              ),
-              _buildDotDivider(),
-              _buildMetaItem(
-                Icons.schedule_rounded,
-                'Day ${mess.billingStartDay} Cycle',
-              ),
-            ],
-          ),
-
-          // Manager Action Buttons
-          if (canManage || (!mess.isIndividualMess && mess.isOwner)) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                if (canManage) ...[
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final ok = await MessFormScreen.showAsDialog(
-                          context,
-                          mess: mess,
-                          cubit: context.read<MessCubit>(),
-                        );
-                        if (ok == true && context.mounted) {
-                          context.read<MessCubit>().loadMess(messId);
-                        }
-                      },
-                      icon: const Icon(Icons.edit_outlined, size: 13),
-                      label: const Text(
-                        'Edit Details',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.ink,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        minimumSize: const Size(0, 32),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        side: const BorderSide(color: AppColors.paperLine),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                      child: const Icon(
+                        Icons.apartment_rounded,
+                        color: Colors.white,
+                        size: 24,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showInviteMemberModal(context, messId),
-                      icon: const Icon(
-                        Icons.person_add_alt_1_outlined,
-                        size: 13,
-                      ),
-                      label: const Text(
-                        'Invite Member',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.brandDark,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        minimumSize: const Size(0, 32),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        side: const BorderSide(color: AppColors.paperLine),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            mess.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.ink,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on_outlined,
+                                size: 13,
+                                color: mess.location.isNotEmpty
+                                    ? AppColors.inkFaded
+                                    : AppColors.inkFaded.withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(width: 3),
+                              Expanded(
+                                child: Text(
+                                  mess.location.isNotEmpty
+                                      ? mess.location
+                                      : 'ui.mess_no_location'.tr2,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: mess.location.isNotEmpty
+                                        ? AppColors.inkFaded
+                                        : AppColors.inkFaded.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-                if (!mess.isIndividualMess && mess.isOwner) ...[
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: () => _confirmDeleteMess(context, mess),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
+                    const SizedBox(width: 8),
+                    Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+                        horizontal: 9,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.dangerSoft.withValues(alpha: 0.3),
+                        color: canManage
+                            ? AppColors.brandDark
+                            : AppColors.paper,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.dangerSoft),
+                        border: Border.all(
+                          color: canManage
+                              ? AppColors.brandDark
+                              : AppColors.paperLine,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.delete_outline_rounded,
-                        size: 16,
-                        color: AppColors.danger,
+                      child: Text(
+                        mess.displayRole.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                          color: canManage ? Colors.white : AppColors.inkFaded,
+                        ),
                       ),
                     ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Quick Stat Chips Row
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.paper,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.paperLine),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildHeaderStatPill(
+                          icon: Icons.group_outlined,
+                          value: bnDigits(mess.membersCount),
+                          label: 'ui.mess_members'.tr2,
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 26,
+                        color: AppColors.paperLine,
+                      ),
+                      Expanded(
+                        child: _buildHeaderStatPill(
+                          icon: Icons.calendar_month_outlined,
+                          value: bnDigits(mess.monthsCount),
+                          label: 'ui.mess_sheets'.tr2,
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 26,
+                        color: AppColors.paperLine,
+                      ),
+                      Expanded(
+                        child: _buildHeaderStatPill(
+                          icon: Icons.repeat_rounded,
+                          value:
+                              '${'ui.mess_day'.tr2} ${bnDigits(mess.billingStartDay)}',
+                          label: 'ui.mess_billing_cycle'.tr2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Manager Action Buttons
+                if (canManage || (!mess.isIndividualMess && mess.isOwner)) ...[
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      if (canManage) ...[
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              final ok = await MessFormScreen.showAsDialog(
+                                context,
+                                mess: mess,
+                                cubit: context.read<MessCubit>(),
+                              );
+                              if (ok == true && context.mounted) {
+                                CacheManager.clearAll();
+                                context.read<MessCubit>().loadMess(
+                                  messId,
+                                  forceRefresh: true,
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.edit_outlined, size: 14),
+                            label: Text(
+                              'ui.mess_edit'.tr2,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.ink,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              minimumSize: const Size(0, 36),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              side: const BorderSide(
+                                color: AppColors.paperLine,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () =>
+                                _showInviteMemberModal(context, messId),
+                            icon: const Icon(
+                              Icons.person_add_alt_1_rounded,
+                              size: 14,
+                            ),
+                            label: Text(
+                              'ui.mess_invite'.tr2,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.brandDark,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              minimumSize: const Size(0, 36),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (!mess.isIndividualMess && mess.isOwner) ...[
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: () => _confirmDeleteMess(context, mess),
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.dangerSoft.withValues(
+                                alpha: 0.4,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppColors.dangerSoft),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.delete_outline_rounded,
+                                size: 16,
+                                color: AppColors.danger,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ],
             ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetaItem(IconData icon, String label) {
-    return Expanded(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: AppColors.brandDark),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.inkSoft,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDotDivider() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4),
-      child: Text(
-        '·',
-        style: TextStyle(
-          color: AppColors.paperLine,
-          fontWeight: FontWeight.bold,
+  Widget _buildHeaderStatPill({
+    required IconData icon,
+    required String value,
+    required String label,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 12, color: AppColors.brandDark),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                color: AppColors.ink,
+              ),
+            ),
+          ],
         ),
-      ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: AppColors.inkFaded,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 
   // ==========================================
-  // 2. ACTIVE MONTHLY SHEET SECTION
+  // 2. ACTIVE MONTHLY SHEET SECTION (Modern Redesign)
   // ==========================================
   Widget _buildSheetsSection(
     BuildContext context,
@@ -488,96 +613,111 @@ class _MessDetailView extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'MONTHLY SHEET',
-                style: TextStyle(
+              Text(
+                'ui.mess_monthly_sheet'.tr2,
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                   color: AppColors.inkFaded,
                   letterSpacing: 0.8,
                 ),
               ),
-              if (canManage)
-                InkWell(
-                  onTap: () => _showCreateMonthModal(context, messId),
-                  borderRadius: BorderRadius.circular(6),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.add_rounded,
-                          size: 14,
+              InkWell(
+                onTap: () => _showCreateMonthModal(context, messId),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.paperLine),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.add_rounded,
+                        size: 14,
+                        color: AppColors.brandDark,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'ui.mess_open_month'.tr2,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
                           color: AppColors.brandDark,
                         ),
-                        SizedBox(width: 2),
-                        Text(
-                          'Open Month',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.brandDark,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: AppColors.paperRaised,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.paperLine),
             ),
             child: Column(
               children: [
-                const Icon(
-                  Icons.calendar_today_outlined,
-                  size: 28,
-                  color: AppColors.inkFaded,
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 26,
+                    color: AppColors.brandDark,
+                  ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'No active sheets',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                const SizedBox(height: 12),
+                Text(
+                  'ui.mess_no_sheets'.tr2,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
                     color: AppColors.ink,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   canManage
-                      ? 'Open a month sheet to start tracking daily meals.'
-                      : 'Waiting for manager to open a month sheet.',
+                      ? 'ui.mess_no_sheets_manager'.tr2
+                      : 'ui.mess_no_sheets_member'.tr2,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     color: AppColors.inkFaded,
+                    height: 1.4,
                   ),
                 ),
                 if (canManage) ...[
-                  const SizedBox(height: 12),
-                  FilledButton(
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
                     onPressed: () => _showCreateMonthModal(context, messId),
+                    icon: const Icon(Icons.add_task_rounded, size: 16),
+                    label: Text('ui.mess_open_first_sheet'.tr2),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.brandDark,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                        horizontal: 18,
+                        vertical: 10,
                       ),
-                      minimumSize: const Size(0, 36),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                    child: const Text(
-                      'Open First Month',
-                      style: TextStyle(fontSize: 12),
                     ),
                   ),
                 ],
@@ -588,8 +728,12 @@ class _MessDetailView extends StatelessWidget {
       );
     }
 
-    final activeMonth = months[0];
-    final pastMonths = months.sublist(1);
+    // Active month selection
+    final activeMonth = months.firstWhere(
+      (m) => m.isActive,
+      orElse: () => months[0],
+    );
+    final pastMonths = months.where((m) => m.id != activeMonth.id).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -597,9 +741,9 @@ class _MessDetailView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'ACTIVE MONTHLY SHEET',
-              style: TextStyle(
+            Text(
+              'ui.mess_active_sheet'.tr2,
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 color: AppColors.inkFaded,
@@ -609,21 +753,30 @@ class _MessDetailView extends StatelessWidget {
             if (canManage)
               InkWell(
                 onTap: () => _showCreateMonthModal(context, messId),
-                borderRadius: BorderRadius.circular(6),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.paperLine),
+                  ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.add_rounded,
-                        size: 14,
+                        size: 13,
                         color: AppColors.brandDark,
                       ),
-                      SizedBox(width: 2),
+                      const SizedBox(width: 3),
                       Text(
-                        'New Month',
-                        style: TextStyle(
-                          fontSize: 12,
+                        'ui.mess_new_month'.tr2,
+                        style: const TextStyle(
+                          fontSize: 11,
                           fontWeight: FontWeight.w800,
                           color: AppColors.brandDark,
                         ),
@@ -636,197 +789,667 @@ class _MessDetailView extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        // Featured Active Sheet Card
+        // Featured Active Sheet Card (Premium Hero Container)
         Container(
-          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.paperRaised,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.paperLine),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.brandSoft, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: AppColors.brandDark.withValues(alpha: 0.04),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.calendar_month_rounded,
-                      color: AppColors.brandDark,
-                      size: 22,
-                    ),
+              // Top Bar: Custom Month Switcher Button + Delete icon
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: const BoxDecoration(
+                  color: AppColors.paper,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.paperLine),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              activeMonth.label,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.ink,
-                              ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.emeraldSoft,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: AppColors.emerald.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            size: 10,
+                            color: AppColors.emerald,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            'ui.mess_current_active'.tr2,
+                            style: const TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
+                              color: AppColors.emerald,
                             ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    if (canManage && months.length > 1)
+                      InkWell(
+                        onTap: () =>
+                            _showMonthPickerSheet(context, months, activeMonth),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.paperRaised,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.paperLine),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.swap_horiz_rounded,
+                                size: 13,
+                                color: AppColors.brandDark,
                               ),
-                              decoration: BoxDecoration(
-                                color: AppColors.emeraldSoft,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'ACTIVE',
-                                style: TextStyle(
-                                  fontSize: 8.5,
+                              const SizedBox(width: 4),
+                              Text(
+                                'ui.mess_switch_month'.tr2,
+                                style: const TextStyle(
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5,
-                                  color: AppColors.emerald,
+                                  color: AppColors.brandDark,
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          activeMonth.cycleLabel.isNotEmpty
-                              ? activeMonth.cycleLabel.replaceAll(r'\u2192', '→')
-                              : '${activeMonth.daysInMonth} Days cycle',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.inkFaded,
+                      ),
+                    if (canManage) ...[
+                      const SizedBox(width: 6),
+                      InkWell(
+                        onTap: () =>
+                            _confirmDeleteMonth(context, messId, activeMonth),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: AppColors.dangerSoft.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.dangerSoft),
+                          ),
+                          child: const Icon(
+                            Icons.delete_outline_rounded,
+                            size: 14,
+                            color: AppColors.danger,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // Main Body of Active Sheet Card
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: AppColors.brandSoft,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppColors.paperLine),
+                          ),
+                          child: const Icon(
+                            Icons.calendar_month_rounded,
+                            color: AppColors.brandDark,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                activeMonth.label,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.ink,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.timelapse_rounded,
+                                    size: 13,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      activeMonth.cycleLabel.isNotEmpty
+                                          ? activeMonth.cycleLabel.replaceAll(
+                                              r'\u2192',
+                                              '→',
+                                            )
+                                          : '${bnDigits(activeMonth.daysInMonth)} ${'ui.mess_days_cycle'.tr2}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.inkFaded,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MessSheetScreen(
-                        messId: messId,
-                        monthId: activeMonth.id,
-                        monthLabel: activeMonth.label,
+
+                    const SizedBox(height: 14),
+
+                    // Primary Button to Enter Matrix
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MessSheetScreen(
+                              messId: messId,
+                              monthId: activeMonth.id,
+                              monthLabel: activeMonth.label,
+                            ),
+                          ),
+                        ),
+                        icon: const Icon(Icons.table_chart_rounded, size: 16),
+                        label: Text(
+                          'ui.mess_open_matrix'.tr2,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.brandDark,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
                       ),
                     ),
-                  ),
-                  icon: const Icon(Icons.table_chart_outlined, size: 16),
-                  label: const Text(
-                    'Open Daily Meal Matrix',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-                  ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.brandDark,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    minimumSize: const Size(0, 40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
 
-        // Past Sheets Accordion
+        // Past Sheets Collapsed Accordion (Card Style)
         if (pastMonths.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            title: Text(
-              'Past Sheets (${pastMonths.length})',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: AppColors.inkFaded,
-              ),
+          const SizedBox(height: 14),
+          Material(
+            color: AppColors.paperRaised,
+            borderRadius: BorderRadius.circular(18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: const BorderSide(color: AppColors.paperLine),
             ),
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.paperRaised,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.paperLine),
+            elevation: 0,
+            child: Theme(
+              data: Theme.of(
+                context,
+              ).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
                 ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: pastMonths.length,
-                  separatorBuilder: (_, _) =>
-                      const Divider(height: 1, color: AppColors.paperLine),
-                  itemBuilder: (context, i) {
-                    final m = pastMonths[i];
-                    return ListTile(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => MessSheetScreen(
-                            messId: messId,
-                            monthId: m.id,
-                            monthLabel: m.label,
+                childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                leading: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.paper,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.paperLine),
+                  ),
+                  child: const Icon(
+                    Icons.history_rounded,
+                    size: 18,
+                    color: AppColors.inkFaded,
+                  ),
+                ),
+                title: Text(
+                  '${'ui.mess_past_sheets'.tr2} (${bnDigits(pastMonths.length)})',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
+                ),
+                subtitle: Text(
+                  'ui.mess_past_sheets_sub'.tr2,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.inkFaded,
+                  ),
+                ),
+                children: [
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: pastMonths.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (context, i) {
+                      final m = pastMonths[i];
+                      return Material(
+                        color: AppColors.paper,
+                        borderRadius: BorderRadius.circular(14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          side: const BorderSide(color: AppColors.paperLine),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: () =>
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => MessSheetScreen(
+                                    messId: messId,
+                                    monthId: m.id,
+                                    monthLabel: m.label,
+                                  ),
+                                ),
+                              ).then((_) {
+                                if (context.mounted) {
+                                  CacheManager.clearAll();
+                                  context.read<MessCubit>().loadMess(
+                                    messId,
+                                    forceRefresh: true,
+                                  );
+                                }
+                              }),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 38,
+                                  height: 38,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.paperRaised,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: AppColors.paperLine,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 17,
+                                      color: AppColors.inkSoft,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        m.label,
+                                        style: const TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        m.cycleLabel.isNotEmpty
+                                            ? m.cycleLabel
+                                            : '${bnDigits(m.daysInMonth)} ${'ui.mess_days_cycle'.tr2}',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.inkFaded,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (canManage) ...[
+                                  InkWell(
+                                    onTap: () async {
+                                      final ok = await context
+                                          .read<MessCubit>()
+                                          .activateMonth(messId, m.id);
+                                      if (ok && context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'ui.mess_now_active'.tr2
+                                                  .replaceAll(
+                                                    '{label}',
+                                                    m.label,
+                                                  ),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.brandSoft,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: AppColors.paperLine,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'ui.mess_set_active'.tr2,
+                                        style: const TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.brandDark,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  InkWell(
+                                    onTap: () =>
+                                        _confirmDeleteMonth(context, messId, m),
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.dangerSoft.withValues(
+                                          alpha: 0.4,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: AppColors.dangerSoft,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        size: 14,
+                                        color: AppColors.danger,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 18,
+                                  color: AppColors.inkFaded,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      leading: const Icon(
-                        Icons.history_rounded,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                      title: Text(
-                        m.label,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                      subtitle: Text(
-                        m.cycleLabel.isNotEmpty
-                            ? m.cycleLabel
-                            : '${m.daysInMonth} days',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.inkFaded,
-                        ),
-                      ),
-                      trailing: const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ],
+    );
+  }
+
+  // ==========================================
+  // CUSTOM MONTH PICKER BOTTOM SHEET MODAL
+  // ==========================================
+  void _showMonthPickerSheet(
+    BuildContext context,
+    List<MessMonthLite> months,
+    MessMonthLite activeMonth,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.paperRaised,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.paperLine,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ui.mess_select_active_month'.tr2,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'ui.mess_select_active_month_sub'.tr2,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                    ],
+                  ),
+                  InkWell(
+                    onTap: () => Navigator.pop(ctx),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: AppColors.paper,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: months.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
+                itemBuilder: (context, i) {
+                  final m = months[i];
+                  final isCurrentlyActive = m.id == activeMonth.id;
+                  return InkWell(
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      if (isCurrentlyActive) return;
+                      final ok = await context.read<MessCubit>().activateMonth(
+                        messId,
+                        m.id,
+                      );
+                      if (ok && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'ui.mess_now_active'.tr2.replaceAll(
+                                '{label}',
+                                m.label,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isCurrentlyActive
+                            ? AppColors.brandSoft
+                            : AppColors.paper,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isCurrentlyActive
+                              ? AppColors.brandDark
+                              : AppColors.paperLine,
+                          width: isCurrentlyActive ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isCurrentlyActive
+                                ? Icons.radio_button_checked_rounded
+                                : Icons.radio_button_off_rounded,
+                            color: isCurrentlyActive
+                                ? AppColors.brandDark
+                                : AppColors.inkFaded,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  m.label,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: isCurrentlyActive
+                                        ? FontWeight.w900
+                                        : FontWeight.w700,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                                if (m.cycleLabel.isNotEmpty) ...[
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    m.cycleLabel,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.inkFaded,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          if (isCurrentlyActive)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.emeraldSoft,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'ui.mess_active_badge'.tr2,
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.5,
+                                  color: AppColors.emerald,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -850,7 +1473,7 @@ class _MessDetailView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'MEMBER SETTLEMENT — ${monthLabel.toUpperCase()}',
+              '${'ui.mess_settlement_header'.tr2} — ${monthLabel.toUpperCase()}',
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -859,7 +1482,7 @@ class _MessDetailView extends StatelessWidget {
               ),
             ),
             Text(
-              '${settlements.length} Members',
+              '${bnDigits(settlements.length)} ${'ui.mess_members_count'.tr2}',
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -890,8 +1513,6 @@ class _MessDetailView extends StatelessWidget {
     final mealsStr = s.meals % 1 == 0
         ? s.meals.toInt().toString()
         : s.meals.toStringAsFixed(1);
-    final spendStr = '${s.spend.toStringAsFixed(0)} ৳';
-    final givenStr = '${s.given.toStringAsFixed(0)} ৳';
     final balanceValStr = '${s.balance.abs().toStringAsFixed(0)} ৳';
     final balancePrefix = isPositive ? '+' : '-';
     final avatarColor = _hexColor(s.color);
@@ -981,10 +1602,10 @@ class _MessDetailView extends StatelessWidget {
                                   ),
                                   child: Text(
                                     isOwner
-                                        ? 'OWNER'
+                                        ? 'ui.role_owner'.tr2
                                         : isManager
-                                        ? 'MANAGER'
-                                        : 'MEMBER',
+                                        ? 'ui.role_manager'.tr2
+                                        : 'ui.role_member'.tr2,
                                     style: TextStyle(
                                       fontSize: 8.5,
                                       fontWeight: FontWeight.w800,
@@ -1035,7 +1656,9 @@ class _MessDetailView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              isPositive ? 'SURPLUS' : 'DUE',
+                              isPositive
+                                  ? 'ui.mess_surplus'.tr2
+                                  : 'ui.mess_due'.tr2,
                               style: TextStyle(
                                 fontSize: 7.5,
                                 fontWeight: FontWeight.w800,
@@ -1081,8 +1704,8 @@ class _MessDetailView extends StatelessWidget {
                           child: _buildTileStat(
                             icon: Icons.restaurant_menu_rounded,
                             iconColor: AppColors.brandDark,
-                            label: 'Meals',
-                            value: mealsStr,
+                            label: 'ui.mess_stat_meals'.tr2,
+                            value: bnDigits(mealsStr),
                           ),
                         ),
                         Container(
@@ -1094,8 +1717,8 @@ class _MessDetailView extends StatelessWidget {
                           child: _buildTileStat(
                             icon: Icons.shopping_bag_outlined,
                             iconColor: AppColors.inkSoft,
-                            label: 'Spend',
-                            value: spendStr,
+                            label: 'ui.mess_stat_spend'.tr2,
+                            value: '৳${bnDigits(s.spend.toStringAsFixed(0))}',
                           ),
                         ),
                         Container(
@@ -1107,8 +1730,8 @@ class _MessDetailView extends StatelessWidget {
                           child: _buildTileStat(
                             icon: Icons.payments_outlined,
                             iconColor: AppColors.emerald,
-                            label: 'Given',
-                            value: givenStr,
+                            label: 'ui.mess_stat_given'.tr2,
+                            value: '৳${bnDigits(s.given.toStringAsFixed(0))}',
                           ),
                         ),
                       ],
@@ -1172,9 +1795,9 @@ class _MessDetailView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'MEMBERS',
-              style: TextStyle(
+            Text(
+              'ui.mess_members_label'.tr2,
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 color: AppColors.inkFaded,
@@ -1182,7 +1805,7 @@ class _MessDetailView extends StatelessWidget {
               ),
             ),
             Text(
-              '${members.length} Total',
+              '${bnDigits(members.length)} ${'ui.mess_total'.tr2}',
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -1430,19 +2053,19 @@ class _MessDetailView extends StatelessWidget {
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
+                                children: [
                                   Text(
-                                    'Open New Monthly Sheet',
-                                    style: TextStyle(
+                                    'ui.mess_open_month_title'.tr2,
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w900,
                                       color: AppColors.ink,
                                     ),
                                   ),
-                                  SizedBox(height: 1),
+                                  const SizedBox(height: 1),
                                   Text(
-                                    'Create 1–31 daily roster & ledger matrix',
-                                    style: TextStyle(
+                                    'ui.mess_open_month_sub'.tr2,
+                                    style: const TextStyle(
                                       fontSize: 11.5,
                                       color: AppColors.inkFaded,
                                     ),
@@ -1531,7 +2154,8 @@ class _MessDetailView extends StatelessWidget {
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
                                       color:
-                                          selectedMonth == nextMonthDate.month &&
+                                          selectedMonth ==
+                                                  nextMonthDate.month &&
                                               yearCtrl.text ==
                                                   '${nextMonthDate.year}'
                                           ? Colors.white
@@ -1540,7 +2164,8 @@ class _MessDetailView extends StatelessWidget {
                                   ),
                                   backgroundColor:
                                       selectedMonth == nextMonthDate.month &&
-                                          yearCtrl.text == '${nextMonthDate.year}'
+                                          yearCtrl.text ==
+                                              '${nextMonthDate.year}'
                                       ? AppColors.brandDark
                                       : AppColors.paper,
                                   side: BorderSide(
@@ -1571,15 +2196,16 @@ class _MessDetailView extends StatelessWidget {
                                 Expanded(
                                   flex: 3,
                                   child: DropdownButtonFormField<int>(
-                                    value: selectedMonth,
+                                    initialValue: selectedMonth,
                                     decoration: InputDecoration(
-                                      labelText: 'Month',
+                                      labelText: 'ui.mess_month_label'.tr2,
                                       filled: true,
                                       fillColor: AppColors.paper,
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 12,
-                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 12,
+                                          ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: const BorderSide(
@@ -1619,13 +2245,14 @@ class _MessDetailView extends StatelessWidget {
                                     controller: yearCtrl,
                                     keyboardType: TextInputType.number,
                                     decoration: InputDecoration(
-                                      labelText: 'Year',
+                                      labelText: 'ui.mess_year_label'.tr2,
                                       filled: true,
                                       fillColor: AppColors.paper,
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 12,
-                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 12,
+                                          ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: const BorderSide(
@@ -1649,9 +2276,9 @@ class _MessDetailView extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'CUSTOM BILLING CYCLE (OPTIONAL)',
-                                  style: TextStyle(
+                                Text(
+                                  'ui.mess_billing_cycle_optional'.tr2,
+                                  style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 0.5,
@@ -1666,9 +2293,9 @@ class _MessDetailView extends StatelessWidget {
                                         endDate = null;
                                       });
                                     },
-                                    child: const Text(
-                                      'Reset to Default',
-                                      style: TextStyle(
+                                    child: Text(
+                                      'ui.mess_reset_default'.tr2,
+                                      style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
                                         color: AppColors.brandDark,
@@ -1686,9 +2313,11 @@ class _MessDetailView extends StatelessWidget {
                                 Expanded(
                                   child: InkWell(
                                     onTap: () async {
-                                      final initialDate = startDate ??
+                                      final initialDate =
+                                          startDate ??
                                           DateTime(
-                                            int.tryParse(yearCtrl.text) ?? now.year,
+                                            int.tryParse(yearCtrl.text) ??
+                                                now.year,
                                             selectedMonth,
                                             1,
                                           );
@@ -1700,12 +2329,15 @@ class _MessDetailView extends StatelessWidget {
                                         builder: (context, child) {
                                           return Theme(
                                             data: Theme.of(context).copyWith(
-                                              colorScheme: const ColorScheme.light(
-                                                primary: AppColors.brandDark,
-                                                onPrimary: Colors.white,
-                                                surface: AppColors.paperRaised,
-                                                onSurface: AppColors.ink,
-                                              ),
+                                              colorScheme:
+                                                  const ColorScheme.light(
+                                                    primary:
+                                                        AppColors.brandDark,
+                                                    onPrimary: Colors.white,
+                                                    surface:
+                                                        AppColors.paperRaised,
+                                                    onSurface: AppColors.ink,
+                                                  ),
                                             ),
                                             child: child!,
                                           );
@@ -1714,15 +2346,21 @@ class _MessDetailView extends StatelessWidget {
                                       if (picked != null) {
                                         setS(() {
                                           startDate = picked;
-                                          if (endDate != null && endDate!.isBefore(picked)) {
-                                            endDate = picked.add(const Duration(days: 29));
+                                          if (endDate != null &&
+                                              endDate!.isBefore(picked)) {
+                                            endDate = picked.add(
+                                              const Duration(days: 29),
+                                            );
                                           }
                                         });
                                       }
                                     },
                                     borderRadius: BorderRadius.circular(12),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 11,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: AppColors.paper,
                                         borderRadius: BorderRadius.circular(12),
@@ -1734,15 +2372,20 @@ class _MessDetailView extends StatelessWidget {
                                         ),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          const Row(
+                                          Row(
                                             children: [
-                                              Icon(Icons.calendar_today_rounded, size: 13, color: AppColors.brandDark),
-                                              SizedBox(width: 5),
+                                              const Icon(
+                                                Icons.calendar_today_rounded,
+                                                size: 13,
+                                                color: AppColors.brandDark,
+                                              ),
+                                              const SizedBox(width: 5),
                                               Text(
-                                                'PERIOD START',
-                                                style: TextStyle(
+                                                'ui.mess_period_start'.tr2,
+                                                style: const TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w800,
                                                   color: AppColors.inkFaded,
@@ -1759,7 +2402,9 @@ class _MessDetailView extends StatelessWidget {
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w800,
-                                              color: startDate != null ? AppColors.ink : AppColors.inkSoft,
+                                              color: startDate != null
+                                                  ? AppColors.ink
+                                                  : AppColors.inkSoft,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -1780,7 +2425,13 @@ class _MessDetailView extends StatelessWidget {
                                         selectedMonth + 1,
                                         0,
                                       );
-                                      final initialDate = endDate ?? (startDate != null ? startDate!.add(const Duration(days: 29)) : defaultEnd);
+                                      final initialDate =
+                                          endDate ??
+                                          (startDate != null
+                                              ? startDate!.add(
+                                                  const Duration(days: 29),
+                                                )
+                                              : defaultEnd);
                                       final picked = await showDatePicker(
                                         context: context,
                                         initialDate: initialDate,
@@ -1789,12 +2440,15 @@ class _MessDetailView extends StatelessWidget {
                                         builder: (context, child) {
                                           return Theme(
                                             data: Theme.of(context).copyWith(
-                                              colorScheme: const ColorScheme.light(
-                                                primary: AppColors.brandDark,
-                                                onPrimary: Colors.white,
-                                                surface: AppColors.paperRaised,
-                                                onSurface: AppColors.ink,
-                                              ),
+                                              colorScheme:
+                                                  const ColorScheme.light(
+                                                    primary:
+                                                        AppColors.brandDark,
+                                                    onPrimary: Colors.white,
+                                                    surface:
+                                                        AppColors.paperRaised,
+                                                    onSurface: AppColors.ink,
+                                                  ),
                                             ),
                                             child: child!,
                                           );
@@ -1808,7 +2462,10 @@ class _MessDetailView extends StatelessWidget {
                                     },
                                     borderRadius: BorderRadius.circular(12),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 11,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: AppColors.paper,
                                         borderRadius: BorderRadius.circular(12),
@@ -1820,15 +2477,20 @@ class _MessDetailView extends StatelessWidget {
                                         ),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          const Row(
+                                          Row(
                                             children: [
-                                              Icon(Icons.event_available_rounded, size: 13, color: AppColors.brandDark),
-                                              SizedBox(width: 5),
+                                              const Icon(
+                                                Icons.event_available_rounded,
+                                                size: 13,
+                                                color: AppColors.brandDark,
+                                              ),
+                                              const SizedBox(width: 5),
                                               Text(
-                                                'PERIOD END',
-                                                style: TextStyle(
+                                                'ui.mess_period_end'.tr2,
+                                                style: const TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w800,
                                                   color: AppColors.inkFaded,
@@ -1845,7 +2507,9 @@ class _MessDetailView extends StatelessWidget {
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w800,
-                                              color: endDate != null ? AppColors.ink : AppColors.inkSoft,
+                                              color: endDate != null
+                                                  ? AppColors.ink
+                                                  : AppColors.inkSoft,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -1861,7 +2525,11 @@ class _MessDetailView extends StatelessWidget {
                               const SizedBox(height: 6),
                               Row(
                                 children: [
-                                  const Icon(Icons.info_outline_rounded, size: 13, color: AppColors.brandDark),
+                                  const Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 13,
+                                    color: AppColors.brandDark,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${endDate!.difference(startDate!).inDays + 1} days in custom billing period (${formatIsoDate(startDate!)} → ${formatIsoDate(endDate!)})',
@@ -1885,27 +2553,36 @@ class _MessDetailView extends StatelessWidget {
                                         setS(() => saving = true);
                                         try {
                                           final payload = <String, dynamic>{
-                                            'year': int.tryParse(yearCtrl.text) ?? DateTime.now().year,
+                                            'year':
+                                                int.tryParse(yearCtrl.text) ??
+                                                DateTime.now().year,
                                             'month': selectedMonth,
                                           };
-                                          if (startDate != null && endDate != null) {
-                                            payload['cycle_start_date'] = formatIsoDate(startDate!);
-                                            payload['cycle_end_date'] = formatIsoDate(endDate!);
+                                          if (startDate != null &&
+                                              endDate != null) {
+                                            payload['cycle_start_date'] =
+                                                formatIsoDate(startDate!);
+                                            payload['cycle_end_date'] =
+                                                formatIsoDate(endDate!);
                                           }
-                                          await MessRepository().createMonth(messId, payload);
+                                          await MessRepository().createMonth(
+                                            messId,
+                                            payload,
+                                          );
                                           if (context.mounted) {
                                             Navigator.pop(ctx2);
                                             ScaffoldMessenger.of(
                                               context,
                                             ).showSnackBar(
-                                              const SnackBar(
+                                              SnackBar(
                                                 content: Text(
-                                                  'Monthly sheet opened successfully',
+                                                  'ui.mess_sheet_opened'.tr2,
                                                 ),
                                               ),
                                             );
                                             context.read<MessCubit>().loadMess(
                                               messId,
+                                              forceRefresh: true,
                                             );
                                           }
                                         } catch (e) {
@@ -1941,7 +2618,9 @@ class _MessDetailView extends StatelessWidget {
                                         size: 18,
                                       ),
                                 label: Text(
-                                  saving ? 'Opening...' : 'Create Monthly Sheet',
+                                  saving
+                                      ? 'ui.mess_opening'.tr2
+                                      : 'ui.mess_create_sheet'.tr2,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 14,
@@ -2029,19 +2708,19 @@ class _MessDetailView extends StatelessWidget {
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
-                                  'Invite New Member',
-                                  style: TextStyle(
+                                  'ui.mess_invite_title'.tr2,
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16,
                                     color: AppColors.ink,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
-                                  'Send an invite to join this mess group.',
-                                  style: TextStyle(
+                                  'ui.mess_invite_sub'.tr2,
+                                  style: const TextStyle(
                                     fontSize: 11.5,
                                     color: AppColors.inkFaded,
                                   ),
@@ -2080,9 +2759,9 @@ class _MessDetailView extends StatelessWidget {
                       const SizedBox(height: 18),
 
                       // Email Input Field
-                      const Text(
-                        'EMAIL ADDRESS',
-                        style: TextStyle(
+                      Text(
+                        'ui.mess_invite_email'.tr2,
+                        style: const TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
                           color: AppColors.inkFaded,
@@ -2098,7 +2777,7 @@ class _MessDetailView extends StatelessWidget {
                           color: AppColors.ink,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'member@example.com',
+                          hintText: 'ui.mess_invite_email_hint'.tr2,
                           hintStyle: const TextStyle(
                             fontSize: 12.5,
                             color: AppColors.inkFaded,
@@ -2139,9 +2818,9 @@ class _MessDetailView extends StatelessWidget {
                       const SizedBox(height: 12),
 
                       // Display Name Field
-                      const Text(
-                        'DISPLAY NAME (OPTIONAL)',
-                        style: TextStyle(
+                      Text(
+                        'ui.mess_invite_name'.tr2,
+                        style: const TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
                           color: AppColors.inkFaded,
@@ -2156,7 +2835,7 @@ class _MessDetailView extends StatelessWidget {
                           color: AppColors.ink,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'e.g. Alex Johnson',
+                          hintText: 'ui.mess_invite_name_hint'.tr2,
                           hintStyle: const TextStyle(
                             fontSize: 12.5,
                             color: AppColors.inkFaded,
@@ -2197,9 +2876,9 @@ class _MessDetailView extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       // Role Selector Cards
-                      const Text(
-                        'ASSIGN ROLE',
-                        style: TextStyle(
+                      Text(
+                        'ui.mess_invite_role'.tr2,
+                        style: const TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
                           color: AppColors.inkFaded,
@@ -2211,8 +2890,8 @@ class _MessDetailView extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _buildRoleSelectCard(
-                              title: 'Member',
-                              subtitle: 'Regular tracker',
+                              title: 'ui.role_member'.tr2,
+                              subtitle: 'ui.mess_role_regular'.tr2,
                               icon: Icons.person_outline_rounded,
                               isSelected: selectedRole == 'member',
                               onTap: () => setS(() => selectedRole = 'member'),
@@ -2221,8 +2900,8 @@ class _MessDetailView extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: _buildRoleSelectCard(
-                              title: 'Manager',
-                              subtitle: 'Admin access',
+                              title: 'ui.role_manager'.tr2,
+                              subtitle: 'ui.mess_role_admin'.tr2,
                               icon: Icons.shield_outlined,
                               isSelected: selectedRole == 'manager',
                               onTap: () => setS(() => selectedRole = 'manager'),
@@ -2253,9 +2932,9 @@ class _MessDetailView extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
+                              child: Text(
+                                'ui.cancel'.tr2,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 12.5,
                                 ),
@@ -2274,9 +2953,10 @@ class _MessDetailView extends StatelessWidget {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          const SnackBar(
+                                          SnackBar(
                                             content: Text(
-                                              'Please enter an email address',
+                                              'ui.mess_invite_email_required'
+                                                  .tr2,
                                             ),
                                           ),
                                         );
@@ -2298,14 +2978,15 @@ class _MessDetailView extends StatelessWidget {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            const SnackBar(
+                                            SnackBar(
                                               content: Text(
-                                                'Invitation sent successfully',
+                                                'ui.mess_invite_sent'.tr2,
                                               ),
                                             ),
                                           );
                                           context.read<MessCubit>().loadMess(
                                             messId,
+                                            forceRefresh: true,
                                           );
                                         }
                                       } catch (e) {
@@ -2339,9 +3020,9 @@ class _MessDetailView extends StatelessWidget {
                                         color: Colors.white,
                                       ),
                                     )
-                                  : const Text(
-                                      'Send Invite',
-                                      style: TextStyle(
+                                  : Text(
+                                      'ui.mess_send_invite'.tr2,
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.w800,
                                         fontSize: 12.5,
                                       ),
@@ -2442,21 +3123,48 @@ class _MessDetailView extends StatelessWidget {
   void _confirmDeleteMess(BuildContext context, MessModel mess) async {
     final confirm = await ConfirmDeleteDialog.show(
       context,
-      title: 'Delete Mess?',
+      title: 'ui.confirm_delete_mess_title'.tr2,
       itemName: mess.name,
-      message:
-          'Are you sure you want to delete this mess? All data, member accounts, sheets, and bazar records will be permanently removed. This action cannot be undone.',
-      confirmLabel: 'Delete Mess',
+      message: 'ui.confirm_delete_mess_message'.tr2,
+      confirmLabel: 'ui.confirm_delete_mess_label'.tr2,
       icon: Icons.apartment_rounded,
     );
 
     if (confirm == true && context.mounted) {
       final ok = await context.read<MessCubit>().deleteMess(mess.id);
       if (ok && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Mess deleted successfully')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('ui.mess_deleted'.tr2)));
         Navigator.pop(context);
+      }
+    }
+  }
+
+  void _confirmDeleteMonth(
+    BuildContext context,
+    int messId,
+    MessMonthLite month,
+  ) async {
+    final confirm = await ConfirmDeleteDialog.show(
+      context,
+      title: 'ui.confirm_delete_sheet_title'.tr2,
+      itemName: month.label,
+      message: 'ui.confirm_delete_sheet_message'.tr2,
+      confirmLabel: 'ui.confirm_delete_sheet_label'.tr2,
+      icon: Icons.calendar_month_rounded,
+    );
+
+    if (confirm == true && context.mounted) {
+      final ok = await context.read<MessCubit>().deleteMonth(messId, month.id);
+      if (ok && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'ui.mess_sheet_deleted'.tr2.replaceAll('{label}', month.label),
+            ),
+          ),
+        );
       }
     }
   }

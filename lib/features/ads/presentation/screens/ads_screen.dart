@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/ad_cards.dart';
 import '../../../../core/widgets/messmax_app_bar.dart';
 import '../../../../core/widgets/search_filter_bar.dart';
@@ -55,7 +57,10 @@ class _AdsScreenState extends State<AdsScreen> {
       loadCities: (search, page) =>
           context.read<AdsCubit>().fetchCities(search: search, page: page),
       loadAreas: (city, search, page) => context.read<AdsCubit>().fetchAreas(
-          city: city, search: search, page: page),
+        city: city,
+        search: search,
+        page: page,
+      ),
       onApply: ({city, area, roomType, query}) {
         if (query != null && query.isNotEmpty) {
           _searchController.text = query;
@@ -114,12 +119,15 @@ class _AdsScreenState extends State<AdsScreen> {
                                 color: AppColors.inkFaded,
                               ),
                               const SizedBox(height: 12),
-                              const Text(
-                                'Could not load mess seats',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.ink,
+                              ValueListenableBuilder<int>(
+                                valueListenable: AppTranslations.notifier,
+                                builder: (context, _, _) => Text(
+                                  'ui.ads_load_error'.tr2,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.ink,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -131,7 +139,11 @@ class _AdsScreenState extends State<AdsScreen> {
                                 onPressed: () => context
                                     .read<AdsCubit>()
                                     .fetchAds(forceRefresh: true),
-                                child: const Text('Try Again'),
+                                child: ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) =>
+                                      Text('ui.try_again'.tr2),
+                                ),
                               ),
                             ],
                           ),
@@ -162,21 +174,27 @@ class _AdsScreenState extends State<AdsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                const Text(
-                                  'No matching seats found',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.ink,
+                                ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Text(
+                                    'ui.ads_empty_title'.tr2,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.ink,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                const Text(
-                                  'Try adjusting your search query, location or room type filter.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.inkFaded,
+                                ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Text(
+                                    'ui.ads_empty_sub'.tr2,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.inkFaded,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 20),
@@ -185,7 +203,11 @@ class _AdsScreenState extends State<AdsScreen> {
                                     _searchController.clear();
                                     context.read<AdsCubit>().clearFilters();
                                   },
-                                  child: const Text('Reset All Filters'),
+                                  child: ValueListenableBuilder<int>(
+                                    valueListenable: AppTranslations.notifier,
+                                    builder: (context, _, _) =>
+                                        Text('ui.ads_reset_filters'.tr2),
+                                  ),
                                 ),
                               ],
                             ),
@@ -195,9 +217,9 @@ class _AdsScreenState extends State<AdsScreen> {
 
                       return RefreshIndicator(
                         color: AppColors.accent,
-                        onRefresh: () => context
-                            .read<AdsCubit>()
-                            .fetchAds(forceRefresh: true),
+                        onRefresh: () => context.read<AdsCubit>().fetchAds(
+                          forceRefresh: true,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -205,12 +227,15 @@ class _AdsScreenState extends State<AdsScreen> {
                               padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
                               child: Row(
                                 children: [
-                                  Text(
-                                    'Showing ${ads.length} of ${state.response.total} seat listing${state.response.total == 1 ? '' : 's'}',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.inkFaded,
+                                  ValueListenableBuilder<int>(
+                                    valueListenable: AppTranslations.notifier,
+                                    builder: (context, _, _) => Text(
+                                      '${bnDigits(ads.length)} / ${bnDigits(state.response.total)}',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.inkFaded,
+                                      ),
                                     ),
                                   ),
                                   const Spacer(),
@@ -224,12 +249,16 @@ class _AdsScreenState extends State<AdsScreen> {
                                         _searchController.clear();
                                         context.read<AdsCubit>().clearFilters();
                                       },
-                                      child: const Text(
-                                        'Clear Filters',
-                                        style: TextStyle(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.accentDark,
+                                      child: ValueListenableBuilder<int>(
+                                        valueListenable:
+                                            AppTranslations.notifier,
+                                        builder: (context, _, _) => Text(
+                                          'ui.ads_clear_filters'.tr2,
+                                          style: const TextStyle(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppColors.accentDark,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -303,7 +332,7 @@ class _AdsScreenState extends State<AdsScreen> {
     final roomTypeOptions =
         loadedState?.response.availableRoomTypes ?? const <RoomTypeOption>[];
     final roomTypeLabels = [
-      'All Room Types',
+      'ui.ads_all_rooms'.tr2,
       ...roomTypeOptions.map((rt) => rt.label),
     ];
     final roomTypeValues = <String?>[
@@ -319,86 +348,91 @@ class _AdsScreenState extends State<AdsScreen> {
       _searchController.text = loadedState.searchQuery ?? '';
     }
 
-    return MessMaxAppBar(
-      title: 'Find Mess Seats',
-      showBorder: true,
-      bottom: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SearchFilterBar(
-            controller: _searchController,
-            hintText: 'Search area, city or mess name…',
-            onSubmitted: (val) => context.read<AdsCubit>().updateSearch(val),
-            onFilterTap: () => _openFilterDialog(context, loadedState),
-            onClearTap: () {
-              _searchController.clear();
-              context.read<AdsCubit>().updateSearch('');
-            },
-          ),
-          if (loadedState != null)
-            _buildActiveFilterChips(context, loadedState),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 38,
-            child: ListView.separated(
-              clipBehavior: Clip.none,
-              separatorBuilder: (_, _) => const SizedBox(width: 4),
-              padding: EdgeInsets.zero,
-              scrollDirection: Axis.horizontal,
-              itemCount: roomTypeLabels.length,
-              itemBuilder: (context, index) {
-                final isSelected = selectedIndex == index;
-                return GestureDetector(
-                  onTap: () => context.read<AdsCubit>().filterRoomType(
-                    roomTypeValues[index],
-                  ),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+    return ValueListenableBuilder<int>(
+      valueListenable: AppTranslations.notifier,
+      builder: (context, _, _) => MessMaxAppBar(
+        title: 'ui.ads_find_title'.tr2,
+        showBorder: true,
+        bottom: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SearchFilterBar(
+              controller: _searchController,
+              hintText: 'ui.ads_search_hint'.tr2,
+              onSubmitted: (val) => context.read<AdsCubit>().updateSearch(val),
+              onFilterTap: () => _openFilterDialog(context, loadedState),
+              onClearTap: () {
+                _searchController.clear();
+                context.read<AdsCubit>().updateSearch('');
+              },
+            ),
+            if (loadedState != null)
+              _buildActiveFilterChips(context, loadedState),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 38,
+              child: ListView.separated(
+                clipBehavior: Clip.none,
+                separatorBuilder: (_, _) => const SizedBox(width: 4),
+                padding: EdgeInsets.zero,
+                scrollDirection: Axis.horizontal,
+                itemCount: roomTypeLabels.length,
+                itemBuilder: (context, index) {
+                  final isSelected = selectedIndex == index;
+                  return GestureDetector(
+                    onTap: () => context.read<AdsCubit>().filterRoomType(
+                      roomTypeValues[index],
                     ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.brandDark
-                          : AppColors.paperRaised,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.brandDark
-                            : AppColors.paperLine,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: AppColors.brandDark.withValues(
-                                  alpha: 0.2,
+                            : AppColors.paperRaised,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.brandDark
+                              : AppColors.paperLine,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.brandDark.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
                                 ),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Center(
-                      child: Text(
-                        roomTypeLabels[index],
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: isSelected
-                              ? FontWeight.w800
-                              : FontWeight.w600,
-                          color: isSelected ? Colors.white : AppColors.inkSoft,
+                              ]
+                            : null,
+                      ),
+                      child: Center(
+                        child: Text(
+                          roomTypeLabels[index],
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: isSelected
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.inkSoft,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -458,12 +492,15 @@ class _AdsScreenState extends State<AdsScreen> {
                   color: AppColors.accentSoft,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Text(
-                  'Clear All',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.accentDark,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.ads_clear_all'.tr2,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.accentDark,
+                    ),
                   ),
                 ),
               ),

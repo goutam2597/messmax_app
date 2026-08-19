@@ -163,6 +163,43 @@ class MessRepository {
     if (data['success'] != true) {
       throw Exception(data['message'] ?? 'Failed to create month');
     }
+    _messDetailCache.remove(messId);
+    _messesCache = null;
+  }
+
+  Future<void> activateMonth(int messId, int monthId) async {
+    try {
+      final res = await _dio.patch(
+        '${ApiEndpoints.messes}/$messId/months/$monthId/activate',
+      );
+      final data = res.data as Map<String, dynamic>;
+      if (data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to activate month');
+      }
+      // Bust detail cache so the next fetchMess picks up the new active_month_id
+      _messDetailCache.remove(messId);
+      _messesCache = null;
+    } catch (e) {
+      AppLogger.w('activateMonth failed: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteMonth(int messId, int monthId) async {
+    try {
+      final res = await _dio.delete(
+        '${ApiEndpoints.messes}/$messId/months/$monthId',
+      );
+      final data = res.data as Map<String, dynamic>;
+      if (data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to delete monthly sheet');
+      }
+      _messDetailCache.remove(messId);
+      _messesCache = null;
+    } catch (e) {
+      AppLogger.w('deleteMonth failed: $e');
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> fetchSheet(int messId, int monthId) async {

@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/ad_cards.dart';
 import '../../../../core/widgets/filter_pill_bar.dart';
@@ -48,7 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
       loadCities: (search, page) =>
           context.read<AdsCubit>().fetchCities(search: search, page: page),
       loadAreas: (city, search, page) => context.read<AdsCubit>().fetchAreas(
-          city: city, search: search, page: page),
+        city: city,
+        search: search,
+        page: page,
+      ),
       onApply: ({city, area, roomType, query}) {
         _applyFilterAndNavigate(
           context,
@@ -111,12 +115,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Unable to connect to MessMax server',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.ink,
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            'ui.home_error'.tr2,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -145,7 +152,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               .read<HomeCubit>()
                               .fetchHomeData(forceRefresh: true),
                           icon: const Icon(Icons.refresh_rounded, size: 18),
-                          label: const Text('Try Again'),
+                          label: ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) =>
+                                Text('ui.try_again'.tr2),
+                          ),
                         ),
                       ],
                     ),
@@ -244,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: SearchFilterBar(
             controller: _searchController,
-            hintText: 'Search seats, area, city or mess name…',
+            hintText: 'ui.home_search_placeholder'.tr2,
             onSubmitted: (query) =>
                 _applyFilterAndNavigate(context, query: query),
             onFilterTap: () => _openFilterDialog(context, data),
@@ -290,25 +301,25 @@ class _HomeScreenState extends State<HomeScreen> {
       null,
       ...data.availableRoomTypes.map((rt) => rt.value),
     ];
-    final labels = [
-      'All',
-      ...data.availableRoomTypes.map((rt) => rt.label),
-    ];
+    final labels = ['All', ...data.availableRoomTypes.map((rt) => rt.label)];
     var selectedIndex = roomTypeValues.indexOf(_selectedRoomType);
     if (selectedIndex < 0) selectedIndex = 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            'Explore Seat Types',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-              color: AppColors.ink,
-              letterSpacing: -0.3,
+        ValueListenableBuilder<int>(
+          valueListenable: AppTranslations.notifier,
+          builder: (context, _, _) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              'ui.home_explore_seats'.tr2,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+                color: AppColors.ink,
+                letterSpacing: -0.3,
+              ),
             ),
           ),
         ),
@@ -323,10 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNewListingsSection(
-    List<AdModel> ads, {
-    String? selectedLabel,
-  }) {
+  Widget _buildNewListingsSection(List<AdModel> ads, {String? selectedLabel}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Column(
@@ -335,23 +343,29 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                selectedLabel == null
-                    ? 'New Seat Listings'
-                    : '$selectedLabel Seats',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                  letterSpacing: -0.4,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  selectedLabel == null
+                      ? 'ui.home_new_listings'.tr2
+                      : '$selectedLabel ${'ui.home_available'.tr2}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                    letterSpacing: -0.4,
+                  ),
                 ),
               ),
-              Text(
-                '${ads.length} available',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.inkFaded,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  '${ads.length} ${'ui.home_available'.tr2}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.inkFaded,
+                  ),
                 ),
               ),
             ],
@@ -374,14 +388,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: AppColors.inkFaded,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    selectedLabel == null
-                        ? 'No seats currently listed.'
-                        : 'No $selectedLabel seats currently listed.',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.inkSoft,
+                  ValueListenableBuilder<int>(
+                    valueListenable: AppTranslations.notifier,
+                    builder: (context, _, _) => Text(
+                      selectedLabel == null
+                          ? 'ui.home_no_seats'.tr2
+                          : 'ui.home_no_filtered'.tr2,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.inkSoft,
+                      ),
                     ),
                   ),
                 ],

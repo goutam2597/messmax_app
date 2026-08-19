@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
+import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/ad_cards.dart';
 import '../../../../core/widgets/app_back_button.dart';
@@ -154,9 +158,12 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                         const SizedBox(height: 20),
 
                         // Listing details (spec tiles)
-                        _sectionHeader(
-                          icon: Icons.grid_view_rounded,
-                          title: 'Room & Rent Details',
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => _sectionHeader(
+                            icon: Icons.grid_view_rounded,
+                            title: 'ui.ad_detail_room_rent'.tr2,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSpecsGrid(),
@@ -165,9 +172,12 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
                         // Description
                         if (ad.description != null && ad.description!.isNotEmpty) ...[
-                          _sectionHeader(
-                            icon: Icons.subject_rounded,
-                            title: 'Description',
+                          ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => _sectionHeader(
+                              icon: Icons.subject_rounded,
+                              title: 'ui.ad_detail_description'.tr2,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Container(
@@ -199,9 +209,12 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
                         // Amenities
                         if (ad.amenities.isNotEmpty) ...[
-                          _sectionHeader(
-                            icon: Icons.checklist_rounded,
-                            title: 'Amenities & Facilities',
+                          ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => _sectionHeader(
+                              icon: Icons.checklist_rounded,
+                              title: 'ui.ad_detail_amenities'.tr2,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           _buildAmenitiesWrap(),
@@ -224,11 +237,17 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                             ),
                           )
                         else if (_relatedAds.isNotEmpty) ...[
-                          _sectionHeader(
-                            icon: Icons.explore_rounded,
-                            title: 'Nearby & Similar Seats',
-                            subtitle:
-                                'More seats available in ${ad.areaLabel ?? ad.area ?? ad.city ?? 'the same area'}',
+                          ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) {
+                              final area = ad.areaLabel ?? ad.area ?? ad.city ?? 'the same area';
+                              final sub = 'ui.ad_detail_nearby_sub'.tr2.replaceAll('{area}', area);
+                              return _sectionHeader(
+                                icon: Icons.explore_rounded,
+                                title: 'ui.ad_detail_nearby'.tr2,
+                                subtitle: sub,
+                              );
+                            },
                           ),
                           const SizedBox(height: 14),
                           MasonryGridView.count(
@@ -302,11 +321,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     ),
                   ),
                   child: GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Sharing seat listing details')),
-                      );
-                    },
+                    onTap: () => _shareAd(context),
                     child: const Icon(
                       Icons.share_rounded,
                       color: Colors.white,
@@ -409,27 +424,30 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFE2701C).withValues(alpha: 0.3),
+                      color: Color(0xFFE2701C).withValues(alpha: 0.3),
                       blurRadius: 6,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.star_rounded, size: 12, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text(
-                      'FEATURED',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star_rounded, size: 12, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        'ui.featured_label'.tr2,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -445,12 +463,15 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                 color: AppColors.inkFaded,
               ),
               const SizedBox(width: 5),
-              Text(
-                'Posted ${ad.publishedAt}',
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  color: AppColors.inkFaded,
-                  fontWeight: FontWeight.w600,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.ad_detail_posted'.tr2.replaceAll('{date}', bnDigits(ad.publishedAt)),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.inkFaded,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -466,18 +487,29 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       clipBehavior: Clip.none,
       child: Row(
         children: [
-          _badgeChip(
-            icon: Icons.meeting_room_rounded,
-            label: '${ad.roomType.toUpperCase()} ROOM',
-            bgColor: AppColors.brandSoft,
-            textColor: AppColors.brandDark,
+          ValueListenableBuilder<int>(
+            valueListenable: AppTranslations.notifier,
+            builder: (context, _, _) => _badgeChip(
+              icon: Icons.meeting_room_rounded,
+              label: '${ad.roomType.toUpperCase()} ${'ui.ad_detail_room_suffix'.tr2}',
+              bgColor: AppColors.brandSoft,
+              textColor: AppColors.brandDark,
+            ),
           ),
           const SizedBox(width: 8),
-          _badgeChip(
-            icon: Icons.event_seat_rounded,
-            label: '${ad.seatsAvailable} Seat${ad.seatsAvailable == 1 ? '' : 's'} Open',
-            bgColor: const Color(0xFFE6F4EA),
-            textColor: const Color(0xFF137333),
+          ValueListenableBuilder<int>(
+            valueListenable: AppTranslations.notifier,
+            builder: (context, _, _) {
+              final seatsLabel = ad.seatsAvailable == 1
+                  ? 'ui.card_seats_open'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable))
+                  : 'ui.card_seats_open_plural'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable));
+              return _badgeChip(
+                icon: Icons.event_seat_rounded,
+                label: seatsLabel,
+                bgColor: const Color(0xFFE6F4EA),
+                textColor: const Color(0xFF137333),
+              );
+            },
           ),
           const SizedBox(width: 8),
           if (ad.areaLabel != null || ad.city != null)
@@ -593,12 +625,15 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     children: [
                       const Icon(Icons.photo_library_rounded, size: 12, color: Colors.white),
                       const SizedBox(width: 5),
-                      Text(
-                        '${_galleryIndex + 1}/${ad.imageUrls.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
+                      ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          '${bnDigits(_galleryIndex + 1)}/${bnDigits(ad.imageUrls.length)}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ],
@@ -630,20 +665,23 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
         color: AppColors.brandSoft,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
       ),
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.house_rounded, color: AppColors.inkFaded, size: 54),
-          SizedBox(height: 8),
-          Text(
-            'MessMax Verified Listing',
-            style: TextStyle(
-              color: AppColors.inkFaded,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+      child: ValueListenableBuilder<int>(
+        valueListenable: AppTranslations.notifier,
+        builder: (context, _, _) => Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.house_rounded, color: AppColors.inkFaded, size: 54),
+            const SizedBox(height: 8),
+            Text(
+              'ui.ad_detail_verified_listing'.tr2,
+              style: const TextStyle(
+                color: AppColors.inkFaded,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -662,7 +700,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           BoxShadow(
             color: AppColors.brandDark.withValues(alpha: 0.3),
             blurRadius: 16,
-            offset: const Offset(0, 6),
+            offset: Offset(0, 6),
           ),
         ],
       ),
@@ -672,13 +710,16 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'RENT PER SEAT',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white.withValues(alpha: 0.65),
-                    letterSpacing: 0.8,
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.ad_detail_price_label'.tr2,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white.withValues(alpha: 0.65),
+                      letterSpacing: 0.8,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -686,21 +727,27 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text(
-                      '৳${ad.rentPerSeat.toInt()}',
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
+                    ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        '৳${bnDigits(ad.rentPerSeat.toInt())}',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
                       ),
                     ),
-                    Text(
-                      ' / month',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white.withValues(alpha: 0.75),
+                    ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        'ui.ad_detail_price_month'.tr2,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withValues(alpha: 0.75),
+                        ),
                       ),
                     ),
                   ],
@@ -717,13 +764,16 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'AVAILABILITY',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white.withValues(alpha: 0.65),
-                  letterSpacing: 0.8,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.ad_detail_availability'.tr2,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white.withValues(alpha: 0.65),
+                    letterSpacing: 0.8,
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
@@ -743,27 +793,35 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     ),
                   ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${ad.seatsAvailable} Seat${ad.seatsAvailable == 1 ? '' : 's'} Open',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                child: ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) {
+                    final seatsText = ad.seatsAvailable == 1
+                        ? 'ui.card_seats_open'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable))
+                        : 'ui.card_seats_open_plural'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable));
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          seatsText,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ],
@@ -811,13 +869,16 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'HOST / MANAGER',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.inkFaded,
-                    letterSpacing: 0.6,
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.ad_detail_host'.tr2,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.inkFaded,
+                      letterSpacing: 0.6,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -838,25 +899,28 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
               color: AppColors.emeraldSoft,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.verified_rounded,
-                  size: 14,
-                  color: AppColors.emerald,
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'VERIFIED',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
+            child: ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.verified_rounded,
+                    size: 14,
                     color: AppColors.emerald,
-                    letterSpacing: 0.4,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  Text(
+                    'ui.ad_detail_verified'.tr2,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.emerald,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -941,26 +1005,29 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                 color: AppColors.brandSoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.security_rounded,
-                    size: 18,
-                    color: AppColors.brandDark,
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Street address hidden by manager for privacy. Contact manager to visit.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.brandDark,
-                        fontWeight: FontWeight.w600,
-                        height: 1.35,
+              child: ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Row(
+                  children: [
+                    const Icon(
+                      Icons.security_rounded,
+                      size: 18,
+                      color: AppColors.brandDark,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'ui.ad_detail_street_hidden'.tr2,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.brandDark,
+                          fontWeight: FontWeight.w600,
+                          height: 1.35,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
         ],
@@ -969,77 +1036,82 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
   }
 
   Widget _buildSpecsGrid() {
-    final specs = <(IconData, String, String)>[
-      (Icons.meeting_room_rounded, 'Room Type', ad.roomType.toUpperCase()),
-      if (ad.messName != null)
-        (Icons.apartment_rounded, 'Mess Name', ad.messName!),
-      (
-        Icons.groups_rounded,
-        'Room Capacity',
-        ad.roomCapacity != null ? '${ad.roomCapacity} Persons' : 'Flexible',
-      ),
-      (Icons.payments_rounded, 'Rent Period', 'Monthly'),
-    ];
+    return ValueListenableBuilder<int>(
+      valueListenable: AppTranslations.notifier,
+      builder: (context, _, _) {
+        final specs = <(IconData, String, String)>[
+          (Icons.meeting_room_rounded, 'ui.ad_detail_room_type'.tr2, ad.roomType.toUpperCase()),
+          if (ad.messName != null)
+            (Icons.apartment_rounded, 'ui.ad_detail_mess_name'.tr2, ad.messName!),
+          (
+            Icons.groups_rounded,
+            'ui.ad_detail_room_capacity'.tr2,
+            ad.roomCapacity != null ? '${bnDigits(ad.roomCapacity)} ${'ui.ad_detail_persons'.tr2}' : 'ui.ad_detail_flexible'.tr2,
+          ),
+          (Icons.payments_rounded, 'ui.ad_detail_rent_period'.tr2, 'ui.ad_detail_monthly'.tr2),
+        ];
 
-    return GridView.count(
-      padding: EdgeInsets.zero,
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 2.8,
-      children: specs.map((spec) {
-        final (icon, label, value) = spec;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.paperRaised,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.paperLine),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 18, color: AppColors.brandDark),
+        return GridView.count(
+          padding: EdgeInsets.zero,
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 2.8,
+          children: specs.map((spec) {
+            final (icon, label, value) = spec;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.paperRaised,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.paperLine),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.inkFaded,
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandSoft,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.ink,
-                      ),
+                    child: Icon(icon, size: 18, color: AppColors.brandDark),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          label,
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          value,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
@@ -1093,12 +1165,26 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
     );
   }
 
+  Future<void> _shareAd(BuildContext context) async {
+    final webUrl = 'http://${AppConfig.baseDomain}/ads/${ad.slug}';
+    final text =
+        '${ad.title} — ৳${ad.rentPerSeat.toInt()} /mo • ${ad.areaLabel ?? ad.city ?? 'Dhaka'}\n$webUrl';
+    try {
+      await SharePlus.instance.share(ShareParams(text: text, subject: ad.title));
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ui.share_failed'.tr2)),
+      );
+    }
+  }
+
   Future<void> _makePhoneCall(BuildContext context) async {
     final rawPhone = ad.contactPhone?.trim();
     if (rawPhone == null || rawPhone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Phone number not provided for this listing.'),
+        SnackBar(
+          content: Text('ui.ad_detail_phone_missing'.tr2),
           backgroundColor: AppColors.ink,
         ),
       );
@@ -1117,7 +1203,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not open phone dialer for $rawPhone'),
+          content: Text('${'ui.ad_detail_phone_open_fail'.tr2} $rawPhone'),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -1131,8 +1217,8 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
     if (rawWhatsapp == null || rawWhatsapp.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('WhatsApp number not provided for this listing.'),
+        SnackBar(
+          content: Text('ui.ad_detail_whatsapp_missing'.tr2),
           backgroundColor: AppColors.ink,
         ),
       );
@@ -1166,7 +1252,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not open WhatsApp for $rawWhatsapp'),
+          content: Text('${'ui.ad_detail_whatsapp_open_fail'.tr2} $rawWhatsapp'),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -1217,12 +1303,15 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     BlendMode.srcIn,
                   ),
                 ),
-                label: const Text(
-                  'Call Phone',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.2,
+                label: ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.ad_detail_call_phone'.tr2,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
               ),
@@ -1255,12 +1344,15 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     BlendMode.srcIn,
                   ),
                 ),
-                label: const Text(
-                  'WhatsApp',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.2,
+                label: ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.ad_detail_whatsapp'.tr2,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
               ),
@@ -1366,12 +1458,15 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
               ),
-              child: Text(
-                '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
+              child: ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  '${bnDigits(_currentIndex + 1)} / ${bnDigits(widget.imageUrls.length)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ),
@@ -1392,12 +1487,15 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                   color: Colors.black.withValues(alpha: 0.45),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  'Pinch to zoom • Swipe for more',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.ad_detail_pinch_hint'.tr2,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -1532,27 +1630,30 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
                             color: Colors.black.withValues(alpha: 0.45),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 12,
-                                height: 12,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(
+                                  width: 12,
+                                  height: 12,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Loading seat details…',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                                const SizedBox(width: 8),
+                                Text(
+                                  'ui.ad_detail_loading'.tr2,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),

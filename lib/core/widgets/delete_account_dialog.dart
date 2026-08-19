@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../locale/app_translations.dart';
 import '../theme/app_colors.dart';
 
 /// Premium, high-security confirmation dialog for permanent account deletion.
@@ -84,27 +85,33 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
               const SizedBox(height: 18),
 
               // 2. Title
-              const Text(
-                'Delete Account?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                  letterSpacing: -0.4,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.delete_account_title'.tr2,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                    letterSpacing: -0.4,
+                  ),
                 ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
 
               // 3. Subtitle / Warning
-              const Text(
-                'This action is irreversible. All your profile data, mess memberships, seat listings, and active sessions will be permanently removed.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.inkFaded,
-                  height: 1.45,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.delete_account_message'.tr2,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.inkFaded,
+                    height: 1.45,
+                  ),
                 ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
 
@@ -113,8 +120,8 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  hintText: 'Enter your password to verify',
+                  labelText: 'ui.delete_confirm_password_label'.tr2,
+                  hintText: 'ui.delete_confirm_password_hint'.tr2,
                   filled: true,
                   fillColor: AppColors.paper,
                   prefixIcon: const Icon(
@@ -176,11 +183,14 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.cancel'.tr2,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -204,11 +214,14 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                         shadowColor: AppColors.danger.withValues(alpha: 0.35),
                       ),
                       icon: const Icon(Icons.delete_forever_rounded, size: 18),
-                      label: const Text(
-                        'Delete',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
+                      label: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.delete_confirm'.tr2,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),

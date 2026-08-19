@@ -15,7 +15,7 @@ class DashboardCubit extends Cubit<DashboardState> {
       emit(DashboardLoaded(cached));
       return;
     }
-    if (state is! DashboardLoaded) {
+    if (state is! DashboardLoaded && !forceRefresh) {
       emit(const DashboardLoading());
     }
     try {

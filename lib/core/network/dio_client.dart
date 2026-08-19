@@ -38,7 +38,11 @@ class DioClient {
         baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: AppConfig.connectTimeout,
         receiveTimeout: AppConfig.receiveTimeout,
-        headers: {'Accept': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
         validateStatus: (status) => status != null && status < 500,
       ),
     )

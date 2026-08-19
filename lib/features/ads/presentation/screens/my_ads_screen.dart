@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
+import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
@@ -55,11 +57,10 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
   Future<void> _deleteAd(AdModel ad) async {
     final confirm = await ConfirmDeleteDialog.show(
       context,
-      title: 'Delete Seat Ad?',
+      title: 'ui.confirm_delete_ad_title'.tr2,
       itemName: ad.title,
-      message:
-          'Are you sure you want to delete this seat listing? It will no longer be visible to prospective members.',
-      confirmLabel: 'Delete Ad',
+      message: 'ui.confirm_delete_ad_message'.tr2,
+      confirmLabel: 'ui.confirm_delete_ad_label'.tr2,
       icon: Icons.campaign_rounded,
     );
 
@@ -75,7 +76,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete ad: $e')),
+        SnackBar(content: Text('${'ui.myads_delete_failed'.tr2}: $e')),
       );
     }
   }
@@ -115,8 +116,8 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
           leading: AppBackButton(
             onPressed: _backToDashboard,
           ),
-          title: const Text(
-            'My Posted Seat Ads',
+          title: Text(
+            'ui.myads_title'.tr2,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w900,
@@ -129,8 +130,8 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
         backgroundColor: AppColors.brandDark,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded, size: 22),
-        label: const Text(
-          'Post Seat Ad',
+        label: Text(
+          'ui.myads_post_ad'.tr2,
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
         ),
       ),
@@ -191,13 +192,13 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                                 child: const Icon(Icons.home_work_rounded, color: AppColors.brandDark, size: 48),
                               ),
                               const SizedBox(height: 20),
-                              const Text(
-                                'No Seat Ads Posted Yet',
+                              Text(
+                                'ui.myads_empty_title'.tr2,
                                 style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: AppColors.ink),
                               ),
                               const SizedBox(height: 8),
-                              const Text(
-                                'Post your vacant hostel / mess seats on MessMax to reach thousands of students & jobholders looking for mess seats.',
+                              Text(
+                                'ui.myads_empty_sub'.tr2,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 13, color: AppColors.inkFaded, height: 1.4),
                               ),
@@ -205,7 +206,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                               FilledButton.icon(
                                 onPressed: () => _openForm(),
                                 icon: const Icon(Icons.add_rounded, size: 20),
-                                label: const Text('Post First Seat Ad'),
+                                label: Text('ui.myads_post_first'.tr2),
                               ),
                             ],
                           ),
@@ -277,7 +278,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                '${ad.seatsAvailable} OPEN',
+                                '${bnDigits(ad.seatsAvailable)} ${'ui.myads_open'.tr2}',
                                 style: TextStyle(
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w900,
@@ -306,7 +307,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '৳${ad.rentPerSeat.toInt()} / month • ${ad.areaLabel ?? ad.city ?? "Dhaka"}',
+                          '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.myads_per_month'.tr2} • ${ad.areaLabel ?? ad.city ?? "Dhaka"}',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -331,20 +332,20 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                     MaterialPageRoute(builder: (_) => AdDetailScreen(ad: ad)),
                   ),
                   icon: const Icon(Icons.visibility_outlined, size: 16, color: AppColors.inkFaded),
-                  label: const Text('View Ad', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.inkFaded)),
+                  label: Text('ui.myads_view'.tr2, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.inkFaded)),
                 ),
                 Row(
                   children: [
                     TextButton.icon(
                       onPressed: () => _openForm(ad: ad),
                       icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.brandDark),
-                      label: const Text('Edit', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.brandDark)),
+                      label: Text('ui.myads_edit'.tr2, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.brandDark)),
                     ),
                     const SizedBox(width: 4),
                     TextButton.icon(
                       onPressed: () => _deleteAd(ad),
                       icon: const Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.danger),
-                      label: const Text('Delete', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.danger)),
+                      label: Text('ui.myads_delete'.tr2, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.danger)),
                     ),
                   ],
                 ),

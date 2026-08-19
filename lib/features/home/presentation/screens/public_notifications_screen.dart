@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/services/push_notification_service.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/network_image_cover.dart';
 import '../../../ads/data/models/ad_model.dart';
@@ -78,7 +80,8 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
   bool _isLoading = true;
   String? _errorMessage;
 
-  late final StreamController<List<PublicNotificationItem>> _notificationsStreamController;
+  late final StreamController<List<PublicNotificationItem>>
+  _notificationsStreamController;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
   Timer? _livePollTimer;
 
@@ -86,13 +89,16 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _notificationsStreamController = StreamController<List<PublicNotificationItem>>.broadcast();
+    _notificationsStreamController =
+        StreamController<List<PublicNotificationItem>>.broadcast();
 
     // 1. Initial fetch
     _fetchNotifications();
 
     // 2. Real-time FCM stream listener (triggers instant silent sync on incoming broadcast)
-    _fcmSubscription = PushNotificationService.onForegroundMessage.listen((RemoteMessage message) {
+    _fcmSubscription = PushNotificationService.onForegroundMessage.listen((
+      RemoteMessage message,
+    ) {
       if (mounted) {
         _fetchNotifications(isSilent: true);
       }
@@ -134,12 +140,17 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
     }
 
     try {
-      final response = await DioClient.instance.get(ApiEndpoints.publicNotifications);
+      final response = await DioClient.instance.get(
+        ApiEndpoints.publicNotifications,
+      );
       if (response.statusCode == 200 && response.data['success'] == true) {
         final List items = response.data['data']['items'] as List? ?? [];
         if (mounted) {
           final newItems = items
-              .map((e) => PublicNotificationItem.fromJson(e as Map<String, dynamic>))
+              .map(
+                (e) =>
+                    PublicNotificationItem.fromJson(e as Map<String, dynamic>),
+              )
               .toList();
 
           // Preserve read state of existing items if already marked read locally
@@ -178,7 +189,8 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
       if (mounted && !isSilent) {
         setState(() {
           _isLoading = false;
-          _errorMessage = e.response?.data?['message']?.toString() ??
+          _errorMessage =
+              e.response?.data?['message']?.toString() ??
               'Unable to reach server. Pull down to refresh.';
         });
       }
@@ -198,11 +210,17 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
     return list.where((n) {
       final lowerTag = n.tag.toLowerCase();
       if (lowerFilter == 'alerts') {
-        return lowerTag.contains('seat') || lowerTag.contains('alert') || lowerTag.contains('room');
+        return lowerTag.contains('seat') ||
+            lowerTag.contains('alert') ||
+            lowerTag.contains('room');
       } else if (lowerFilter == 'offers') {
-        return lowerTag.contains('promo') || lowerTag.contains('offer') || lowerTag.contains('discount');
+        return lowerTag.contains('promo') ||
+            lowerTag.contains('offer') ||
+            lowerTag.contains('discount');
       } else if (lowerFilter == 'updates') {
-        return lowerTag.contains('update') || lowerTag.contains('feature') || lowerTag.contains('version');
+        return lowerTag.contains('update') ||
+            lowerTag.contains('feature') ||
+            lowerTag.contains('version');
       }
       return true;
     }).toList();
@@ -231,10 +249,14 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
 
   IconData _getTagIcon(String tag) {
     final lower = tag.toLowerCase();
-    if (lower.contains('seat') || lower.contains('room') || lower.contains('alert')) {
+    if (lower.contains('seat') ||
+        lower.contains('room') ||
+        lower.contains('alert')) {
       return Icons.meeting_room_rounded;
     }
-    if (lower.contains('promo') || lower.contains('offer') || lower.contains('discount')) {
+    if (lower.contains('promo') ||
+        lower.contains('offer') ||
+        lower.contains('discount')) {
       return Icons.local_offer_rounded;
     }
     if (lower.contains('update') || lower.contains('feature')) {
@@ -245,10 +267,14 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
 
   Color _getTagColor(String tag) {
     final lower = tag.toLowerCase();
-    if (lower.contains('seat') || lower.contains('room') || lower.contains('alert')) {
+    if (lower.contains('seat') ||
+        lower.contains('room') ||
+        lower.contains('alert')) {
       return const Color(0xFF2E7D32);
     }
-    if (lower.contains('promo') || lower.contains('offer') || lower.contains('discount')) {
+    if (lower.contains('promo') ||
+        lower.contains('offer') ||
+        lower.contains('discount')) {
       return const Color(0xFFE65100);
     }
     if (lower.contains('update') || lower.contains('feature')) {
@@ -259,10 +285,14 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
 
   Color _getTagBg(String tag) {
     final lower = tag.toLowerCase();
-    if (lower.contains('seat') || lower.contains('room') || lower.contains('alert')) {
+    if (lower.contains('seat') ||
+        lower.contains('room') ||
+        lower.contains('alert')) {
       return const Color(0xFFE8F5E9);
     }
-    if (lower.contains('promo') || lower.contains('offer') || lower.contains('discount')) {
+    if (lower.contains('promo') ||
+        lower.contains('offer') ||
+        lower.contains('discount')) {
       return const Color(0xFFFFF3E0);
     }
     if (lower.contains('update') || lower.contains('feature')) {
@@ -278,7 +308,8 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
     }
 
     // If notification has attached item (Seat Ad)
-    final hasItem = (item.itemType == 'ad' || item.itemId != null || item.itemSlug != null);
+    final hasItem =
+        (item.itemType == 'ad' || item.itemId != null || item.itemSlug != null);
     if (hasItem) {
       final slug = item.itemSlug ?? (item.adSummary?['slug'] as String?);
       if (slug != null && slug.isNotEmpty) {
@@ -312,7 +343,8 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
               city: item.adSummary!['city'] as String?,
               area: item.adSummary!['area'] as String?,
               seatsAvailable: item.adSummary!['seats_available'] as int? ?? 1,
-              rentPerSeat: (item.adSummary!['rent_per_seat'] as num?)?.toDouble() ?? 0.0,
+              rentPerSeat:
+                  (item.adSummary!['rent_per_seat'] as num?)?.toDouble() ?? 0.0,
               roomType: item.adSummary!['room_type'] as String? ?? 'shared',
               hideAddress: false,
               hasVisibleAddress: true,
@@ -384,7 +416,9 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 7.5, vertical: 2.5),
+                              horizontal: 7.5,
+                              vertical: 2.5,
+                            ),
                             decoration: BoxDecoration(
                               color: iconBg,
                               borderRadius: BorderRadius.circular(6),
@@ -489,11 +523,14 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text(
-                      'Got It',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        'ui.notif_got_it'.tr2,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ),
@@ -521,25 +558,31 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
           children: [
             Row(
               children: [
-                const Text(
-                  'Notifications',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.ink,
-                    letterSpacing: -0.3,
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.notif_title'.tr2,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.ink,
+                      letterSpacing: -0.3,
+                    ),
                   ),
                 ),
                 if (_unreadCount > 0) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.brandDark,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      '$_unreadCount',
+                      bnDigits(_unreadCount),
                       style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w800,
@@ -551,12 +594,15 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
               ],
             ),
             const SizedBox(height: 1),
-            const Text(
-              'Seat alerts, promo offers & announcements',
-              style: TextStyle(
-                fontSize: 11.5,
-                color: AppColors.inkFaded,
-                fontWeight: FontWeight.w500,
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => Text(
+                'ui.notif_subtitle'.tr2,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.inkFaded,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -569,16 +615,22 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                 child: TextButton(
                   onPressed: _markAllAsRead,
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text(
-                    'Mark read',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.brandDark,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: AppTranslations.notifier,
+                    builder: (context, _, _) => Text(
+                      'ui.notif_mark_read'.tr2,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.brandDark,
+                      ),
                     ),
                   ),
                 ),
@@ -598,11 +650,13 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                 stream: _notificationsStream,
                 initialData: _notifications.isNotEmpty ? _notifications : null,
                 builder: (context, snapshot) {
-                  if (_isLoading && (!snapshot.hasData || snapshot.data!.isEmpty)) {
+                  if (_isLoading &&
+                      (!snapshot.hasData || snapshot.data!.isEmpty)) {
                     return _buildSkeletonList();
                   }
 
-                  if (_errorMessage != null && (!snapshot.hasData || snapshot.data!.isEmpty)) {
+                  if (_errorMessage != null &&
+                      (!snapshot.hasData || snapshot.data!.isEmpty)) {
                     return _buildErrorState();
                   }
 
@@ -637,10 +691,10 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
 
   Widget _buildFilterBar() {
     final filters = [
-      {'id': 'all', 'label': 'All'},
-      {'id': 'alerts', 'label': 'Seat Alerts'},
-      {'id': 'offers', 'label': 'Offers'},
-      {'id': 'updates', 'label': 'Updates'},
+      {'id': 'all', 'label': 'ui.notif_filter_all'.tr2},
+      {'id': 'alerts', 'label': 'ui.notif_filter_alerts'.tr2},
+      {'id': 'offers', 'label': 'ui.notif_filter_offers'.tr2},
+      {'id': 'updates', 'label': 'ui.notif_filter_updates'.tr2},
     ];
 
     return Container(
@@ -670,8 +724,10 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                 borderRadius: BorderRadius.circular(20),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6.5,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.brandDark : AppColors.paper,
                     borderRadius: BorderRadius.circular(20),
@@ -685,8 +741,9 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                     f['label']!,
                     style: TextStyle(
                       fontSize: 12.5,
-                      fontWeight:
-                          isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: isSelected
+                          ? FontWeight.w800
+                          : FontWeight.w600,
                       color: isSelected ? Colors.white : AppColors.ink,
                     ),
                   ),
@@ -703,7 +760,8 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
     final iconColor = _getTagColor(item.tag);
     final iconBg = _getTagBg(item.tag);
     final icon = _getTagIcon(item.tag);
-    final hasAttachedAd = (item.itemType == 'ad' || item.itemId != null || item.itemSlug != null);
+    final hasAttachedAd =
+        (item.itemType == 'ad' || item.itemId != null || item.itemSlug != null);
 
     return InkWell(
       onTap: () => _handleNotificationTap(item),
@@ -757,7 +815,9 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6.5, vertical: 2),
+                              horizontal: 6.5,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: iconBg,
                               borderRadius: BorderRadius.circular(6),
@@ -800,8 +860,9 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                         item.title,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight:
-                              item.isRead ? FontWeight.w700 : FontWeight.w900,
+                          fontWeight: item.isRead
+                              ? FontWeight.w700
+                              : FontWeight.w900,
                           color: AppColors.ink,
                           height: 1.25,
                         ),
@@ -864,7 +925,8 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item.adSummary!['title'] as String? ?? 'Attached Seat Listing',
+                            item.adSummary!['title'] as String? ??
+                                'Attached Seat Listing',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -875,7 +937,7 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '৳${(item.adSummary!['rent_per_seat'] as num?)?.toInt() ?? 0} / month • ${item.adSummary!['area'] ?? item.adSummary!['city'] ?? 'Dhaka'}',
+                            '৳${bnDigits((item.adSummary!['rent_per_seat'] as num?)?.toInt() ?? 0)} ${'ui.notif_per_month'.tr2} • ${item.adSummary!['area'] ?? item.adSummary!['city'] ?? 'Dhaka'}',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -887,24 +949,34 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.brandDark,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            'View Seat',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                          ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => Text(
+                              'ui.notif_view_seat'.tr2,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                          SizedBox(width: 3),
-                          Icon(Icons.arrow_forward_rounded, size: 12, color: Colors.white),
+                          const SizedBox(width: 3),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 12,
+                            color: Colors.white,
+                          ),
                         ],
                       ),
                     ),
@@ -982,7 +1054,11 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.cloud_off_rounded, size: 48, color: AppColors.inkFaded),
+            const Icon(
+              Icons.cloud_off_rounded,
+              size: 48,
+              color: AppColors.inkFaded,
+            ),
             const SizedBox(height: 14),
             Text(
               _errorMessage ?? 'Failed to load notifications.',
@@ -998,11 +1074,19 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.brandDark,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: _fetchNotifications,
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.w800)),
+              label: ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.try_again'.tr2,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
             ),
           ],
         ),
@@ -1035,22 +1119,28 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No Marketing Notifications',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w900,
-                color: AppColors.ink,
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => Text(
+                'ui.notif_empty_title'.tr2,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.ink,
+                ),
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Stay tuned! New seat alerts, verified mess announcements, and exclusive student promos will appear here.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.inkFaded,
-                height: 1.4,
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => Text(
+                'ui.notif_empty_sub'.tr2,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.inkFaded,
+                  height: 1.4,
+                ),
               ),
             ),
           ],

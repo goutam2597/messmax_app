@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../data/models/ad_model.dart';
 import '../../data/repositories/user_ad_repository.dart';
@@ -92,7 +94,9 @@ class _AdFormScreenState extends State<AdFormScreen> {
       _areaController.text = ad.area ?? '';
       _locationController.text = ad.location ?? '';
       _rentController.text = ad.rentPerSeat.toInt().toString();
-      _totalRentController.text = ad.rentTotal != null ? ad.rentTotal!.toInt().toString() : '';
+      _totalRentController.text = ad.rentTotal != null
+          ? ad.rentTotal!.toInt().toString()
+          : '';
       _seatsController.text = ad.seatsAvailable.toString();
       _capacityController.text = ad.roomCapacity?.toString() ?? '3';
       _descriptionController.text = ad.description ?? '';
@@ -135,9 +139,9 @@ class _AdFormScreenState extends State<AdFormScreen> {
   Future<void> _pickImages() async {
     final remainingSlots = 6 - _totalImageCount;
     if (remainingSlots <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum 6 photos allowed per seat ad')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.ad_form_max_photos'.tr2)));
       return;
     }
 
@@ -157,7 +161,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick images: $e')),
+        SnackBar(content: Text('${'ui.ad_form_pick_failed'.tr2}: $e')),
       );
     }
   }
@@ -183,23 +187,23 @@ class _AdFormScreenState extends State<AdFormScreen> {
     final seatsStr = _seatsController.text.trim();
 
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an ad title')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.ad_form_title_required'.tr2)));
       return;
     }
     final rent = double.tryParse(rentStr);
     if (rent == null || rent <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid rent amount')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.ad_form_rent_required'.tr2)));
       return;
     }
     final seats = int.tryParse(seatsStr);
     if (seats == null || seats <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter available seats count')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.ad_form_seats_required'.tr2)));
       return;
     }
 
@@ -234,8 +238,8 @@ class _AdFormScreenState extends State<AdFormScreen> {
         SnackBar(
           content: Text(
             widget.ad == null
-                ? 'Seat ad posted successfully!'
-                : 'Seat ad updated successfully!',
+                ? 'ui.ad_form_posted'.tr2
+                : 'ui.ad_form_updated'.tr2,
           ),
         ),
       );
@@ -243,7 +247,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save ad: $e')),
+        SnackBar(content: Text('${'ui.ad_form_save_failed'.tr2}: $e')),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -278,18 +282,27 @@ class _AdFormScreenState extends State<AdFormScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Select Room Type',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.ad_form_select_room_type'.tr2,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Choose the layout that best describes your space',
-                style: TextStyle(fontSize: 12, color: AppColors.inkSoft),
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.ad_form_room_type_hint'.tr2,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.inkSoft,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               ..._roomTypesInfo.map((info) {
@@ -388,7 +401,8 @@ class _AdFormScreenState extends State<AdFormScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctxState, setSheetState) {
-            final allChecked = tempSelected.length == _availableAmenitiesList.length;
+            final allChecked =
+                tempSelected.length == _availableAmenitiesList.length;
             return Container(
               height: MediaQuery.of(context).size.height * 0.72,
               decoration: const BoxDecoration(
@@ -415,20 +429,26 @@ class _AdFormScreenState extends State<AdFormScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Amenities & Facilities',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.ink,
+                            ValueListenableBuilder<int>(
+                              valueListenable: AppTranslations.notifier,
+                              builder: (context, _, _) => Text(
+                                'ui.ad_detail_amenities'.tr2,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.ink,
+                                ),
                               ),
                             ),
-                            Text(
-                              'Selected ${tempSelected.length} of ${_availableAmenitiesList.length}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.brandDark,
-                                fontWeight: FontWeight.w700,
+                            ValueListenableBuilder<int>(
+                              valueListenable: AppTranslations.notifier,
+                              builder: (context, _, _) => Text(
+                                'ui.ad_form_selected_of'.tr2.replaceAll('{count}', bnDigits(tempSelected.length)).replaceAll('{total}', bnDigits(_availableAmenitiesList.length)),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.brandDark,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                           ],
@@ -447,12 +467,17 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               }
                             });
                           },
-                          child: Text(
-                            allChecked ? 'Deselect All' : 'Select All',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.brandDark,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => Text(
+                              allChecked
+                                  ? 'ui.ad_form_deselect_all'.tr2
+                                  : 'ui.ad_form_select_all'.tr2,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.brandDark,
+                              ),
                             ),
                           ),
                         ),
@@ -465,7 +490,8 @@ class _AdFormScreenState extends State<AdFormScreen> {
                     child: ListView.separated(
                       padding: const EdgeInsets.all(20),
                       itemCount: _availableAmenitiesList.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 10),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final item = _availableAmenitiesList[index];
                         final String name = item['name'];
@@ -563,11 +589,14 @@ class _AdFormScreenState extends State<AdFormScreen> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: Text(
-                          'Apply Selection (${tempSelected.length})',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            '${'ui.ad_form_apply_selection'.tr2} (${bnDigits(tempSelected.length)})',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ),
                       ),
@@ -594,12 +623,17 @@ class _AdFormScreenState extends State<AdFormScreen> {
         scrolledUnderElevation: 0.5,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: const AppBackButton(),
-        title: Text(
-          isEdit ? 'Edit Seat Listing' : 'Post New Seat Listing',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            color: AppColors.ink,
+        title: ValueListenableBuilder<int>(
+          valueListenable: AppTranslations.notifier,
+          builder: (context, _, _) => Text(
+            isEdit
+                ? 'ui.ad_form_edit_title'.tr2
+                : 'ui.ad_form_create_title'.tr2,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
           ),
         ),
         bottom: PreferredSize(
@@ -622,17 +656,16 @@ class _AdFormScreenState extends State<AdFormScreen> {
 
                     // --- SECTION 1: BASIC INFORMATION ---
                     _buildFormCard(
-                      title: 'BASIC INFORMATION',
+                      title: 'ui.ad_form_basic'.tr2,
                       icon: Icons.info_outline_rounded,
                       children: [
-                        _fieldLabel('AD TITLE *'),
+                        _fieldLabel('ui.ad_form_ad_title'.tr2),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _titleController,
                           textCapitalization: TextCapitalization.sentences,
-                          decoration: const InputDecoration(
-                            hintText:
-                                'e.g. 2 seats available in student mess — Mirpur 10',
+                          decoration: InputDecoration(
+                            hintText: 'ui.ad_form_title_hint'.tr2,
                             prefixIcon: Icon(
                               Icons.subtitles_outlined,
                               size: 20,
@@ -647,13 +680,13 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _fieldLabel('RENT PER SEAT (৳) *'),
+                                  _fieldLabel('ui.ad_form_rent_per_seat'.tr2),
                                   const SizedBox(height: 6),
                                   TextField(
                                     controller: _rentController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      hintText: 'e.g. 3500',
+                                    decoration: InputDecoration(
+                            hintText: 'ui.ad_form_rent_hint'.tr2,
                                       prefixIcon: Icon(
                                         Icons.payments_outlined,
                                         size: 20,
@@ -669,13 +702,13 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _fieldLabel('TOTAL ROOM RENT (৳)'),
+                                  _fieldLabel('ui.ad_form_total_rent'.tr2),
                                   const SizedBox(height: 6),
                                   TextField(
                                     controller: _totalRentController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      hintText: 'e.g. 10500',
+                                    decoration: InputDecoration(
+                            hintText: 'ui.ad_form_total_hint'.tr2,
                                       prefixIcon: Icon(
                                         Icons.price_change_outlined,
                                         size: 20,
@@ -695,13 +728,13 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _fieldLabel('OPEN SEATS *'),
+                                  _fieldLabel('ui.ad_form_open_seats'.tr2),
                                   const SizedBox(height: 6),
                                   TextField(
                                     controller: _seatsController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      hintText: 'e.g. 2',
+                                    decoration: InputDecoration(
+                            hintText: 'ui.ad_form_seats_hint'.tr2,
                                       prefixIcon: Icon(
                                         Icons.event_seat_outlined,
                                         size: 20,
@@ -717,13 +750,13 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _fieldLabel('ROOM CAPACITY'),
+                                  _fieldLabel('ui.ad_form_room_capacity'.tr2),
                                   const SizedBox(height: 6),
                                   TextField(
                                     controller: _capacityController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      hintText: 'e.g. 3 persons',
+                                    decoration: InputDecoration(
+                            hintText: 'ui.ad_form_capacity_hint'.tr2,
                                       prefixIcon: Icon(
                                         Icons.groups_outlined,
                                         size: 20,
@@ -742,15 +775,15 @@ class _AdFormScreenState extends State<AdFormScreen> {
 
                     // --- SECTION 2: ROOM TYPE & AMENITIES CARD ---
                     _buildFormCard(
-                      title: 'ROOM & FACILITIES',
+                      title: 'ui.ad_form_room_facilities'.tr2,
                       icon: Icons.king_bed_outlined,
                       children: [
-                        _fieldLabel('ROOM TYPE *'),
+                        _fieldLabel('ui.ad_form_room_type'.tr2),
                         const SizedBox(height: 8),
                         _buildRoomTypeSelector(),
                         const SizedBox(height: 16),
 
-                        _fieldLabel('AMENITIES & FACILITIES'),
+                        _fieldLabel('ui.ad_form_amenities'.tr2),
                         const SizedBox(height: 8),
                         _buildAmenitiesSelector(),
                       ],
@@ -759,7 +792,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
 
                     // --- SECTION 3: LOCATION & PRIVACY ---
                     _buildFormCard(
-                      title: 'LOCATION & ADDRESS',
+                      title: 'ui.ad_form_location'.tr2,
                       icon: Icons.location_on_outlined,
                       children: [
                         Row(
@@ -768,12 +801,12 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _fieldLabel('CITY *'),
+                                  _fieldLabel('ui.ad_form_city'.tr2),
                                   const SizedBox(height: 6),
                                   TextField(
                                     controller: _cityController,
-                                    decoration: const InputDecoration(
-                                      hintText: 'e.g. Dhaka',
+                                    decoration: InputDecoration(
+                            hintText: 'ui.ad_form_city_hint'.tr2,
                                       prefixIcon: Icon(
                                         Icons.location_city_outlined,
                                         size: 20,
@@ -789,12 +822,12 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _fieldLabel('AREA / THANA'),
+                                  _fieldLabel('ui.ad_form_area'.tr2),
                                   const SizedBox(height: 6),
                                   TextField(
                                     controller: _areaController,
-                                    decoration: const InputDecoration(
-                                      hintText: 'e.g. Mirpur 10',
+                                    decoration: InputDecoration(
+                            hintText: 'ui.ad_form_area_hint'.tr2,
                                       prefixIcon: Icon(
                                         Icons.map_outlined,
                                         size: 20,
@@ -808,13 +841,12 @@ class _AdFormScreenState extends State<AdFormScreen> {
                           ],
                         ),
                         const SizedBox(height: 14),
-                        _fieldLabel('STREET ADDRESS / BUILDING LOCATION'),
+                        _fieldLabel('ui.ad_form_street'.tr2),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _locationController,
-                          decoration: const InputDecoration(
-                            hintText:
-                                'e.g. House 14, Road 3, Block A, Mirpur 10',
+                          decoration: InputDecoration(
+                            hintText: 'ui.ad_form_street_hint'.tr2,
                             prefixIcon: Icon(
                               Icons.home_outlined,
                               size: 20,
@@ -835,16 +867,16 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               vertical: 2,
                             ),
                             activeTrackColor: AppColors.brandDark,
-                            title: const Text(
-                              'Hide street address for privacy',
+                            title: Text(
+                              'ui.ad_form_hide_address'.tr2,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.ink,
                               ),
                             ),
-                            subtitle: const Text(
-                              'Only area & city will be visible on public listing',
+                            subtitle: Text(
+                              'ui.ad_form_hide_sub'.tr2,
                               style: TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.inkFaded,
@@ -861,17 +893,16 @@ class _AdFormScreenState extends State<AdFormScreen> {
 
                     // --- SECTION 4: DESCRIPTION & CONTACT ---
                     _buildFormCard(
-                      title: 'DESCRIPTION & CONTACT',
+                      title: 'ui.ad_form_desc_contact'.tr2,
                       icon: Icons.contact_phone_outlined,
                       children: [
-                        _fieldLabel('ADDITIONAL DETAILS & RULES'),
+                        _fieldLabel('ui.ad_form_additional'.tr2),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _descriptionController,
                           maxLines: 4,
-                          decoration: const InputDecoration(
-                            hintText:
-                                'Describe room environment, student/jobholder preference, university proximity, rules, etc.',
+                          decoration: InputDecoration(
+                            hintText: 'ui.ad_form_desc_hint'.tr2,
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -881,7 +912,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _fieldLabel('CONTACT PHONE'),
+                                  _fieldLabel('ui.ad_form_contact_phone'.tr2),
                                   const SizedBox(height: 6),
                                   TextField(
                                     controller: _phoneController,
@@ -903,7 +934,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _fieldLabel('WHATSAPP NUMBER'),
+                                  _fieldLabel('ui.ad_form_whatsapp'.tr2),
                                   const SizedBox(height: 6),
                                   TextField(
                                     controller: _whatsappController,
@@ -967,7 +998,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                             ),
                           )
                         : Text(
-                            isEdit ? 'Save Changes' : 'Publish Seat Listing',
+                            isEdit ? 'ui.ad_form_save'.tr2 : 'ui.ad_form_publish'.tr2,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
@@ -1001,15 +1032,15 @@ class _AdFormScreenState extends State<AdFormScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
-                children: const [
-                  Icon(
+                children: [
+                  const Icon(
                     Icons.add_a_photo_outlined,
                     color: AppColors.brandDark,
                     size: 20,
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'PROPERTY PHOTOS',
+                    'ui.ad_form_photos'.tr2,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w900,
@@ -1019,13 +1050,16 @@ class _AdFormScreenState extends State<AdFormScreen> {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.brandSoft,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '$_totalImageCount / 6 Photos',
+                  '${bnDigits(_totalImageCount)} / ${bnDigits(6)} ${'ui.ad_form_photos_suffix'.tr2}',
                   style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w800,
@@ -1043,7 +1077,10 @@ class _AdFormScreenState extends State<AdFormScreen> {
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 28,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.paper,
                   borderRadius: BorderRadius.circular(14),
@@ -1069,7 +1106,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'Upload Room & Mess Photos',
+                      'ui.ad_form_upload_title'.tr2,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
@@ -1078,9 +1115,12 @@ class _AdFormScreenState extends State<AdFormScreen> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Tap to add up to 6 high quality images. First photo will be the cover.',
+                      'ui.ad_form_upload_sub'.tr2,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 11.5, color: AppColors.inkFaded),
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.inkFaded,
+                      ),
                     ),
                   ],
                 ),
@@ -1123,12 +1163,16 @@ class _AdFormScreenState extends State<AdFormScreen> {
                         color: AppColors.brandDark,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.star_rounded, color: Colors.white, size: 14),
+                          const Icon(
+                            Icons.star_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                           SizedBox(width: 4),
                           Text(
-                            'PRIMARY COVER',
+                            'ui.ad_form_primary_cover'.tr2,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
@@ -1194,17 +1238,17 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               style: BorderStyle.solid,
                             ),
                           ),
-                          child: const Column(
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.add_photo_alternate_outlined,
                                 color: AppColors.brandDark,
                                 size: 22,
                               ),
                               SizedBox(height: 2),
                               Text(
-                                'Add Photo',
+                                'ui.ad_form_add_photo'.tr2,
                                 style: TextStyle(
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w800,
@@ -1232,14 +1276,13 @@ class _AdFormScreenState extends State<AdFormScreen> {
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => Container(
           color: AppColors.paperLine,
-          child: const Center(child: Icon(Icons.broken_image_outlined, size: 36)),
+          child: const Center(
+            child: Icon(Icons.broken_image_outlined, size: 36),
+          ),
         ),
       );
     } else if (_newImages.isNotEmpty) {
-      return Image.file(
-        File(_newImages.first.path),
-        fit: BoxFit.cover,
-      );
+      return Image.file(File(_newImages.first.path), fit: BoxFit.cover);
     }
     return const SizedBox();
   }
@@ -1267,8 +1310,8 @@ class _AdFormScreenState extends State<AdFormScreen> {
               child: Container(
                 color: AppColors.brandDark.withValues(alpha: 0.85),
                 padding: const EdgeInsets.symmetric(vertical: 2),
-                child: const Text(
-                  'COVER',
+                child: Text(
+                  'ui.ad_form_cover'.tr2,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 8.5,
@@ -1365,10 +1408,10 @@ class _AdFormScreenState extends State<AdFormScreen> {
                 color: AppColors.brandSoft.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Text(
-                    'Change',
+                    'ui.ad_form_change'.tr2,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
@@ -1431,10 +1474,10 @@ class _AdFormScreenState extends State<AdFormScreen> {
                     color: AppColors.brandSoft.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Text(
-                        'Customize',
+                        'ui.ad_form_customize'.tr2,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,

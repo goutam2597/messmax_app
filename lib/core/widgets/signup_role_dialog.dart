@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../locale/app_translations.dart';
 import '../theme/app_colors.dart';
 
 /// Premium dialog for selecting account role (Hostel Owner vs Individual)
@@ -91,22 +92,28 @@ class _SignUpRoleDialogState extends State<SignUpRoleDialog> {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Choose Account Type',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.ink,
-                            letterSpacing: -0.3,
+                      children: [
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            'ui.signup_choose_title'.tr2,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                              letterSpacing: -0.3,
+                            ),
                           ),
                         ),
-                        SizedBox(height: 3),
-                        Text(
-                          'Select how you will use MessMax',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            color: AppColors.inkFaded,
+                        const SizedBox(height: 3),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            'ui.signup_choose_sub'.tr2,
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: AppColors.inkFaded,
+                            ),
                           ),
                         ),
                       ],
@@ -130,24 +137,28 @@ class _SignUpRoleDialogState extends State<SignUpRoleDialog> {
               const SizedBox(height: 20),
 
               // Option 1: Individual Member (preselected, first)
-              _buildRoleCard(
-                role: 'individual',
-                title: 'Individual / Member',
-                badge: 'SINGLE MESS',
-                description:
-                    'Join a mess, track your daily meal count, monthly bills, bazar balance & browse available seats.',
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => _buildRoleCard(
+                  role: 'individual',
+                  title: 'ui.signup_individual_title'.tr2,
+                  badge: 'ui.signup_individual_badge'.tr2,
+                  description: 'ui.signup_individual_desc'.tr2,
                 icon: Icons.person_rounded,
+                ),
               ),
               const SizedBox(height: 12),
 
               // Option 2: Hostel Owner / Manager
-              _buildRoleCard(
-                role: 'hostel_owner',
-                title: 'Hostel Owner / Manager',
-                badge: 'MULTI-MESS',
-                description:
-                    'Manage multiple messes, post seat vacancy ads, meal counters, bazar ledgers & member deposits.',
+              ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => _buildRoleCard(
+                  role: 'hostel_owner',
+                  title: 'ui.signup_hostel_title'.tr2,
+                  badge: 'ui.signup_hostel_badge'.tr2,
+                  description: 'ui.signup_hostel_desc'.tr2,
                 icon: Icons.apartment_rounded,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -165,20 +176,23 @@ class _SignUpRoleDialogState extends State<SignUpRoleDialog> {
                   ),
                 ),
                 child: Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.info_outline_rounded,
                       size: 16,
                       color: AppColors.brandDark,
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        'You can create or join messes anytime after registration.',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          color: AppColors.brandDark,
-                          fontWeight: FontWeight.w600,
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.signup_info_banner'.tr2,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.brandDark,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -206,9 +220,12 @@ class _SignUpRoleDialogState extends State<SignUpRoleDialog> {
                         fixedSize: const Size.fromHeight(48),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.cancel'.tr2,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ),
                   ),
@@ -238,16 +255,19 @@ class _SignUpRoleDialogState extends State<SignUpRoleDialog> {
                           onTap: () =>
                               Navigator.of(context).pop(_selectedRole),
                           borderRadius: BorderRadius.circular(14),
-                          child: const Center(
+                          child: Center(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  'Continue with Google',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
+                                ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Text(
+                                    'ui.continue_with_google'.tr2,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: 6),

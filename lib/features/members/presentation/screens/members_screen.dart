@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
@@ -48,11 +50,13 @@ class _MembersViewState extends State<_MembersView> {
   void _confirmDelete(BuildContext context, MemberModel member) async {
     final confirm = await ConfirmDeleteDialog.show(
       context,
-      title: 'Remove Member?',
+      title: 'ui.confirm_remove_member_title'.tr2,
       itemName: member.name,
-      message:
-          'Are you sure you want to remove ${member.name} from the active mess roster? All active associations will be removed.',
-      confirmLabel: 'Remove Member',
+      message: 'ui.confirm_remove_member_message'.tr2.replaceAll(
+        '{name}',
+        member.name,
+      ),
+      confirmLabel: 'ui.confirm_remove_member_label'.tr2,
       icon: Icons.person_remove_rounded,
     );
 
@@ -61,7 +65,7 @@ class _MembersViewState extends State<_MembersView> {
       final ok = await cubit.deleteMember(member.id);
       if (ok && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${member.name} removed successfully.')),
+          SnackBar(content: Text('${member.name} ${'ui.members_removed'.tr2}')),
         );
       }
     }
@@ -81,9 +85,7 @@ class _MembersViewState extends State<_MembersView> {
           backgroundColor: AppColors.paperRaised,
           elevation: 0,
           scrolledUnderElevation: 0.5,
-          leading: AppBackButton(
-            onPressed: _backToDashboard,
-          ),
+          leading: AppBackButton(onPressed: _backToDashboard),
           title: BlocBuilder<MemberCubit, MemberState>(
             builder: (context, state) {
               final messName = state is MemberLoaded
@@ -92,8 +94,8 @@ class _MembersViewState extends State<_MembersView> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Mess Members',
+                  Text(
+                    'ui.members_title'.tr2,
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w900,
@@ -102,8 +104,8 @@ class _MembersViewState extends State<_MembersView> {
                   ),
                   Text(
                     messName.isNotEmpty
-                        ? '$messName • Member List'
-                        : 'Member List & Meal Defaults',
+                        ? '$messName • ${'ui.members_member_list'.tr2}'
+                        : 'ui.members_list_defaults'.tr2,
                     style: const TextStyle(
                       fontSize: 11,
                       color: AppColors.inkFaded,
@@ -120,178 +122,187 @@ class _MembersViewState extends State<_MembersView> {
               padding: const EdgeInsets.only(right: 12),
               child: Center(
                 child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => context.read<MemberCubit>().loadMembers(forceRefresh: true),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.paper,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.paperLine),
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.read<MemberCubit>().loadMembers(
+                      forceRefresh: true,
                     ),
-                    child: const Center(
-                      child: Icon(Icons.refresh_rounded, color: AppColors.ink, size: 18),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.paper,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.paperLine),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.refresh_rounded,
+                          color: AppColors.ink,
+                          size: 18,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: BlocConsumer<MemberCubit, MemberState>(
-          listener: (context, state) {
-            if (state is MemberLoaded && state.message != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message!)),
-              );
-            }
-          },
-          builder: (context, state) {
-            if (state is MemberLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.brandDark),
-              );
-            }
+          ],
+        ),
+        body: SafeArea(
+          child: BlocConsumer<MemberCubit, MemberState>(
+            listener: (context, state) {
+              if (state is MemberLoaded && state.message != null) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message!)));
+              }
+            },
+            builder: (context, state) {
+              if (state is MemberLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.brandDark),
+                );
+              }
 
-            if (state is MemberError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline_rounded,
-                        size: 42,
-                        color: Color(0xFFA02626),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        state.message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.inkFaded),
-                      ),
-                      const SizedBox(height: 16),
-                      FilledButton(
-                        onPressed: () =>
-                            context.read<MemberCubit>().loadMembers(forceRefresh: true),
-                        child: const Text('Try Again'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            if (state is MemberLoaded) {
-              final data = state.response;
-              final members = data.members;
-
-              return RefreshIndicator(
-                color: AppColors.brandDark,
-                onRefresh: () => context.read<MemberCubit>().loadMembers(forceRefresh: true),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // --- MESS SELECTOR HEADER CARD ---
-                      _buildHeaderCard(context, data),
-                      const SizedBox(height: 20),
-
-                      const Text(
-                        'ACTIVE MEMBERS ROSTER',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.inkFaded,
-                          letterSpacing: 0.8,
+              if (state is MemberError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline_rounded,
+                          size: 42,
+                          color: Color(0xFFA02626),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      if (members.isEmpty) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            color: AppColors.paperRaised,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppColors.paperLine),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(
-                                Icons.people_outline_rounded,
-                                size: 48,
-                                color: AppColors.inkFaded,
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                'No Members Found',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.ink,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Add members to start managing daily meals and bazar roster.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.inkFaded,
-                                ),
-                              ),
-                            ],
-                          ),
+                        const SizedBox(height: 12),
+                        Text(
+                          state.message,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: AppColors.inkFaded),
                         ),
-                      ] else ...[
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: members.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            return _buildMemberCard(
-                              context,
-                              members[index],
-                              data.canManage,
-                              data.messId,
-                            );
-                          },
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: () => context
+                              .read<MemberCubit>()
+                              .loadMembers(forceRefresh: true),
+                          child: Text('ui.try_again'.tr2),
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
+                );
+              }
+
+              if (state is MemberLoaded) {
+                final data = state.response;
+                final members = data.members;
+
+                return RefreshIndicator(
+                  color: AppColors.brandDark,
+                  onRefresh: () => context.read<MemberCubit>().loadMembers(
+                    forceRefresh: true,
+                  ),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // --- MESS SELECTOR HEADER CARD ---
+                        _buildHeaderCard(context, data),
+                        const SizedBox(height: 20),
+
+                        Text(
+                          'ui.members_active_roster'.tr2,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.inkFaded,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        if (members.isEmpty) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(32),
+                            decoration: BoxDecoration(
+                              color: AppColors.paperRaised,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.paperLine),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.people_outline_rounded,
+                                  size: 48,
+                                  color: AppColors.inkFaded,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'ui.members_no_members'.tr2,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'ui.members_no_members_sub'.tr2,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ] else ...[
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: members.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              return _buildMemberCard(
+                                context,
+                                members[index],
+                                data.canManage,
+                                data.messId,
+                              );
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+        floatingActionButton: BlocBuilder<MemberCubit, MemberState>(
+          builder: (context, state) {
+            if (state is MemberLoaded && state.response.canManage) {
+              return FloatingActionBubble(
+                messId: state.response.messId,
+                cubit: context.read<MemberCubit>(),
               );
             }
-
             return const SizedBox.shrink();
           },
         ),
       ),
-      floatingActionButton: BlocBuilder<MemberCubit, MemberState>(
-        builder: (context, state) {
-          if (state is MemberLoaded && state.response.canManage) {
-            return FloatingActionBubble(
-              messId: state.response.messId,
-              cubit: context.read<MemberCubit>(),
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
-    ),
     );
   }
 
@@ -315,7 +326,9 @@ class _MembersViewState extends State<_MembersView> {
         children: [
           InkWell(
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => MessDetailScreen(messId: data.messId)),
+              MaterialPageRoute(
+                builder: (_) => MessDetailScreen(messId: data.messId),
+              ),
             ),
             borderRadius: BorderRadius.circular(12),
             child: Row(
@@ -358,7 +371,7 @@ class _MembersViewState extends State<_MembersView> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${data.members.length} Members Enrolled • Join Code: ${data.messCode}',
+                        '${bnDigits(data.members.length)} ${'ui.members_enrolled'.tr2} • ${'ui.members_join_code'.tr2}: ${data.messCode}',
                         style: const TextStyle(
                           fontSize: 11.5,
                           color: AppColors.inkFaded,
@@ -376,8 +389,8 @@ class _MembersViewState extends State<_MembersView> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text(
-                  'Switch Mess:',
+                Text(
+                  'ui.members_switch_mess'.tr2,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -404,9 +417,9 @@ class _MembersViewState extends State<_MembersView> {
                             ),
                             onSelected: (_) {
                               if (!active) {
-                                context
-                                    .read<MemberCubit>()
-                                    .loadMembers(messId: m.id);
+                                context.read<MemberCubit>().loadMembers(
+                                  messId: m.id,
+                                );
                               }
                             },
                           ),
@@ -464,7 +477,8 @@ class _MembersViewState extends State<_MembersView> {
                       ? Image.network(
                           member.avatarUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => _initials(member.name),
+                          errorBuilder: (context, error, stackTrace) =>
+                              _initials(member.name),
                         )
                       : _initials(member.name),
                 ),
@@ -497,31 +511,33 @@ class _MembersViewState extends State<_MembersView> {
                             color: isOwner
                                 ? const Color(0xFFEDE7F6)
                                 : isManager
-                                    ? AppColors.brandSoft
-                                    : AppColors.paper,
+                                ? AppColors.brandSoft
+                                : AppColors.paper,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: isOwner
-                                  ? const Color(0xFF5E35B1).withValues(alpha: 0.3)
+                                  ? const Color(
+                                      0xFF5E35B1,
+                                    ).withValues(alpha: 0.3)
                                   : isManager
-                                      ? AppColors.brandDark.withValues(alpha: 0.2)
-                                      : AppColors.paperLine,
+                                  ? AppColors.brandDark.withValues(alpha: 0.2)
+                                  : AppColors.paperLine,
                             ),
                           ),
                           child: Text(
                             isOwner
-                                ? 'OWNER'
+                                ? 'ui.role_owner'.tr2
                                 : isManager
-                                    ? 'MANAGER'
-                                    : 'MEMBER',
+                                ? 'ui.role_manager'.tr2
+                                : 'ui.role_member'.tr2,
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               color: isOwner
                                   ? const Color(0xFF5E35B1)
                                   : isManager
-                                      ? AppColors.brandDark
-                                      : AppColors.inkFaded,
+                                  ? AppColors.brandDark
+                                  : AppColors.inkFaded,
                             ),
                           ),
                         ),
@@ -559,25 +575,30 @@ class _MembersViewState extends State<_MembersView> {
                     }
                   },
                   itemBuilder: (ctx) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_rounded, size: 18),
-                          SizedBox(width: 8),
-                          Text('Edit Member'),
+                          const Icon(Icons.edit_rounded, size: 18),
+                          const SizedBox(width: 8),
+                          Text('ui.members_edit_member'.tr2),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline_rounded,
-                              size: 18, color: Color(0xFFA02626)),
-                          SizedBox(width: 8),
-                          Text('Remove Member',
-                              style: TextStyle(color: Color(0xFFA02626))),
+                          const Icon(
+                            Icons.delete_outline_rounded,
+                            size: 18,
+                            color: Color(0xFFA02626),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'ui.members_remove_member'.tr2,
+                            style: const TextStyle(color: Color(0xFFA02626)),
+                          ),
                         ],
                       ),
                     ),
@@ -595,9 +616,9 @@ class _MembersViewState extends State<_MembersView> {
             children: [
               Row(
                 children: [
-                  const Text(
-                    'Defaults (B·L·D):',
-                    style: TextStyle(
+                  Text(
+                    'ui.members_defaults'.tr2,
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppColors.inkFaded,
@@ -625,7 +646,7 @@ class _MembersViewState extends State<_MembersView> {
                 ],
               ),
               Text(
-                'Bazar Day: ${member.bazarDay}',
+                '${'ui.members_bazar_day'.tr2}: ${bnDigits(member.bazarDay)}',
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -673,18 +694,15 @@ class FloatingActionBubble extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => MemberFormScreen(
-              messId: messId,
-              cubit: cubit,
-            ),
+            builder: (_) => MemberFormScreen(messId: messId, cubit: cubit),
           ),
         );
       },
       backgroundColor: AppColors.brandDark,
       icon: const Icon(Icons.add_rounded, color: Colors.white),
-      label: const Text(
-        'Add Member',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      label: Text(
+        'ui.members_add_member'.tr2,
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }

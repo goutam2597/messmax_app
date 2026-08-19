@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/searchable_dropdown.dart';
 import '../../data/models/home_data_model.dart';
@@ -118,13 +119,16 @@ class _HomeFilterDialogState extends State<HomeFilterDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Filter Seat Listings',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.ink,
-                    letterSpacing: -0.4,
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.filter_title'.tr2,
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.ink,
+                      letterSpacing: -0.4,
+                    ),
                   ),
                 ),
                 GestureDetector(
@@ -147,81 +151,107 @@ class _HomeFilterDialogState extends State<HomeFilterDialog> {
             const SizedBox(height: 16),
 
             // Search Keyword
-            const _FieldLabel('Search Keyword'),
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => _FieldLabel('ui.filter_search_keyword'.tr2),
+            ),
             const SizedBox(height: 6),
-            TextField(
-              controller: _queryController,
-              onChanged: (_) => setState(() {}),
-              decoration: _inputDecoration(
-                hintText: 'Search title, area, or mess name…',
-                prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  color: AppColors.inkFaded,
-                  size: 20,
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => TextField(
+                key: ValueKey(AppTranslations.locale),
+                controller: _queryController,
+                onChanged: (_) => setState(() {}),
+                decoration: _inputDecoration(
+                  hintText: 'ui.filter_search_hint'.tr2,
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.inkFaded,
+                    size: 20,
+                  ),
+                  suffixIcon: _queryController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            size: 18,
+                            color: AppColors.inkFaded,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _queryController.clear();
+                            });
+                          },
+                        )
+                      : null,
                 ),
-                suffixIcon: _queryController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          size: 18,
-                          color: AppColors.inkFaded,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _queryController.clear();
-                          });
-                        },
-                      )
-                    : null,
               ),
             ),
             const SizedBox(height: 16),
 
             // City — searchable + paginated
-            const _FieldLabel('Select City'),
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => _FieldLabel('ui.filter_city'.tr2),
+            ),
             const SizedBox(height: 6),
-            SearchableDropdown(
-              value: _selectedCity,
-              hint: 'All Cities',
-              fetcher: widget.loadCities,
-              onChanged: (value) {
-                setState(() {
-                  _selectedCity = value;
-                  _selectedArea = null;
-                });
-              },
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => SearchableDropdown(
+                key: ValueKey('city_${AppTranslations.locale}'),
+                value: _selectedCity,
+                hint: 'ui.filter_all_cities'.tr2,
+                fetcher: widget.loadCities,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCity = value;
+                    _selectedArea = null;
+                  });
+                },
+              ),
             ),
             const SizedBox(height: 16),
 
             // Area — always available: all areas when no city, city areas when selected
-            const _FieldLabel('Select Area'),
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => _FieldLabel('ui.filter_area'.tr2),
+            ),
             const SizedBox(height: 6),
-            SearchableDropdown(
-              key: ValueKey<String?>(_selectedCity),
-              value: _selectedArea,
-              hint: 'All Areas',
-              fetcher: (search, page) => widget.loadAreas(
-                _selectedCity,
-                search,
-                page,
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => SearchableDropdown(
+                key: ValueKey<String?>('${_selectedCity}_${AppTranslations.locale}'),
+                value: _selectedArea,
+                hint: 'ui.filter_all_areas'.tr2,
+                fetcher: (search, page) => widget.loadAreas(
+                  _selectedCity,
+                  search,
+                  page,
+                ),
+                onChanged: (value) =>
+                    setState(() => _selectedArea = value),
               ),
-              onChanged: (value) =>
-                  setState(() => _selectedArea = value),
             ),
             const SizedBox(height: 16),
 
             // Room Type Dropdown
-            const _FieldLabel('Room Type'),
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => _FieldLabel('ui.filter_room_type'.tr2),
+            ),
             const SizedBox(height: 6),
-            _FilterDropdown<RoomTypeOption>(
-              value: widget.roomTypes
-                  .where((rt) => rt.value == _selectedRoomType)
-                  .firstOrNull,
-              hint: 'All Types',
-              items: widget.roomTypes,
-              labelOf: (rt) => rt.label,
-              onChanged: (value) =>
-                  setState(() => _selectedRoomType = value?.value),
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => _FilterDropdown<RoomTypeOption>(
+                value: widget.roomTypes
+                    .where((rt) => rt.value == _selectedRoomType)
+                    .firstOrNull,
+                hint: 'ui.filter_all_types'.tr2,
+                items: widget.roomTypes,
+                labelOf: (rt) => rt.label,
+                onChanged: (value) =>
+                    setState(() => _selectedRoomType = value?.value),
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -248,11 +278,14 @@ class _HomeFilterDialogState extends State<HomeFilterDialog> {
                             });
                           }
                         : () => Navigator.of(context).pop(),
-                    child: Text(
-                      _hasFilterApplied ? 'Reset' : 'Cancel',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        _hasFilterApplied ? 'ui.filter_reset'.tr2 : 'ui.filter_cancel'.tr2,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ),
@@ -280,11 +313,14 @@ class _HomeFilterDialogState extends State<HomeFilterDialog> {
                         query: qText.isEmpty ? null : qText,
                       );
                     },
-                    child: const Text(
-                      'Apply Filters',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        'ui.filter_apply'.tr2,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ),

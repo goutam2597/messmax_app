@@ -1,6 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 
+import '../locale/app_translations.dart';
 import '../theme/app_colors.dart';
+import '../utils/bn_digits.dart';
 import '../../features/ads/data/models/ad_model.dart';
 import '../../features/ads/presentation/screens/ad_detail_screen.dart';
 import 'network_image_cover.dart';
@@ -72,12 +74,19 @@ class AdFeaturedCard extends StatelessWidget {
                       size: 13,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      '${ad.seatsAvailable} seat${ad.seatsAvailable == 1 ? '' : 's'} left',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
+                    ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        ad.seatsAvailable == 1
+                            ? '${bnDigits(ad.seatsAvailable)} ${'ui.card_seats_left'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable))}'
+                                  .replaceAll('{count} ', '')
+                                  .replaceAll(' {count}', '')
+                            : '${bnDigits(ad.seatsAvailable)} ${'ui.card_seats_left_plural'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable)).replaceFirst('${bnDigits(ad.seatsAvailable)} ', '').replaceFirst(' ${bnDigits(ad.seatsAvailable)}', '')}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ],
@@ -167,12 +176,15 @@ class AdFeaturedCard extends StatelessWidget {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text(
-                          '৳${ad.rentPerSeat.toInt()} /mo',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.accentDark,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.accentDark,
+                            ),
                           ),
                         ),
                       ),
@@ -192,17 +204,20 @@ class AdFeaturedCard extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Text(
-                              'View Details',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                          children: [
+                            ValueListenableBuilder<int>(
+                              valueListenable: AppTranslations.notifier,
+                              builder: (context, _, _) => Text(
+                                'ui.card_view_details'.tr2,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                            SizedBox(width: 4),
-                            Icon(
+                            const SizedBox(width: 4),
+                            const Icon(
                               Icons.chevron_right_rounded,
                               size: 14,
                               color: Colors.white,
@@ -332,12 +347,15 @@ class AdGridCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Text(
-                      '৳${ad.rentPerSeat.toInt()} /mo',
-                      style: const TextStyle(
-                        color: AppColors.accentDark,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
+                        style: const TextStyle(
+                          color: AppColors.accentDark,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ),
@@ -374,12 +392,15 @@ class AdGridCard extends StatelessWidget {
                           size: 12,
                         ),
                         const SizedBox(width: 3),
-                        Text(
-                          '${ad.seatsAvailable} left',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            '${bnDigits(ad.seatsAvailable)} ${'ui.left_label'.tr2}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ),
                       ],
@@ -470,12 +491,18 @@ class AdGridCard extends StatelessWidget {
                           color: AppColors.inkFaded,
                         ),
                         const SizedBox(width: 3),
-                        Text(
-                          '${ad.roomCapacity} persons room',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.inkFaded,
-                            fontWeight: FontWeight.w600,
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            'ui.card_persons_room'.tr2.replaceAll(
+                              '{count}',
+                              bnDigits(ad.roomCapacity),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              color: AppColors.inkFaded,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
@@ -491,7 +518,9 @@ class AdGridCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          ad.publishedAt ?? 'New listing',
+                          ad.publishedAt != null
+                              ? bnDigits(ad.publishedAt)
+                              : 'ui.card_new_listing'.tr2,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -506,12 +535,15 @@ class AdGridCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Text(
-                        'Details →',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.brandDark,
+                      ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.card_details'.tr2,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.brandDark,
+                          ),
                         ),
                       ),
                     ],
@@ -627,12 +659,15 @@ class AdRowCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'à§³${ad.rentPerSeat.toInt()} /mo',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.accentDark,
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.accentDark,
+                            ),
                           ),
                         ),
                         Container(
@@ -646,15 +681,26 @@ class AdRowCard extends StatelessWidget {
                                 : AppColors.amberSoft,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            '${ad.seatsAvailable} seat${ad.seatsAvailable == 1 ? '' : 's'}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: ad.seatsAvailable > 1
-                                  ? AppColors.emerald
-                                  : AppColors.amber,
-                            ),
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) {
+                              final k = ad.seatsAvailable == 1
+                                  ? 'ui.card_seats_left'.tr2
+                                  : 'ui.card_seats_left_plural'.tr2;
+                              return Text(
+                                k.replaceAll(
+                                  '{count}',
+                                  bnDigits(ad.seatsAvailable),
+                                ),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: ad.seatsAvailable > 1
+                                      ? AppColors.emerald
+                                      : AppColors.amber,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -729,14 +775,22 @@ class AdListCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Text(
-                      '${ad.seatsAvailable} SEAT${ad.seatsAvailable == 1 ? '' : 'S'} OPEN',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                      ),
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) {
+                        final k = ad.seatsAvailable == 1
+                            ? 'ui.card_seats_open'.tr2
+                            : 'ui.card_seats_open_plural'.tr2;
+                        return Text(
+                          k.replaceAll('{count}', bnDigits(ad.seatsAvailable)),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -758,12 +812,15 @@ class AdListCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Text(
-                      'à§³${ad.rentPerSeat.toInt()} /mo',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => Text(
+                        '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ),

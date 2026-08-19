@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:messmax_app/features/welcome/presentation/screens/welcome_screen.dart';
 
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
@@ -390,13 +391,16 @@ class _TaglineBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: const Text(
-        AppStrings.tagline,
-        style: TextStyle(
-          fontSize: 12,
-          color: AppColors.inkSoft,
-          letterSpacing: 1.8,
-          fontWeight: FontWeight.w600,
+      child: ValueListenableBuilder<int>(
+        valueListenable: AppTranslations.notifier,
+        builder: (context, _, _) => Text(
+          AppStrings.tagline,
+          style: const TextStyle(
+            fontSize: 12,
+            color: AppColors.inkSoft,
+            letterSpacing: 1.8,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
