@@ -3896,6 +3896,7 @@ class _SheetViewState extends State<_SheetView>
     final myL = _asMap(sheet['myMealL']);
     final myD = _asMap(sheet['myMealD']);
     bool bOn = true, lOn = true, dOn = true;
+    int? lastLoadedDay;
     final noteCtrl = TextEditingController();
     final monthRaw = _asMap(sheet['month']);
     final days = _toI(monthRaw['days']) > 0 ? _toI(monthRaw['days']) : 31;
@@ -3905,14 +3906,91 @@ class _SheetViewState extends State<_SheetView>
       barrierDismissible: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx2, setS) {
-          void applyDayPrefill() {
-            final k = selectedDay.toString();
-            bOn = !(_toD(myB[k] ?? myB[selectedDay]) == 0);
-            lOn = !(_toD(myL[k] ?? myL[selectedDay]) == 0);
-            dOn = !(_toD(myD[k] ?? myD[selectedDay]) == 0);
+          void applyDayPrefill(int d) {
+            if (lastLoadedDay == d) return;
+            lastLoadedDay = d;
+            final k = d.toString();
+            bOn = !(_toD(myB[k] ?? myB[d]) == 0);
+            lOn = !(_toD(myL[k] ?? myL[d]) == 0);
+            dOn = !(_toD(myD[k] ?? myD[d]) == 0);
           }
 
-          applyDayPrefill();
+          applyDayPrefill(selectedDay);
+
+          Widget buildMealToggleCard({
+            required String label,
+            required IconData icon,
+            required bool isOn,
+            required VoidCallback onTap,
+          }) {
+            final isBn = AppTranslations.locale == 'bn';
+            final statusText = isOn
+                ? (isBn ? 'চালু' : 'ON')
+                : (isBn ? 'বন্ধ' : 'OFF');
+
+            return InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: isOn ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isOn ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isOn ? const Color(0xFF22C55E) : const Color(0xFFEF4444)).withValues(alpha: 0.08),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isOn ? Icons.check_circle_rounded : Icons.do_not_disturb_on_rounded,
+                      size: 22,
+                      color: isOn ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: isOn ? const Color(0xFF14532D) : const Color(0xFF7F1D1D),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isOn ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           return Dialog(
             backgroundColor: AppColors.paperRaised,
             insetPadding: const EdgeInsets.symmetric(
@@ -3950,22 +4028,22 @@ class _SheetViewState extends State<_SheetView>
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Request Meal Off',
-                                style: TextStyle(
+                                'ui.sheet_request_off'.tr2,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                   color: AppColors.ink,
                                 ),
                               ),
-                              SizedBox(height: 1),
+                              const SizedBox(height: 1),
                               Text(
-                                'Pick day & meal slots to turn off',
-                                style: TextStyle(
+                                'ui.sheet_request_off_sub'.tr2,
+                                style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
                                 ),
@@ -4006,12 +4084,13 @@ class _SheetViewState extends State<_SheetView>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'PICK A DATE',
-                            style: TextStyle(
+                          Text(
+                            'ui.select_day'.tr2,
+                            style: const TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
+                              letterSpacing: 0.5,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -4020,57 +4099,68 @@ class _SheetViewState extends State<_SheetView>
                             selectedDay: selectedDay,
                             onTap: (d) => setS(() {
                               selectedDay = d;
-                              applyDayPrefill();
+                              applyDayPrefill(d);
                             }),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'SELECT MEALS TO TURN OFF',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.inkFaded,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(
-                                child: FilterChip(
-                                  label: const Text("B'fast"),
-                                  selected: !bOn,
-                                  onSelected: (v) => setS(() => bOn = !v),
-                                  selectedColor: AppColors.dangerSoft,
-                                  checkmarkColor: AppColors.danger,
+                              Text(
+                                'ui.select_meal_slots'.tr2,
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.inkFaded,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: FilterChip(
-                                  label: const Text('Lunch'),
-                                  selected: !lOn,
-                                  onSelected: (v) => setS(() => lOn = !v),
-                                  selectedColor: AppColors.dangerSoft,
-                                  checkmarkColor: AppColors.danger,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: FilterChip(
-                                  label: const Text('Dinner'),
-                                  selected: !dOn,
-                                  onSelected: (v) => setS(() => dOn = !v),
-                                  selectedColor: AppColors.dangerSoft,
-                                  checkmarkColor: AppColors.danger,
+                              Text(
+                                '${'ui.day'.tr2} ${selectedDay.toString().toBnNum()}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.brandDark,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: buildMealToggleCard(
+                                  label: 'ui.breakfast'.tr2,
+                                  icon: Icons.free_breakfast_outlined,
+                                  isOn: bOn,
+                                  onTap: () => setS(() => bOn = !bOn),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: buildMealToggleCard(
+                                  label: 'ui.lunch'.tr2,
+                                  icon: Icons.lunch_dining_outlined,
+                                  isOn: lOn,
+                                  onTap: () => setS(() => lOn = !lOn),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: buildMealToggleCard(
+                                  label: 'ui.dinner'.tr2,
+                                  icon: Icons.wb_twilight_rounded,
+                                  isOn: dOn,
+                                  onTap: () => setS(() => dOn = !dOn),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
                           TextField(
                             controller: noteCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'Note (Optional)',
+                            decoration: InputDecoration(
+                              labelText: 'ui.sheet_note_optional'.tr2,
                               hintText: 'e.g. Traveling home',
                             ),
                           ),
@@ -4112,7 +4202,7 @@ class _SheetViewState extends State<_SheetView>
                                   style: FilledButton.styleFrom(
                                     backgroundColor: AppColors.brandDark,
                                   ),
-                                  child: const Text('Send Request'),
+                                  child: Text('ui.sheet_save'.tr2),
                                 ),
                               ),
                             ],
