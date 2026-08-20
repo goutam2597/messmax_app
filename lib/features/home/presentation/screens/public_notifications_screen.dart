@@ -60,7 +60,7 @@ class PublicNotificationItem {
       actionUrl: json['action_url'] as String?,
       adSummary: json['ad'] as Map<String, dynamic>?,
       createdAt: json['created_at'] as String?,
-      isRead: false,
+      isRead: json['is_read'] as bool? ?? false,
     );
   }
 }
@@ -146,17 +146,6 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
               )
               .toList();
 
-          // Preserve read state of existing items if already marked read locally
-          for (final newItem in newItems) {
-            final existing = _notifications.firstWhere(
-              (n) => n.id == newItem.id,
-              orElse: () => newItem,
-            );
-            if (existing != newItem && existing.isRead) {
-              newItem.isRead = true;
-            }
-          }
-
           _notifications = newItems;
 
           if (!_notificationsStreamController.isClosed) {
@@ -221,23 +210,27 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
 
   int get _unreadCount => _notifications.where((n) => !n.isRead).length;
 
-  void _markAllAsRead() {
+  Future<void> _markAllAsRead() async {
     setState(() {
       for (final n in _notifications) {
         n.isRead = true;
       }
     });
-
     if (!_notificationsStreamController.isClosed) {
       _notificationsStreamController.add(_notifications);
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('ui.all_notifications_marked_read'.tr2),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    // Persist server-side if logged in
+    try {
+      await DioClient.instance.post('/v1/public-notifications/read-all');
+    } catch (_) {}
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('ui.all_notifications_marked_read'.tr2),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   IconData _getTagIcon(String tag) {
@@ -299,6 +292,11 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
     if (!_notificationsStreamController.isClosed) {
       _notificationsStreamController.add(_notifications);
     }
+    try {
+      await DioClient.instance.post('/v1/public-notifications/${item.id}/read');
+    } catch (_) {}
+
+    if (!mounted) return;
 
     // If notification has attached item (Seat Ad)
     final hasItem =
@@ -601,9 +599,30 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
           ],
         ),
         actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: AppColors.inkFaded),
+            onSelected: (v) async {
+              if (v == 'read_all') {
+                await _markAllAsRead();
+              } else if (v == 'clear_all') {
+                final ok = _notifications.isNotEmpty;
+                if (!ok) return;
+                setState(() => _notifications.clear());
+                if (!_notificationsStreamController.isClosed) _notificationsStreamController.add(_notifications);
+                try {
+                  await DioClient.instance.delete('/v1/public-notifications');
+                } catch (_) {}
+              }
+            },
+            itemBuilder: (_) => [
+              if (_unreadCount > 0)
+                PopupMenuItem(value: 'read_all', child: Text('ui.notif_mark_read'.tr2)),
+              const PopupMenuItem(value: 'clear_all', child: Text('Clear all', style: TextStyle(color: Color(0xFFD32F2F)))),
+            ],
+          ),
           if (_unreadCount > 0)
             Padding(
-              padding: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.only(right: 4),
               child: Center(
                 child: TextButton(
                   onPressed: _markAllAsRead,
@@ -669,7 +688,26 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
                                 const SizedBox(height: 10),
                             itemBuilder: (context, index) {
                               final item = filtered[index];
-                              return _buildNotificationCard(item);
+                              return Dismissible(
+                                key: ValueKey('public_${item.id}'),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 20),
+                                  decoration: BoxDecoration(color: const Color(0xFFFFEBEE), borderRadius: BorderRadius.circular(16)),
+                                  child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF5350)),
+                                ),
+                                onDismissed: (_) async {
+                                  final removed = item;
+                                  setState(() => _notifications.removeAt(_notifications.indexWhere((n) => n.id == removed.id)));
+                                  if (!_notificationsStreamController.isClosed) _notificationsStreamController.add(_notifications);
+                                  try {
+                                    // Server per-user delete if logged in, else local only
+                                    await DioClient.instance.delete('/v1/public-notifications/${removed.id}');
+                                  } catch (_) {}
+                                },
+                                child: _buildNotificationCard(item),
+                              );
                             },
                           ),
                   );
