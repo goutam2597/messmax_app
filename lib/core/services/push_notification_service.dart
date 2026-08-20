@@ -173,7 +173,8 @@ class PushNotificationService {
     }
 
     try {
-      // Haptics + sound gate — respect silent/DND but force feedback when allowed
+      // Foreground heads-up must vibrate + sound even if user had muted channel
+      // (channel importance already Max; these ensure heads-up peek).
       try {
         await HapticFeedback.vibrate();
       } catch (_) {}
@@ -210,6 +211,60 @@ class PushNotificationService {
       AppLogger.i('Local notif shown: $title — $body');
     } catch (e, st) {
       AppLogger.e('Local notif show failed: $e', e, st);
+    }
+  }
+
+  /// One-tap local test — bypasses FCM, proves plugin/channel/sound end-to-end.
+  static Future<bool> showTestNotification() async {
+    if (kIsWeb) return false;
+    if (Platform.isAndroid) {
+      final imp = _localNotif.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
+      final enabled = await imp?.areNotificationsEnabled() ?? true;
+      if (enabled == false) {
+        final granted = await imp?.requestNotificationsPermission() ?? false;
+        if (granted != true) {
+          AppLogger.w('Test notif: POST_NOTIFICATIONS still denied after request');
+          return false;
+        }
+      }
+    }
+    try {
+      try {
+        await HapticFeedback.vibrate();
+      } catch (_) {}
+      await _localNotif.show(
+        id: 99999,
+        title: 'MessMax test',
+        body: 'Local notifications are working — sound + vibration OK',
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channel.id,
+            _channel.name,
+            channelDescription: _channel.description,
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher',
+            playSound: true,
+            enableVibration: true,
+            channelShowBadge: true,
+            visibility: NotificationVisibility.public,
+            category: AndroidNotificationCategory.message,
+            styleInformation: const BigTextStyleInformation(''),
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+      );
+      AppLogger.i('Test local notif shown');
+      return true;
+    } catch (e, st) {
+      AppLogger.e('Test local notif failed: $e', e, st);
+      return false;
     }
   }
 
