@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/constants/app_strings.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -64,15 +63,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       parent: _controller,
       curve: const Interval(0.35, 0.8, curve: Curves.easeOut),
     );
-    _textSlide = Tween<Offset>(
-      begin: const Offset(0, 0.12),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.35, 0.8, curve: Curves.easeOutCubic),
-      ),
-    );
+    _textSlide = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.35, 0.8, curve: Curves.easeOutCubic),
+          ),
+        );
     _chipsFade = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.5, 0.9, curve: Curves.easeOut),
@@ -81,15 +78,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       parent: _controller,
       curve: const Interval(0.6, 1, curve: Curves.easeOut),
     );
-    _actionsSlide = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.6, 1, curve: Curves.easeOutCubic),
-      ),
-    );
+    _actionsSlide =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.6, 1, curve: Curves.easeOutCubic),
+          ),
+        );
   }
 
   @override
@@ -204,7 +199,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 ValueListenableBuilder<int>(
                                   valueListenable: AppTranslations.notifier,
                                   builder: (context, _, _) => Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
                                     child: Text(
                                       'ui.welcome_subtitle'.tr2,
                                       textAlign: TextAlign.center,
@@ -256,7 +253,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               valueListenable: AppTranslations.notifier,
                               builder: (context, _, _) => _PrimaryActionButton(
                                 icon: Icons.travel_explore_rounded,
-                                label: AppStrings.findMesses,
+                                label: 'ui.welcome_find_messes'.tr2,
                                 onPressed: _onFindMesses,
                               ),
                             ),
@@ -269,7 +266,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   Icons.add_circle_outline_rounded,
                                   size: 18,
                                 ),
-                                label: Text(AppStrings.createMess),
+                                label: Text('ui.welcome_create_mess'.tr2),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppColors.ink,
                                   side: const BorderSide(
@@ -305,24 +302,22 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     AppLogger.d('Welcome: Find messes tapped');
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => const MainShellScreen(initialTab: 0),
-      ),
+      MaterialPageRoute(builder: (_) => const MainShellScreen(initialTab: 0)),
     );
   }
 
   void _onCreateMess() {
     AppLogger.d('Welcome: Create mess tapped');
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const RegisterScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const RegisterScreen()));
   }
 
   void _onLogin() {
     AppLogger.d('Welcome: Login tapped');
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 }
 
@@ -356,13 +351,13 @@ class _OrbitingHero extends StatelessWidget {
 
   final AnimationController controller;
 
-  static final _orbitIcons = [
-    (Icons.rice_bowl_rounded, AppStrings.featureMealCount),
-    (Icons.shopping_basket_rounded, AppStrings.featureBazarLedger),
-    (Icons.savings_rounded, AppStrings.featureDeposits),
-    (Icons.campaign_rounded, AppStrings.featurePostMessAds),
-    (Icons.travel_explore_rounded, AppStrings.featureFindMess),
-    (Icons.insights_rounded, AppStrings.featureSmartReports),
+  static List<(IconData, String)> _orbitIcons(BuildContext context) => [
+    (Icons.rice_bowl_rounded, 'ui.welcome_feature_meal'.tr2),
+    (Icons.shopping_basket_rounded, 'ui.welcome_feature_bazar'.tr2),
+    (Icons.savings_rounded, 'ui.welcome_feature_deposits'.tr2),
+    (Icons.campaign_rounded, 'ui.welcome_feature_ads'.tr2),
+    (Icons.travel_explore_rounded, 'ui.welcome_feature_find'.tr2),
+    (Icons.insights_rounded, 'ui.welcome_feature_reports'.tr2),
   ];
 
   @override
@@ -415,7 +410,8 @@ class _OrbitingHero extends StatelessWidget {
                 ),
               ),
               // Orbiting icons
-              for (var i = 0; i < _orbitIcons.length; i++) _orbitIcon(i),
+              for (var i = 0; i < _orbitIcons(context).length; i++)
+                _orbitIcon(context, i),
               // Official Emblem Card
               Container(
                 width: 104,
@@ -457,13 +453,13 @@ class _OrbitingHero extends StatelessWidget {
     );
   }
 
-  Widget _orbitIcon(int index) {
-    final baseAngle = (index / _orbitIcons.length) * 2 * math.pi;
+  Widget _orbitIcon(BuildContext context, int index) {
+    final baseAngle = (index / _orbitIcons(context).length) * 2 * math.pi;
     final angle = baseAngle + controller.value * 2 * math.pi;
     const radius = 114.0;
     final dx = radius * math.cos(angle);
     final dy = radius * math.sin(angle);
-    final (icon, _) = _orbitIcons[index];
+    final (icon, _) = _orbitIcons(context)[index];
     return Transform.translate(
       offset: Offset(dx, dy),
       child: Container(
@@ -550,54 +546,57 @@ class _PrimaryActionButton extends StatelessWidget {
 class _FeatureChips extends StatelessWidget {
   const _FeatureChips();
 
-  static final _items = [
-    (Icons.rice_bowl_rounded, AppStrings.featureMealCount),
-    (Icons.shopping_basket_rounded, AppStrings.featureBazarLedger),
-    (Icons.savings_rounded, AppStrings.featureDeposits),
-    (Icons.campaign_rounded, AppStrings.featurePostMessAds),
-    (Icons.travel_explore_rounded, AppStrings.featureFindMess),
-    (Icons.insights_rounded, AppStrings.featureSmartReports),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final (icon, label) in _items)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFFE5E5DF)),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x0A000000),
-                  blurRadius: 8,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: 15, color: AppColors.brandDark),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.inkSoft,
+    final items = [
+      (Icons.rice_bowl_rounded, 'ui.welcome_feature_meal'.tr2),
+      (Icons.shopping_basket_rounded, 'ui.welcome_feature_bazar'.tr2),
+      (Icons.savings_rounded, 'ui.welcome_feature_deposits'.tr2),
+      (Icons.campaign_rounded, 'ui.welcome_feature_ads'.tr2),
+      (Icons.travel_explore_rounded, 'ui.welcome_feature_find'.tr2),
+      (Icons.insights_rounded, 'ui.welcome_feature_reports'.tr2),
+    ];
+
+    return ValueListenableBuilder<int>(
+      valueListenable: AppTranslations.notifier,
+      builder: (context, _, _) => Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final (icon, label) in items)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: const Color(0xFFE5E5DF)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0A000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 15, color: AppColors.brandDark),
+                  const SizedBox(width: 6),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.inkSoft,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -615,13 +614,13 @@ class _LoginLink extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(
-            '${AppStrings.alreadyHaveAccount} ',
+            '${'ui.welcome_already_account'.tr2} ',
             style: const TextStyle(fontSize: 13.5, color: AppColors.inkFaded),
           ),
           GestureDetector(
             onTap: onTap,
             child: Text(
-              AppStrings.login,
+              'ui.welcome_login'.tr2,
               style: const TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w800,
