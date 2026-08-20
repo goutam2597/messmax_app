@@ -50,9 +50,10 @@ class PushNotificationService {
       );
 
   // ── Public stream: broadcasts when a foreground FCM arrives ─────────────────
-  // Listeners (e.g. NotificationCubit) subscribe to auto-refresh UI.
+  // Listeners (e.g. NotificationCubit, PublicNotificationsScreen) subscribe to
+  // auto-refresh UI. Use broadcast so multiple listeners don't lose events.
   static final Stream<RemoteMessage> onForegroundMessage =
-      FirebaseMessaging.onMessage;
+      FirebaseMessaging.onMessage.asBroadcastStream();
 
   // ── Initialize ──────────────────────────────────────────────────────────────
   static Future<void> initialize() async {
@@ -218,14 +219,17 @@ class PushNotificationService {
   static Future<bool> showTestNotification() async {
     if (kIsWeb) return false;
     if (Platform.isAndroid) {
-      final imp = _localNotif.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin
-      >();
+      final imp = _localNotif
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       final enabled = await imp?.areNotificationsEnabled() ?? true;
       if (enabled == false) {
         final granted = await imp?.requestNotificationsPermission() ?? false;
         if (granted != true) {
-          AppLogger.w('Test notif: POST_NOTIFICATIONS still denied after request');
+          AppLogger.w(
+            'Test notif: POST_NOTIFICATIONS still denied after request',
+          );
           return false;
         }
       }
