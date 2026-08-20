@@ -4769,9 +4769,9 @@ class _SheetViewState extends State<_SheetView>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Add Direct Guest Meal',
-                                style: TextStyle(
+                              Text(
+                                'ui.add_guest_meal'.tr2,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                   color: AppColors.ink,
@@ -4779,7 +4779,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                'Day $selectedDay · Direct Manager Entry',
+                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toString().toBnNum()} · ${'ui.direct_entry'.tr2}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
@@ -5192,37 +5192,69 @@ class _SheetViewState extends State<_SheetView>
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final isBn = AppTranslations.locale == 'bn';
+    final badgeText = isSelected
+        ? (isBn ? '✓ যোগ' : '✓ ADD')
+        : (isBn ? 'বাদ' : 'OFF');
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.brandSoft : AppColors.paper,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.brandDark : AppColors.paperLine,
             width: isSelected ? 1.5 : 1.0,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.brandDark.withValues(alpha: 0.12),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 18,
+              size: 20,
               color: isSelected ? AppColors.brandDark : AppColors.inkFaded,
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 11.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 color: isSelected ? AppColors.brandDark : AppColors.inkSoft,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 5),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.brandDark : const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                badgeText,
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w900,
+                  color: isSelected ? Colors.white : AppColors.inkFaded,
+                  letterSpacing: 0.4,
+                ),
+              ),
             ),
           ],
         ),
