@@ -1227,10 +1227,9 @@ class _DashboardViewState extends State<_DashboardView> {
                     children: [
                       Expanded(
                         child: _heroGlassChip(
-                          label: 'ui.dash_stat_messes'.tr2,
+                          label: 'ui.dash_messes'.tr2,
                           val: bnDigits(summary.totalMesses),
-                          sub:
-                              '${bnDigits(summary.ownedMesses)} ${'ui.dash_owned'.tr2}',
+                          sub: 'ui.dash_owned'.tr2,
                           onTap: activeMess != null
                               ? () => Navigator.of(context).push(
                                   MaterialPageRoute(
@@ -1248,7 +1247,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                       Expanded(
                         child: _heroGlassChip(
-                          label: 'ui.dash_stat_members'.tr2,
+                          label: 'ui.dash_members'.tr2,
                           val: bnDigits(summary.totalMembers),
                           sub: 'ui.dash_active'.tr2,
                           onTap: activeMess != null
@@ -1293,7 +1292,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       ),
                       Expanded(
                         child: _heroGlassChip(
-                          label: 'ui.dash_stat_meals'.tr2,
+                          label: 'ui.dash_meals'.tr2,
                           val: bnDigits(summary.currentMeals.toInt()),
                           sub: 'ui.dash_total'.tr2,
                           onTap:
@@ -1325,7 +1324,7 @@ class _DashboardViewState extends State<_DashboardView> {
   Widget _heroGlassChip({
     required String label,
     required String val,
-    required String sub,
+    String? sub,
     VoidCallback? onTap,
   }) {
     final content = Column(
@@ -1352,16 +1351,17 @@ class _DashboardViewState extends State<_DashboardView> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        Text(
-          sub,
-          style: TextStyle(
-            fontSize: 9,
-            color: Colors.white.withValues(alpha: 0.7),
-            fontWeight: FontWeight.w600,
+        if (sub != null)
+          Text(
+            sub,
+            style: TextStyle(
+              fontSize: 9,
+              color: Colors.white.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
       ],
     );
 
