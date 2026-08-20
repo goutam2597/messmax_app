@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -242,28 +243,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
   // --- TOP HERO HEADER CARD ---
   Widget _buildHeaderHero() {
-    IconData iconData;
-    Color iconColor;
-    Color iconBg;
     String title;
     String stepTag;
 
     if (_step == 1) {
-      iconData = Icons.mark_email_read_rounded;
-      iconColor = AppColors.brandDark;
-      iconBg = AppColors.brandSoft;
       title = 'auth.forgot_password_title'.tr2;
       stepTag = 'Step 1 of 3';
     } else if (_step == 2) {
-      iconData = Icons.dialpad_rounded;
-      iconColor = const Color(0xFFE85D04);
-      iconBg = const Color(0xFFFFF3EB);
       title = 'auth.enter_otp'.tr2;
       stepTag = 'Step 2 of 3';
     } else {
-      iconData = Icons.lock_reset_rounded;
-      iconColor = const Color(0xFF1F6A39);
-      iconBg = const Color(0xFFEFFAF1);
       title = 'auth.reset_password_btn'.tr2;
       stepTag = 'Step 3 of 3';
     }
@@ -271,34 +260,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     return Column(
       children: [
         Center(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: iconBg.withValues(alpha: 0.6),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: iconColor.withValues(alpha: 0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: Icon(iconData, size: 28, color: iconColor),
-              ),
-            ],
+          child: SvgPicture.asset(
+            'assets/images/logo.svg',
+            height: 38,
+            fit: BoxFit.contain,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         Center(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
