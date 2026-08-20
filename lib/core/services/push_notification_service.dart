@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../logger/app_logger.dart';
 import '../network/dio_client.dart';
@@ -24,21 +25,29 @@ class PushNotificationService {
       FlutterLocalNotificationsPlugin();
 
   /// Android high-importance channels matching backend payload & default fallback
+  /// Bump showBadge / enableVibration here would NOT affect already-created
+  /// system channel — we force-recreate it on init (delete → create) to
+  /// apply sound+vibration even if OS cached the channel as silent/muted.
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'messmax_notifications',
     'MessMax Notifications',
     description: 'All MessMax push notifications',
     importance: Importance.max,
     playSound: true,
+    enableVibration: true,
+    showBadge: true,
   );
 
-  static const AndroidNotificationChannel _fallbackChannel = AndroidNotificationChannel(
-    'messmax_high_importance',
-    'MessMax High Importance',
-    description: 'High priority MessMax notifications',
-    importance: Importance.max,
-    playSound: true,
-  );
+  static const AndroidNotificationChannel _fallbackChannel =
+      AndroidNotificationChannel(
+        'messmax_high_importance',
+        'MessMax High Importance',
+        description: 'High priority MessMax notifications',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+        showBadge: true,
+      );
 
   // ── Public stream: broadcasts when a foreground FCM arrives ─────────────────
   // Listeners (e.g. NotificationCubit) subscribe to auto-refresh UI.
@@ -77,8 +86,19 @@ class PushNotificationService {
             >();
 
         // Create high-importance channels on Android (must exist before show())
+        // Force recreate so system channel picks up sound/vibration even if it
+        // was previously cached as silent. createNotificationChannel is no-op
+        // if the channel already exists, so delete first ensures updated sound.
+        await androidImplementation?.deleteNotificationChannel(
+          channelId: _channel.id,
+        );
+        await androidImplementation?.deleteNotificationChannel(
+          channelId: _fallbackChannel.id,
+        );
         await androidImplementation?.createNotificationChannel(_channel);
-        await androidImplementation?.createNotificationChannel(_fallbackChannel);
+        await androidImplementation?.createNotificationChannel(
+          _fallbackChannel,
+        );
 
         // iOS: set foreground presentation options
         await _fcm.setForegroundNotificationPresentationOptions(
@@ -90,7 +110,9 @@ class PushNotificationService {
 
       // ── Foreground message → show local notification ─────────────────────────
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        AppLogger.i('FCM Foreground: ${message.notification?.title ?? message.data['title']} id=${message.messageId}');
+        AppLogger.i(
+          'FCM Foreground: ${message.notification?.title ?? message.data['title']} id=${message.messageId}',
+        );
         _showLocalNotification(message);
       });
 
@@ -119,8 +141,16 @@ class PushNotificationService {
   static Future<void> _showLocalNotification(RemoteMessage message) async {
     if (kIsWeb) return;
     final notification = message.notification;
-    final title = notification?.title ?? message.data['title'] ?? message.data['subject'] ?? 'MessMax';
-    final body = notification?.body ?? message.data['body'] ?? message.data['message'] ?? '';
+    final title =
+        notification?.title ??
+        message.data['title'] ??
+        message.data['subject'] ??
+        'MessMax';
+    final body =
+        notification?.body ??
+        message.data['body'] ??
+        message.data['message'] ??
+        '';
 
     if (title.isEmpty && body.isEmpty) {
       AppLogger.w('Local notif skipped: empty title/body data=${message.data}');
@@ -129,15 +159,27 @@ class PushNotificationService {
 
     // Android 13+ needs POST_NOTIFICATIONS — check explicitly before show()
     if (Platform.isAndroid) {
-      final androidImpl = _localNotif.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final androidImpl = _localNotif
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       final granted = await androidImpl?.areNotificationsEnabled() ?? true;
       if (granted == false) {
-        AppLogger.w('Local notif not shown: POST_NOTIFICATIONS denied (title=$title). User must allow notifications in system settings.');
+        AppLogger.w(
+          'Local notif not shown: POST_NOTIFICATIONS denied (title=$title). User must allow notifications in system settings.',
+        );
         return;
       }
     }
 
     try {
+      // Haptics + sound gate — respect silent/DND but force feedback when allowed
+      try {
+        await HapticFeedback.vibrate();
+      } catch (_) {}
+      try {
+        await SystemSound.play(SystemSoundType.alert);
+      } catch (_) {}
       await _localNotif.show(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: title,
@@ -156,6 +198,7 @@ class PushNotificationService {
             channelShowBadge: true,
             visibility: NotificationVisibility.public,
             category: AndroidNotificationCategory.message,
+            styleInformation: const BigTextStyleInformation(''),
           ),
           iOS: const DarwinNotificationDetails(
             presentAlert: true,
