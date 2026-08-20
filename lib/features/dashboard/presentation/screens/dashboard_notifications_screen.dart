@@ -60,6 +60,50 @@ class DashboardActivityItem {
     this.isRead = false,
   });
 
+  String get displayTag {
+    switch (tag) {
+      case 'Meal ON': return 'ui.dash_notif_tag_meal_on'.tr2;
+      case 'Meal OFF': return 'ui.dash_notif_tag_meal_off'.tr2;
+      case 'Guest Meal': return 'ui.dash_notif_tag_guest_meal'.tr2;
+      case 'Deposit': return 'ui.dash_notif_tag_deposit'.tr2;
+      case 'Bazar Expense': return 'ui.dash_notif_tag_bazar_expense'.tr2;
+      case 'Bazar Duty': return 'ui.dash_notif_tag_bazar_duty'.tr2;
+      case 'Join Request': return 'ui.dash_notif_tag_join_req'.tr2;
+      case 'New Member': return 'ui.dash_notif_tag_new_member'.tr2;
+      case 'Join Result': return 'ui.dash_notif_tag_join_res'.tr2;
+      case 'Manager': return 'ui.dash_notif_tag_manager'.tr2;
+      case 'Announcement': return 'ui.dash_notif_tag_announcement'.tr2;
+      case 'Notice': return 'ui.dash_notif_tag_notice'.tr2;
+      default: return tag;
+    }
+  }
+
+  static String getLocalizedDetailKey(String key) {
+    switch (key) {
+      case 'Day': return 'ui.dash_notif_lbl_day'.tr2;
+      case 'Meal Slot': return 'ui.dash_notif_lbl_meal_slot'.tr2;
+      case 'Requester': return 'ui.dash_notif_lbl_requester'.tr2;
+      case 'Guest': return 'ui.dash_notif_lbl_guest'.tr2;
+      case 'Amount': return 'ui.dash_notif_lbl_amount'.tr2;
+      case 'TrxID': return 'ui.dash_notif_lbl_trxid'.tr2;
+      case 'Gateway': return 'ui.dash_notif_lbl_gateway'.tr2;
+      case 'Budget': return 'ui.dash_notif_lbl_budget'.tr2;
+      case 'Notes': return 'ui.dash_notif_lbl_notes'.tr2;
+      case 'Applicant': return 'ui.dash_notif_lbl_applicant'.tr2;
+      case 'Action': return 'ui.dash_notif_lbl_action'.tr2;
+      default: return key;
+    }
+  }
+
+  String get displayHighlightValue {
+    if (highlightValue == null) return '';
+    if (highlightValue == 'Turn ON') return 'ui.dash_notif_tag_turn_on'.tr2;
+    if (highlightValue == 'Turn OFF') return 'ui.dash_notif_tag_turn_off'.tr2;
+    if (highlightValue == 'Deposit') return 'ui.dash_notif_tag_deposit'.tr2;
+    if (highlightValue == 'Applicant') return 'ui.dash_notif_tag_applicant'.tr2;
+    return highlightValue!;
+  }
+
   factory DashboardActivityItem.fromModel(AppNotificationModel model) {
     DashboardActivityType type = DashboardActivityType.system;
     String tag = 'Notice';
@@ -197,20 +241,19 @@ class _DashboardNotificationsScreenState
   }
 
   Future<void> _handleAction(DashboardActivityItem item, bool approve) async {
-    final action = approve ? 'approve' : 'deny';
-    final actionText = approve ? 'approved' : 'declined';
+    final actionText = approve ? 'ui.dash_status_approved'.tr2 : 'ui.dash_status_declined'.tr2;
 
     if (item.notificationId != null) {
       final success = await context.read<NotificationCubit>().handleAction(
             item.notificationId!,
-            action,
+            approve ? 'approve' : 'deny',
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(success
-              ? '${item.title} has been $actionText.'
-              : 'Failed to process request.'),
+              ? 'ui.dash_notif_action_success'.tr2.replaceAll(':title', item.title).replaceAll(':action', actionText)
+              : 'ui.dash_notif_action_failed'.tr2),
           backgroundColor:
               approve ? const Color(0xFF1B5E20) : const Color(0xFFC62828),
           duration: const Duration(seconds: 2),
@@ -223,7 +266,7 @@ class _DashboardNotificationsScreenState
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${item.title} has been $actionText.'),
+          content: Text('ui.dash_notif_action_success'.tr2.replaceAll(':title', item.title).replaceAll(':action', actionText)),
           backgroundColor:
               approve ? const Color(0xFF1B5E20) : const Color(0xFFC62828),
           duration: const Duration(seconds: 2),
@@ -341,12 +384,15 @@ class _DashboardNotificationsScreenState
                                   color: badgeBg,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: Text(
-                                  statusLabel,
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: badgeColor,
+                                child: ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Text(
+                                    statusLabel,
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: badgeColor,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -484,37 +530,40 @@ class _DashboardNotificationsScreenState
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: AppColors.paperLine),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: item.details!.entries.map((e) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 3),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${e.key}: ',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.inkFaded,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      e.value,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: item.details!.entries.map((e) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 3),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${DashboardActivityItem.getLocalizedDetailKey(e.key)}: ',
                                       style: const TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.ink,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.inkFaded,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
+                                    Expanded(
+                                      child: Text(
+                                        e.value,
+                                        style: const TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
                     ],
@@ -623,13 +672,16 @@ class _DashboardNotificationsScreenState
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                          child: Text(
-                            item.resolvedAt != null
-                                ? 'Resolved (${item.resolvedAt})'
-                                : 'Close Details',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => Text(
+                              item.resolvedAt != null
+                                  ? '${'ui.dash_notif_resolved'.tr2} (${item.resolvedAt == 'Just now' ? 'ui.dash_notif_just_now'.tr2 : item.resolvedAt})'
+                                  : 'ui.dash_notif_close_details'.tr2,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
                         ),
@@ -683,12 +735,15 @@ class _DashboardNotificationsScreenState
                           color: const Color(0xFFA02626),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text(
-                          "${bnDigits(unread)} ${"ui.dash_notif_new".tr2}",
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            "${bnDigits(unread)} ${"ui.dash_notif_new".tr2}",
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -733,7 +788,7 @@ class _DashboardNotificationsScreenState
                       child: Row(
                         children: [
                           const Icon(Icons.done_all_rounded, size: 18, color: AppColors.brandDark),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_mark_all'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
                         ],
                       ),
@@ -743,7 +798,7 @@ class _DashboardNotificationsScreenState
                     child: Row(
                       children: [
                         const Icon(Icons.cleaning_services_rounded, size: 18, color: AppColors.inkFaded),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_clear_read'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
                       ],
                     ),
@@ -753,7 +808,7 @@ class _DashboardNotificationsScreenState
                     child: Row(
                       children: [
                         const Icon(Icons.delete_sweep_rounded, size: 18, color: Color(0xFFEF4444)),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_clear_all'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFEF4444)))),
                       ],
                     ),
@@ -828,17 +883,20 @@ class _DashboardNotificationsScreenState
                                         color: const Color(0xFFEF4444),
                                         borderRadius: BorderRadius.circular(16),
                                       ),
-                                      child: const Row(
+                                      child: Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
-                                          Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
-                                          SizedBox(width: 6),
-                                          Text(
-                                            'Delete',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 13,
+                                          const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
+                                          const SizedBox(width: 6),
+                                          ValueListenableBuilder<int>(
+                                            valueListenable: AppTranslations.notifier,
+                                            builder: (context, _, _) => Text(
+                                              'ui.dash_notif_delete'.tr2,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 13,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -864,114 +922,124 @@ class _DashboardNotificationsScreenState
   }
 
   Widget _buildMetricsBanner(int pendingMealOff, int pendingDeposits) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.brandDark.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.brandDark.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.brandDark,
-              borderRadius: BorderRadius.circular(10),
+    return ValueListenableBuilder<int>(
+      valueListenable: AppTranslations.notifier,
+      builder: (context, _, _) => Container(
+        margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.brandDark.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.brandDark.withValues(alpha: 0.15)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.brandDark,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 20),
             ),
-            child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Manager Live Activity Stream',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.ink,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ui.dash_notif_manager_stream'.tr2,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.ink,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  pendingMealOff > 0 || pendingDeposits > 0
-                      ? '$pendingMealOff Meal Off • $pendingDeposits Deposit Verifications awaiting approval'
-                      : 'All management actions are up to date.',
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color: AppColors.inkFaded,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 2),
+                  Text(
+                    pendingMealOff > 0 || pendingDeposits > 0
+                        ? 'ui.dash_notif_pending_summary'.tr2
+                            .replaceAll(':meal_off', bnDigits(pendingMealOff))
+                            .replaceAll(':deposits', bnDigits(pendingDeposits))
+                        : 'ui.dash_notif_all_updated'.tr2,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.inkFaded,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCategoryBar(int pendingCount) {
-    final categories = [
-      {'id': 'all', 'label': 'All Activities'},
-      {'id': 'pending', 'label': 'Pending ($pendingCount)'},
-      {'id': 'meal_off', 'label': 'Meal Off'},
-      {'id': 'deposits', 'label': 'Deposits'},
-      {'id': 'bazar', 'label': 'Bazar Duty'},
-      {'id': 'members', 'label': 'Members'},
-    ];
+    return ValueListenableBuilder<int>(
+      valueListenable: AppTranslations.notifier,
+      builder: (context, _, _) {
+        final categories = [
+          {'id': 'all', 'label': 'ui.dash_notif_cat_all'.tr2},
+          {'id': 'pending', 'label': 'ui.dash_notif_cat_pending'.tr2.replaceAll(':count', bnDigits(pendingCount))},
+          {'id': 'meal_off', 'label': 'ui.dash_notif_cat_meal_off'.tr2},
+          {'id': 'deposits', 'label': 'ui.dash_notif_cat_deposits'.tr2},
+          {'id': 'bazar', 'label': 'ui.dash_notif_cat_bazar'.tr2},
+          {'id': 'members', 'label': 'ui.dash_notif_cat_members'.tr2},
+        ];
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: const BoxDecoration(
-        color: AppColors.paperRaised,
-        border: Border(
-          bottom: BorderSide(color: AppColors.paperLine, width: 0.8),
-        ),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: categories.map((c) {
-            final isSelected = _selectedCategory == c['id'];
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: InkWell(
-                onTap: () => _onCategoryChanged(c['id']!),
-                borderRadius: BorderRadius.circular(20),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.brandDark : AppColors.paper,
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: const BoxDecoration(
+            color: AppColors.paperRaised,
+            border: Border(
+              bottom: BorderSide(color: AppColors.paperLine, width: 0.8),
+            ),
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: categories.map((c) {
+                final isSelected = _selectedCategory == c['id'];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: InkWell(
+                    onTap: () => _onCategoryChanged(c['id']!),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.brandDark
-                          : AppColors.paperLine,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.brandDark : AppColors.paper,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.brandDark
+                              : AppColors.paperLine,
+                        ),
+                      ),
+                      child: Text(
+                        c['label']!,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight:
+                              isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected ? Colors.white : AppColors.ink,
+                        ),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    c['label']!,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight:
-                          isSelected ? FontWeight.w800 : FontWeight.w600,
-                      color: isSelected ? Colors.white : AppColors.ink,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -987,19 +1055,19 @@ class _DashboardNotificationsScreenState
     if (isPending) {
       badgeBg = const Color(0xFFFFF3E0);
       badgeColor = const Color(0xFFE65100);
-      statusLabel = 'Pending';
+      statusLabel = 'ui.dash_status_pending'.tr2;
     } else if (isApproved) {
       badgeBg = const Color(0xFFE8F5E9);
       badgeColor = const Color(0xFF2E7D32);
-      statusLabel = 'Approved';
+      statusLabel = 'ui.dash_status_approved'.tr2;
     } else if (isDeclined) {
       badgeBg = const Color(0xFFFFEBEE);
       badgeColor = const Color(0xFFC62828);
-      statusLabel = 'Declined';
+      statusLabel = 'ui.dash_status_declined'.tr2;
     } else {
       badgeBg = const Color(0xFFEDE7F6);
       badgeColor = const Color(0xFF512DA8);
-      statusLabel = 'Notice';
+      statusLabel = 'ui.dash_status_notice'.tr2;
     }
 
     IconData typeIcon;
@@ -1109,12 +1177,15 @@ class _DashboardNotificationsScreenState
                           color: typeBg,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(
-                          item.tag,
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w800,
-                            color: typeColor,
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            item.displayTag,
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              color: typeColor,
+                            ),
                           ),
                         ),
                       ),
@@ -1154,12 +1225,15 @@ class _DashboardNotificationsScreenState
                             color: AppColors.brandDark.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text(
-                            item.highlightValue!,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.brandDark,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => Text(
+                              item.displayHighlightValue,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.brandDark,
+                              ),
                             ),
                           ),
                         ),
@@ -1195,12 +1269,15 @@ class _DashboardNotificationsScreenState
                     color: badgeBg,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text(
-                    statusLabel,
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w800,
-                      color: badgeColor,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: AppTranslations.notifier,
+                    builder: (context, _, _) => Text(
+                      statusLabel,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        color: badgeColor,
+                      ),
                     ),
                   ),
                 ),
@@ -1219,48 +1296,51 @@ class _DashboardNotificationsScreenState
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: AppColors.paperRaised,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.paperLine),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.task_alt_rounded,
-                  size: 36,
-                  color: AppColors.brandDark,
+    return ValueListenableBuilder<int>(
+      valueListenable: AppTranslations.notifier,
+      builder: (context, _, _) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.paperRaised,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.paperLine),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.task_alt_rounded,
+                    size: 36,
+                    color: AppColors.brandDark,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No Pending Activities',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w900,
-                color: AppColors.ink,
+              const SizedBox(height: 16),
+              Text(
+                'ui.dash_notif_empty_title'.tr2,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.ink,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'All meal off requests, deposit verifications, and duties are cleared.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.inkFaded,
-                height: 1.4,
+              const SizedBox(height: 6),
+              Text(
+                'ui.dash_notif_empty_desc'.tr2,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.inkFaded,
+                  height: 1.45,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
