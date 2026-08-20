@@ -1022,11 +1022,19 @@ class _SheetViewState extends State<_SheetView>
     final mealsLMap = _asMap(sheet['mealsL']);
     final mealsDMap = _asMap(sheet['mealsD']);
     final dayTotal = _toD(_byDay(_asMap(sheet['rowTotals']), day));
-    final guestList = (_byDay(_asMap(sheet['guestByDay']), day) is List)
-        ? (_byDay(_asMap(sheet['guestByDay']), day) as List)
-        : <dynamic>[];
+	    final guestList = (_byDay(_asMap(sheet['guestByDay']), day) is List)
+	        ? (_byDay(_asMap(sheet['guestByDay']), day) as List)
+	        : <dynamic>[];
 
-    final isExpanded = _expandedDays.contains(day) || isToday;
+	    final hasPendingReq = () {
+	      final offReqs = sheet['offReqByDay'];
+	      if (offReqs is Map && (offReqs[day.toString()] != null || offReqs[day] != null)) return true;
+	      final myOff = sheet['myOffReqByDay'];
+	      if (myOff is Map && (myOff[day.toString()] != null || myOff[day] != null)) return true;
+	      return false;
+	    }();
+
+	    final isExpanded = _expandedDays.contains(day) || isToday;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1143,6 +1151,43 @@ class _SheetViewState extends State<_SheetView>
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                   ),
+                                ),
+                              ),
+                            ],
+                            if (hasPendingReq) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 1.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF3C7),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: const Color(0xFFF59E0B),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.hourglass_top_rounded,
+                                      size: 9,
+                                      color: Color(0xFFD97706),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      AppTranslations.locale == 'bn'
+                                          ? 'আবেদন পেন্ডিং'
+                                          : 'PENDING REQ',
+                                      style: const TextStyle(
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFFB45309),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -1270,6 +1315,7 @@ class _SheetViewState extends State<_SheetView>
                   // 2. Member Meals Breakdown
                   _buildDayMealsBreakdown(
                     day: day,
+                    sheet: sheet,
                     members: members,
                     mealsMap: mealsMap,
                     mealsBMap: mealsBMap,
@@ -1448,6 +1494,7 @@ class _SheetViewState extends State<_SheetView>
 
   Widget _buildDayMealsBreakdown({
     required int day,
+    required Map sheet,
     required List<dynamic> members,
     required Map mealsMap,
     required Map mealsBMap,
@@ -1595,6 +1642,28 @@ class _SheetViewState extends State<_SheetView>
               final hasParts = bRaw != null || lRaw != null || dRaw != null;
               final isOff = count == 0 && hasParts;
 
+              dynamic memberPendingReq;
+              final offReqs = sheet['offReqByDay'];
+              if (offReqs is Map) {
+                final list = offReqs[day.toString()] ?? offReqs[day];
+                if (list is List) {
+                  for (final item in list) {
+                    final rMemberId = (item['mess_member_id'] ?? item['member_id'] ?? item['member']?['id'])?.toString();
+                    if (rMemberId == mid) {
+                      memberPendingReq = item;
+                      break;
+                    }
+                  }
+                }
+              }
+              if (memberPendingReq == null && sheet['myOffReqByDay'] is Map) {
+                final myMemberId = (sheet['myMemberId'])?.toString();
+                if (myMemberId == mid) {
+                  final myReq = (sheet['myOffReqByDay'] as Map)[day.toString()] ?? (sheet['myOffReqByDay'] as Map)[day];
+                  if (myReq != null) memberPendingReq = myReq;
+                }
+              }
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
@@ -1613,15 +1682,45 @@ class _SheetViewState extends State<_SheetView>
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.ink,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              name,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.ink,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (memberPendingReq != null) ...[
+                            const SizedBox(width: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 1.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: const Color(0xFFF59E0B),
+                                ),
+                              ),
+                              child: Text(
+                                '⏳ ${memberPendingReq['label'] ?? (memberPendingReq['is_reenable'] == true ? 'ON Req' : 'OFF Req')}',
+                                style: const TextStyle(
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFB45309),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     if (isOff)
@@ -2657,6 +2756,41 @@ class _SheetViewState extends State<_SheetView>
                                 size: 16,
                               ),
                             ),
+                          ),
+                        ),
+                      ] else ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFFF59E0B),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.hourglass_top_rounded,
+                                size: 10,
+                                color: Color(0xFFD97706),
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                AppTranslations.locale == 'bn'
+                                    ? 'পেন্ডিং'
+                                    : 'Pending',
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFB45309),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -4097,12 +4231,50 @@ class _SheetViewState extends State<_SheetView>
                           _guestDateGrid(
                             days: days,
                             selectedDay: selectedDay,
+                            pendingMap: _asMap(sheet['myOffReqByDay']),
                             onTap: (d) => setS(() {
                               selectedDay = d;
                               applyDayPrefill(d);
                             }),
                           ),
                           const SizedBox(height: 16),
+                          Builder(
+                            builder: (_) {
+                              final myPendingMap = _asMap(sheet['myOffReqByDay']);
+                              final pend = myPendingMap[selectedDay.toString()] ?? myPendingMap[selectedDay];
+                              if (pend is Map) {
+                                final labelStr = (pend['label'] ?? '').toString();
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFFBEB),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: const Color(0xFFF59E0B)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.hourglass_top_rounded, size: 16, color: Color(0xFFD97706)),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          AppTranslations.locale == 'bn'
+                                              ? 'দিন ${selectedDay.toString().toBnNum()}-এর আবেদন পেন্ডিং: ${labelStr.isNotEmpty ? labelStr : 'মিল আবেদন'}'
+                                              : 'Pending request for Day $selectedDay: ${labelStr.isNotEmpty ? labelStr : 'Meal request'}',
+                                          style: const TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFFB45309),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -5976,6 +6148,7 @@ class _SheetViewState extends State<_SheetView>
     required int days,
     required int selectedDay,
     required ValueChanged<int> onTap,
+    Map? pendingMap,
   }) {
     return Container(
       width: double.infinity,
@@ -5998,27 +6171,53 @@ class _SheetViewState extends State<_SheetView>
         itemBuilder: (ctx, index) {
           final d = index + 1;
           final isSelected = selectedDay == d;
+          final hasPend = pendingMap != null &&
+              (pendingMap[d.toString()] != null || pendingMap[d] != null);
+
           return InkWell(
             onTap: () => onTap(d),
             borderRadius: BorderRadius.circular(8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.brandDark : AppColors.paperRaised,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isSelected ? AppColors.brandDark : AppColors.paperLine,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  d.toBnNum(),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: isSelected ? Colors.white : AppColors.ink,
+            child: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.brandDark
+                        : AppColors.paperRaised,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.brandDark
+                          : AppColors.paperLine,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      d.toBnNum(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: isSelected ? Colors.white : AppColors.ink,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                if (hasPend)
+                  Positioned(
+                    top: 3,
+                    right: 3,
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.amberAccent
+                            : const Color(0xFFF59E0B),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           );
         },
