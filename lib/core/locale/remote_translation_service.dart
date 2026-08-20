@@ -3,17 +3,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/dio_client.dart';
 import '../logger/app_logger.dart';
+import 'app_translations.dart';
 
 /// Fetches translations from backend API and caches locally.
-/// Falls back to bundled assets if API unavailable.
 class RemoteTranslationService {
   static const _kTranslationsPrefix = 'remote_translations_';
   static const _kChecksumPrefix = 'remote_translations_checksum_';
   static const _endpoint = '/v1/translations';
   static const _fallbackEndpoint = '/api/v1/translations';
 
-  /// Fetch translations for a locale, merge with fallback.
-  /// Returns flat map "group.key" => value.
+  /// Fetch translations for a locale, using local cache first for instant UI response,
+  /// then updating silently from API in the background.
   static Future<Map<String, String>> fetchLocale(
     String locale, {
     bool forceRefresh = false,
@@ -21,7 +21,26 @@ class RemoteTranslationService {
     final prefs = await SharedPreferences.getInstance();
     final cacheKey = '$_kTranslationsPrefix$locale';
 
-    // Always try API first to pick up admin edits; use cached only as fallback.
+    // 1. Check cached translations first for instant UI response (<1ms)
+    final fallback = prefs.getString(cacheKey);
+    Map<String, String> cachedMap = {};
+    if (fallback != null && fallback.isNotEmpty) {
+      try {
+        cachedMap = _decodeMap(fallback);
+      } catch (_) {}
+    }
+
+    // 2. Trigger asynchronous background update from API
+    _refreshFromApi(locale, prefs, cacheKey);
+
+    return cachedMap;
+  }
+
+  static Future<void> _refreshFromApi(
+    String locale,
+    SharedPreferences prefs,
+    String cacheKey,
+  ) async {
     try {
       final dio = DioClient.instance;
       Response<dynamic>? res;
@@ -53,26 +72,15 @@ class RemoteTranslationService {
             AppLogger.i(
               'Remote translations loaded: $locale (${flat.length} keys)',
             );
-            return flat;
+            if (AppTranslations.locale == locale) {
+              AppTranslations.updateCurrent(flat);
+            }
           }
         }
       }
     } catch (e) {
       AppLogger.w('Remote translations fetch failed for $locale: $e');
     }
-
-    // Fallback to cached
-    final fallback = prefs.getString(cacheKey);
-    if (fallback != null && fallback.isNotEmpty) {
-      try {
-        final cachedMap = _decodeMap(fallback);
-        if (cachedMap.isNotEmpty) {
-          AppLogger.i('Using cached translations for $locale (${cachedMap.length} keys)');
-          return cachedMap;
-        }
-      } catch (_) {}
-    }
-    return {};
   }
 
   static String _encodeMap(Map<String, String> m) {
@@ -98,23 +106,22 @@ class RemoteTranslationService {
       s.replaceAll('\\', '\\\\').replaceAll('\n', '\\n').replaceAll('=', '\\=');
   static String _unescape(String s) {
     final buf = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      if (s[i] == '\\' && i + 1 < s.length) {
-        final n = s[i + 1];
-        if (n == 'n') {
+    var esc = false;
+    for (var i = 0; i < s.length; i++) {
+      final c = s[i];
+      if (esc) {
+        if (c == 'n') {
           buf.write('\n');
-          i++;
-        } else if (n == '\\') {
-          buf.write('\\');
-          i++;
-        } else if (n == '=') {
+        } else if (c == '=') {
           buf.write('=');
-          i++;
         } else {
-          buf.write(s[i]);
+          buf.write(c);
         }
+        esc = false;
+      } else if (c == '\\') {
+        esc = true;
       } else {
-        buf.write(s[i]);
+        buf.write(c);
       }
     }
     return buf.toString();

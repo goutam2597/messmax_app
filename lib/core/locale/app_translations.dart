@@ -18,11 +18,16 @@ class AppTranslations {
     final remote = await RemoteTranslationService.fetchLocale(locale);
     if (remote.isNotEmpty) {
       _current = remote;
-      AppLogger.i('Loaded $locale from API: ${remote.length} keys');
+      AppLogger.i('Loaded $locale: ${remote.length} keys');
     } else {
-      AppLogger.w('No translations for $locale — showing raw keys');
+      AppLogger.w('No translations for $locale — using fallback');
       _current = {};
     }
+    _notifier.value++;
+  }
+
+  static void updateCurrent(Map<String, String> newMap) {
+    _current = newMap;
     _notifier.value++;
   }
 

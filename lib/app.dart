@@ -42,6 +42,12 @@ class MessMaxApp extends StatelessWidget {
                   GlobalWidgetsLocalizations.delegate,
                   GlobalCupertinoLocalizations.delegate,
                 ],
+                builder: (context, child) {
+                  return KeyedSubtree(
+                    key: ValueKey('app_subtree_${locale.languageCode}_${AppTranslations.notifier.value}'),
+                    child: child!,
+                  );
+                },
                 home: const SplashScreen(),
               );
             },
