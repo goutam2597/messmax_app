@@ -16,7 +16,8 @@ class ForgotPasswordScreen extends StatefulWidget {
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
+    with SingleTickerProviderStateMixin {
   final _authRepository = AuthRepository();
 
   int _step = 1; // 1: Email, 2: OTP, 3: Password
@@ -39,9 +40,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   int _secondsLeft = 60;
 
   @override
+  void initState() {
+    super.initState();
+    _newPasswordController.addListener(_updateState);
+    _confirmPasswordController.addListener(_updateState);
+  }
+
+  void _updateState() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     _emailController.dispose();
+    _newPasswordController.removeListener(_updateState);
+    _confirmPasswordController.removeListener(_updateState);
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     for (final c in _otpControllers) {
@@ -98,7 +112,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       });
       _startResendTimer();
       // Auto focus 1st PIN box
-      Future.delayed(const Duration(milliseconds: 150), () {
+      Future.delayed(const Duration(milliseconds: 200), () {
         if (mounted && _otpFocusNodes[0].canRequestFocus) {
           _otpFocusNodes[0].requestFocus();
         }
@@ -179,7 +193,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('auth.password_reset_success'.tr2),
-          backgroundColor: Colors.green[800],
+          backgroundColor: const Color(0xFF1F6A39),
         ),
       );
       Navigator.of(context).pop(); // Return to LoginScreen
@@ -201,24 +215,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: const AppBackButton(),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
           child: ValueListenableBuilder<int>(
             valueListenable: AppTranslations.notifier,
             builder: (context, _, _) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  AppAuthHeader(
-                    title: 'auth.forgot_password_title'.tr2,
-                    subtitle: 'auth.security_recovery'.tr2,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildCard(),
+                  _buildHeaderHero(),
+                  const SizedBox(height: 22),
+                  _buildMainCard(),
                 ],
               );
             },
@@ -228,168 +240,275 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildCard() {
+  // --- TOP HERO HEADER CARD ---
+  Widget _buildHeaderHero() {
+    IconData iconData;
+    Color iconColor;
+    Color iconBg;
+    String title;
+    String stepTag;
+
+    if (_step == 1) {
+      iconData = Icons.mark_email_read_rounded;
+      iconColor = AppColors.brandDark;
+      iconBg = AppColors.brandSoft;
+      title = 'auth.forgot_password_title'.tr2;
+      stepTag = 'Step 1 of 3';
+    } else if (_step == 2) {
+      iconData = Icons.dialpad_rounded;
+      iconColor = const Color(0xFFE85D04);
+      iconBg = const Color(0xFFFFF3EB);
+      title = 'auth.enter_otp'.tr2;
+      stepTag = 'Step 2 of 3';
+    } else {
+      iconData = Icons.lock_reset_rounded;
+      iconColor = const Color(0xFF1F6A39);
+      iconBg = const Color(0xFFEFFAF1);
+      title = 'auth.reset_password_btn'.tr2;
+      stepTag = 'Step 3 of 3';
+    }
+
+    return Column(
+      children: [
+        Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: iconBg.withValues(alpha: 0.6),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: iconColor.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(iconData, size: 28, color: iconColor),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.paperLine.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              stepTag.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkSoft,
+                letterSpacing: 0.6,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            color: AppColors.ink,
+            letterSpacing: -0.4,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- MAIN CARD ---
+  Widget _buildMainCard() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
         border: Border.all(color: AppColors.paperLine),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildWizardHeader(),
-          const SizedBox(height: 18),
+          _buildStepProgressBar(),
+          const SizedBox(height: 20),
+
           if (_errorMessage != null) ...[
             AuthErrorBanner(message: _errorMessage!),
             const SizedBox(height: 14),
           ],
-          if (_step == 1) ...[
-            _buildStep1Email(),
-          ] else if (_step == 2) ...[
-            _buildStep2Otp(),
-          ] else ...[
-            _buildStep3Password(),
-          ],
+
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _step == 1
+                ? _buildStep1Email()
+                : (_step == 2 ? _buildStep2Otp() : _buildStep3Password()),
+          ),
         ],
       ),
     );
   }
 
-  // --- Wizard Step Header Indicator ---
-  Widget _buildWizardHeader() {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.paperLine)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _stepBadge(
-              stepNumber: 1,
-              title: '1. Email',
+  // --- STEP PROGRESS BAR ---
+  Widget _buildStepProgressBar() {
+    double fillPercent = _step / 3.0;
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _stepHeaderItem(
+              stepNum: 1,
+              label: '1. Email',
+              isActive: _step >= 1,
               isCurrent: _step == 1,
-              isCompleted: _step > 1,
             ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _stepBadge(
-              stepNumber: 2,
-              title: '2. OTP',
+            _stepHeaderItem(
+              stepNum: 2,
+              label: '2. Code',
+              isActive: _step >= 2,
               isCurrent: _step == 2,
-              isCompleted: _step > 2,
             ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _stepBadge(
-              stepNumber: 3,
-              title: '3. Password',
+            _stepHeaderItem(
+              stepNum: 3,
+              label: '3. Password',
+              isActive: _step >= 3,
               isCurrent: _step == 3,
-              isCompleted: false,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _stepBadge({
-    required int stepNumber,
-    required String title,
-    required bool isCurrent,
-    required bool isCompleted,
-  }) {
-    Color bg = AppColors.paperLine.withValues(alpha: 0.4);
-    Color border = AppColors.paperLine;
-    Color textColor = AppColors.inkFaded;
-    Widget icon = CircleAvatar(
-      radius: 8,
-      backgroundColor: AppColors.inkFaded.withValues(alpha: 0.2),
-      child: Text(
-        '$stepNumber',
-        style: const TextStyle(fontSize: 9, color: AppColors.ink, fontWeight: FontWeight.bold),
-      ),
-    );
-
-    if (isCompleted) {
-      bg = const Color(0xFFEFFAF1);
-      border = const Color(0xFFBCE7C7);
-      textColor = const Color(0xFF1F6A39);
-      icon = const CircleAvatar(
-        radius: 8,
-        backgroundColor: Color(0xFF1F6A39),
-        child: Icon(Icons.check, size: 10, color: Colors.white),
-      );
-    } else if (isCurrent) {
-      bg = const Color(0xFFFDF6EE);
-      border = const Color(0xFFF6CFAA);
-      textColor = AppColors.brandDark;
-      icon = CircleAvatar(
-        radius: 8,
-        backgroundColor: AppColors.brandDark,
-        child: Text(
-          '$stepNumber',
-          style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold),
+          ],
         ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          icon,
-          const SizedBox(width: 5),
-          Flexible(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: textColor,
+        const SizedBox(height: 12),
+        Stack(
+          children: [
+            Container(
+              height: 4,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.paperLine,
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-          ),
-        ],
-      ),
+            FractionallySizedBox(
+              widthFactor: fillPercent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOut,
+                height: 4,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.brandDark, Color(0xFFE85D04)],
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  // --- Step 1: Email Form ---
+  Widget _stepHeaderItem({
+    required int stepNum,
+    required String label,
+    required bool isActive,
+    required bool isCurrent,
+  }) {
+    Color textColor = AppColors.inkFaded;
+    FontWeight fontW = FontWeight.w600;
+
+    if (isCurrent) {
+      textColor = AppColors.brandDark;
+      fontW = FontWeight.w900;
+    } else if (isActive) {
+      textColor = AppColors.ink;
+      fontW = FontWeight.w700;
+    }
+
+    return Row(
+      children: [
+        Container(
+          width: 18,
+          height: 18,
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.brandDark : AppColors.paperLine,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: isActive && !isCurrent
+                ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
+                : Text(
+                    '$stepNum',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: isActive ? Colors.white : AppColors.inkSoft,
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: fontW,
+            color: textColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- STEP 1: EMAIL INPUT FORM ---
   Widget _buildStep1Email() {
     return Column(
+      key: const ValueKey(1),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           'auth.enter_email_desc'.tr2,
-          style: const TextStyle(fontSize: 12.5, color: AppColors.inkFaded, height: 1.4),
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppColors.inkFaded,
+            height: 1.45,
+          ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
+
         FieldLabel('auth.email'.tr2),
         const SizedBox(height: 6),
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
           autofocus: true,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.ink,
+          ),
           decoration: InputDecoration(
             hintText: 'you@example.com',
             prefixIcon: const Icon(
@@ -397,66 +516,48 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               size: 20,
               color: AppColors.inkFaded,
             ),
+            suffixIcon: _emailController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.cancel_rounded,
+                      size: 18,
+                      color: AppColors.inkFaded,
+                    ),
+                    onPressed: () {
+                      _emailController.clear();
+                      setState(() {});
+                    },
+                  )
+                : null,
           ),
+          onChanged: (_) => setState(() {}),
         ),
-        const SizedBox(height: 20),
-        FilledButton(
-          onPressed: _isLoading ? null : _sendOtp,
-          child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('auth.send_otp'.tr2),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.arrow_forward_rounded, size: 18),
-                  ],
-                ),
-        ),
-      ],
-    );
-  }
+        const SizedBox(height: 14),
 
-  // --- Step 2: 6-Digit Box PinInput View ---
-  Widget _buildStep2Otp() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Email chip
+        // Info Tip Banner
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.paperLine.withValues(alpha: 0.3),
+            color: AppColors.brandSoft.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.paperLine),
+            border: Border.all(
+              color: AppColors.brandDark.withValues(alpha: 0.2),
+            ),
           ),
           child: Row(
             children: [
-              const Icon(Icons.email_outlined, size: 16, color: AppColors.brandDark),
+              const Icon(
+                Icons.info_outline_rounded,
+                size: 16,
+                color: AppColors.brandDark,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  _emailController.text.trim(),
+                  'auth.instant_email_otp_sub'.tr2,
                   style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'monospace',
-                    color: AppColors.ink,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => setState(() => _step = 1),
-                child: Text(
-                  'auth.change'.tr2,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.brandDark,
                   ),
                 ),
@@ -464,95 +565,243 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 22),
+
+        SizedBox(
+          height: 48,
+          child: FilledButton(
+            onPressed: _isLoading ? null : _sendOtp,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.brandDark,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'auth.send_otp'.tr2,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 18),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- STEP 2: 6-DIGIT OTP VERIFICATION ---
+  Widget _buildStep2Otp() {
+    final emailText = _emailController.text.trim();
+
+    return Column(
+      key: const ValueKey(2),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Target Email Chip
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.brandSoft.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.brandDark.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.mark_email_read_rounded,
+                size: 18,
+                color: AppColors.brandDark,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Verification code sent to',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: AppColors.inkFaded,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      emailText,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'monospace',
+                        color: AppColors.ink,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () => setState(() => _step = 1),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.edit_rounded,
+                        size: 13,
+                        color: AppColors.brandDark,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        'auth.change'.tr2,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.brandDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             FieldLabel('auth.enter_otp'.tr2),
             Text(
-              '${_fullOtp.length}/6 digits',
+              '${_fullOtp.length} / 6 digits',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 11.5,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'monospace',
-                color: _fullOtp.length == 6 ? const Color(0xFF1F6A39) : AppColors.inkFaded,
+                color: _fullOtp.length == 6
+                    ? const Color(0xFF1F6A39)
+                    : AppColors.inkFaded,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
 
-        // Symmetrical 3 + Divider + 3 Pin Input Grid
+        // Symmetrical 3-box + Dot + 3-box Grid
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // First 3 Digits
             Row(
               children: List.generate(3, (index) => _pinBox(index)),
             ),
-
-            // Centered Separator Dot
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 6),
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: AppColors.inkFaded,
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                color: AppColors.brandDark.withValues(alpha: 0.6),
                 shape: BoxShape.circle,
               ),
             ),
-
-            // Last 3 Digits
             Row(
               children: List.generate(3, (index) => _pinBox(index + 3)),
             ),
           ],
         ),
+        const SizedBox(height: 22),
 
-        const SizedBox(height: 20),
-        FilledButton(
-          onPressed: (_fullOtp.length < 6 || _isLoading) ? null : _verifyOtp,
-          child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('auth.verify_otp_code'.tr2),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.arrow_forward_rounded, size: 18),
-                  ],
-                ),
+        SizedBox(
+          height: 48,
+          child: FilledButton(
+            onPressed: (_fullOtp.length < 6 || _isLoading) ? null : _verifyOtp,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.brandDark,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'auth.verify_otp_code'.tr2,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 18),
+                    ],
+                  ),
+          ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
         const Divider(color: AppColors.paperLine),
         const SizedBox(height: 12),
 
-        // Resend Timer (Hidden button until 0s)
+        // Resend Timer Row
         Center(
           child: _secondsLeft > 0
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '${'auth.didnt_receive_otp'.tr2} Resend code in ',
-                      style: const TextStyle(fontSize: 12, color: AppColors.inkFaded),
+                      '${'auth.didnt_receive_otp'.tr2} Resend in ',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.inkFaded,
+                      ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.paperLine,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '${_secondsLeft}s',
                         style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
                           fontFamily: 'monospace',
                           color: AppColors.ink,
                         ),
@@ -565,22 +814,33 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   children: [
                     Text(
                       '${'auth.didnt_receive_otp'.tr2} ',
-                      style: const TextStyle(fontSize: 12, color: AppColors.inkFaded),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.inkFaded,
+                      ),
                     ),
                     InkWell(
                       onTap: _isLoading ? null : _sendOtp,
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.refresh_rounded, size: 14, color: AppColors.brandDark),
+                            const Icon(
+                              Icons.refresh_rounded,
+                              size: 15,
+                              color: AppColors.brandDark,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'auth.resend_otp'.tr2,
                               style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
                                 color: AppColors.brandDark,
                               ),
                             ),
@@ -595,13 +855,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  // Custom 6-digit Box Widget with Auto-Advance & Backspace handling
+  // Pin Box Widget with Auto-Advance & Backspace handling
   Widget _pinBox(int index) {
     final hasVal = _otpControllers[index].text.isNotEmpty;
+    final isFocused = _otpFocusNodes[index].hasFocus;
 
     return Container(
-      width: 42,
-      height: 50,
+      width: 44,
+      height: 52,
       margin: const EdgeInsets.symmetric(horizontal: 3),
       child: KeyboardListener(
         focusNode: FocusNode(),
@@ -623,31 +884,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           maxLength: 1,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
             fontFamily: 'monospace',
             color: hasVal ? AppColors.brandDark : AppColors.ink,
           ),
           decoration: InputDecoration(
             counterText: '',
             contentPadding: EdgeInsets.zero,
-            fillColor: hasVal ? const Color(0xFFFDF6EE) : AppColors.paper,
+            fillColor: hasVal
+                ? const Color(0xFFFFF3EB)
+                : (isFocused ? Colors.white : AppColors.paper),
             filled: true,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: hasVal ? const Color(0xFFF6CFAA) : AppColors.paperLine,
-              ),
-            ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
                 color: hasVal ? const Color(0xFFF6CFAA) : AppColors.paperLine,
+                width: hasVal ? 1.5 : 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.brandDark, width: 2),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: AppColors.brandDark,
+                width: 2.0,
+              ),
             ),
           ),
           onChanged: (val) {
@@ -656,7 +917,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               if (index < 5) {
                 _otpFocusNodes[index + 1].requestFocus();
               } else {
-                // Auto submit when 6th digit typed
                 _otpFocusNodes[index].unfocus();
                 if (_fullOtp.length == 6) {
                   _verifyOtp();
@@ -669,65 +929,86 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  // --- Step 3: Set Password View ---
+  // --- STEP 3: CREATE NEW PASSWORD ---
   Widget _buildStep3Password() {
+    final passText = _newPasswordController.text;
+    final confirmText = _confirmPasswordController.text;
+    final isMin6 = passText.length >= 6;
+    final isMatch = passText.isNotEmpty && passText == confirmText;
+
     return Column(
+      key: const ValueKey(3),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // OTP Verified Success Banner
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: const Color(0xFFEFFAF1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFBCE7C7)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF1F6A39)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  _emailController.text.trim(),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'monospace',
-                    color: Color(0xFF1F6A39),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 20,
+                color: Color(0xFF1F6A39),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFBCE7C7),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  'auth.otp_verified_title'.tr2.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F6A39),
-                  ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _emailController.text.trim(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'monospace',
+                        color: Color(0xFF1F6A39),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Text(
+                      'OTP identity verified successfully',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2E8B57),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
+
         FieldLabel('auth.new_password'.tr2),
         const SizedBox(height: 6),
         TextField(
           controller: _newPasswordController,
           obscureText: _obscureNew,
           autofocus: true,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.ink,
+          ),
           decoration: InputDecoration(
             hintText: '••••••••',
-            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.inkFaded),
+            prefixIcon: const Icon(
+              Icons.lock_outline_rounded,
+              size: 20,
+              color: AppColors.inkFaded,
+            ),
             suffixIcon: IconButton(
               icon: Icon(
-                _obscureNew ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                _obscureNew
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
                 size: 18,
                 color: AppColors.inkFaded,
               ),
@@ -736,44 +1017,129 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 14),
+
         FieldLabel('auth.confirm_password'.tr2),
         const SizedBox(height: 6),
         TextField(
           controller: _confirmPasswordController,
           obscureText: _obscureConfirm,
           onSubmitted: (_) => _resetPassword(),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.ink,
+          ),
           decoration: InputDecoration(
             hintText: '••••••••',
-            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.inkFaded),
+            prefixIcon: const Icon(
+              Icons.lock_outline_rounded,
+              size: 20,
+              color: AppColors.inkFaded,
+            ),
             suffixIcon: IconButton(
               icon: Icon(
-                _obscureConfirm ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                _obscureConfirm
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
                 size: 18,
                 color: AppColors.inkFaded,
               ),
-              onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+              onPressed: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
             ),
           ),
         ),
-        const SizedBox(height: 20),
-        FilledButton(
-          onPressed: _isLoading ? null : _resetPassword,
-          child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('auth.save_and_reset_password'.tr2),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.check_rounded, size: 18),
-                  ],
-                ),
+        const SizedBox(height: 16),
+
+        // Live Password Validation Checklist
+        Row(
+          children: [
+            _validationChip(
+              label: 'At least 6 chars',
+              isValid: isMin6,
+            ),
+            const SizedBox(width: 8),
+            _validationChip(
+              label: 'Passwords match',
+              isValid: isMatch,
+            ),
+          ],
+        ),
+        const SizedBox(height: 22),
+
+        SizedBox(
+          height: 48,
+          child: FilledButton(
+            onPressed: (_isLoading || !isMin6 || !isMatch)
+                ? null
+                : _resetPassword,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.brandDark,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'auth.save_and_reset_password'.tr2,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.check_rounded, size: 18),
+                    ],
+                  ),
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _validationChip({required String label, required bool isValid}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isValid
+            ? const Color(0xFFEFFAF1)
+            : AppColors.paperLine.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isValid ? const Color(0xFFBCE7C7) : AppColors.paperLine,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isValid ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+            size: 13,
+            color: isValid ? const Color(0xFF1F6A39) : AppColors.inkFaded,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: isValid ? const Color(0xFF1F6A39) : AppColors.inkFaded,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
