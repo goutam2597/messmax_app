@@ -19,10 +19,10 @@ class AppConfig {
     return 'https://$baseDomain/api';
   }
 
-  /// Ensure image URLs pointing to localhost or 10.0.2.2 map to the host IP.
+  /// Ensure image URLs pointing to localhost or  10.0.2.2 map to the host IP.
   static String? sanitizeImageUrl(String? url) {
     if (url == null || url.isEmpty) return null;
-    return url 
+    return url
         .replaceAll(
           'http://localhost',
           'http://$baseDomain/messmax/backend/public',

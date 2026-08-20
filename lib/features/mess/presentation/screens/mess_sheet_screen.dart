@@ -1421,6 +1421,31 @@ class _SheetViewState extends State<_SheetView>
     );
   }
 
+  Widget _buildAttPill(double val) {
+    final isZero = val == 0;
+    final valStr = (val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(1)).toBnNum();
+    return Container(
+      width: 22,
+      height: 22,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: !isZero ? AppColors.brandSoft : AppColors.paper,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: !isZero ? AppColors.brandDark : AppColors.paperLine,
+        ),
+      ),
+      child: Text(
+        valStr,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: !isZero ? AppColors.brandDark : AppColors.inkFaded,
+        ),
+      ),
+    );
+  }
+
   Widget _buildDayMealsBreakdown({
     required int day,
     required List<dynamic> members,
@@ -1430,50 +1455,105 @@ class _SheetViewState extends State<_SheetView>
     required Map mealsDMap,
     required List<dynamic> guestList,
   }) {
-    String fmt(dynamic v) {
-      if (v == null) return '—';
-      final d = _toD(v);
-      if (d == 0) return '0';
-      return d % 1 == 0 ? d.toInt().toString() : d.toStringAsFixed(1);
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.restaurant_menu_rounded,
-                  size: 14,
-                  color: AppColors.brandDark,
-                ),
-                const SizedBox(width: 5),
-                ValueListenableBuilder<int>(
-                  valueListenable: AppTranslations.notifier,
-                  builder: (context, _, _) => Text(
-                    'ui.sheet_tab_logs'.tr2 == 'Daily Log' ? 'MEAL ATTENDANCE' : 'দৈনিক মিল',
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.inkFaded,
-                      letterSpacing: 0.5,
+            Expanded(
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.restaurant_menu_rounded,
+                    size: 14,
+                    color: AppColors.brandDark,
+                  ),
+                  const SizedBox(width: 5),
+                  ValueListenableBuilder<int>(
+                    valueListenable: AppTranslations.notifier,
+                    builder: (context, _, _) => Text(
+                      'ui.sheet_tab_logs'.tr2 == 'Daily Log' ? 'MEAL ATTENDANCE' : 'দৈনিক মিল',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.inkFaded,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            ValueListenableBuilder<int>(
-              valueListenable: AppTranslations.notifier,
-              builder: (context, _, _) => Text(
-                'ui.dash_bld'.tr2,
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.inkFaded,
-                  letterSpacing: 0.5,
+            SizedBox(
+              width: 78,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 22,
+                    child: Center(
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          AppTranslations.locale == 'bn' ? 'স' : 'B',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: 22,
+                    child: Center(
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          AppTranslations.locale == 'bn' ? 'দু' : 'L',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: 22,
+                    child: Center(
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          AppTranslations.locale == 'bn' ? 'রা' : 'D',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            SizedBox(
+              width: 28,
+              child: ValueListenableBuilder<int>(
+                valueListenable: AppTranslations.notifier,
+                builder: (context, _, _) => Text(
+                  'ui.dash_total'.tr2,
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.inkFaded,
+                  ),
                 ),
               ),
             ),
@@ -1546,10 +1626,9 @@ class _SheetViewState extends State<_SheetView>
                     ),
                     if (isOff)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
+                        width: 78,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.dangerSoft,
                           borderRadius: BorderRadius.circular(5),
@@ -1567,34 +1646,51 @@ class _SheetViewState extends State<_SheetView>
                         ),
                       )
                     else if (hasParts)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.paper,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.paperLine),
-                        ),
-                        child: Text(
-                          '${fmt(bRaw)} · ${fmt(lRaw)} · ${fmt(dRaw)}  =  ${count % 1 == 0 ? count.toInt() : count.toStringAsFixed(1)}',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.ink,
-                          ),
+                      SizedBox(
+                        width: 78,
+                        child: Row(
+                          children: [
+                            _buildAttPill(_toD(bRaw)),
+                            const SizedBox(width: 6),
+                            _buildAttPill(_toD(lRaw)),
+                            const SizedBox(width: 6),
+                            _buildAttPill(_toD(dRaw)),
+                          ],
                         ),
                       )
                     else
-                      Text(
-                        '${(count % 1 == 0 ? count.toInt().toString() : count.toStringAsFixed(1)).toBnNum()} ${'ui.sheet_meals_unit'.tr2}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.ink,
+                      SizedBox(
+                        width: 78,
+                        child: Center(
+                          child: Text(
+                            (count % 1 == 0
+                                    ? count.toInt().toString()
+                                    : count.toStringAsFixed(1))
+                                .toBnNum(),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                            ),
+                          ),
                         ),
                       ),
+                    const SizedBox(width: 14),
+                    SizedBox(
+                      width: 28,
+                      child: Text(
+                        (count % 1 == 0
+                                ? count.toInt().toString()
+                                : count.toStringAsFixed(1))
+                            .toBnNum(),
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.brandDark,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );
