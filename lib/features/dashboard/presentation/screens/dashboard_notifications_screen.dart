@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/locale/app_translations.dart';
-import '../../../../core/services/push_notification_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
@@ -767,20 +766,6 @@ class _DashboardNotificationsScreenState
           },
         ),
         actions: [
-          IconButton(
-            tooltip: 'Test local notification (sound+vibration)',
-            icon: const Icon(Icons.notifications_active_rounded, color: AppColors.inkSoft),
-            onPressed: () async {
-              final ok = await PushNotificationService.showTestNotification();
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(ok ? 'Test notification sent — check sound + vibration' : 'Local notifications denied — enable in system settings → Apps → MessMax → Notifications'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
           BlocBuilder<NotificationCubit, NotificationState>(
             builder: (context, state) {
               final unread = state is NotificationLoaded ? state.unreadCount : 0;
