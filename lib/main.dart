@@ -41,7 +41,7 @@ Future<void> main() async {
     try {
       await GoogleSignIn.instance.initialize(
         serverClientId:
-            '66639149544-53t28igfqu0ll8ts5a4na0t49kvlr88f.apps.googleusercontent.com',
+            '1069180546995-u7cik408g6uj08rctf798be1133n5fib.apps.googleusercontent.com',
       );
       AppLogger.i('GoogleSignIn initialized (native Credential Manager ready)');
     } catch (e, st) {
