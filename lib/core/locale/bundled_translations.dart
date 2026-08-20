@@ -4,18 +4,22 @@ abstract final class BundledTranslations {
     "ads.my_seat_ads": "My seat ads",
     "ads.seats_available": "Seats available",
     "ads.manager_board": "Manager board · post from any of your messes",
-    "ads.my_ads_sub": "Individual or hostel — any manager can post. Each ad ties to one mess so seekers know where the seat is.",
+    "ads.my_ads_sub":
+        "Individual or hostel — any manager can post. Each ad ties to one mess so seekers know where the seat is.",
     "ads.browse_all_seats": "Browse all seats",
     "ads.post_a_seat": "Post a seat",
     "ads.post_seat_title": "Post a seat available",
     "ads.post_first_seat": "Post first seat",
     "ads.edit_seat_ad": "Edit seat ad",
-    "ads.post_sub_desc": "Anyone — individual manager or hostel owner — can post here. Your post appears on Seats and on the home page.",
+    "ads.post_sub_desc":
+        "Anyone — individual manager or hostel owner — can post here. Your post appears on Seats and on the home page.",
     "ads.create_mess_first": "Create a mess first",
-    "ads.tied_to_mess_desc": "A seat ad must be tied to a mess. Create one, then post.",
+    "ads.tied_to_mess_desc":
+        "A seat ad must be tied to a mess. Create one, then post.",
     "ads.create_mess": "Create mess",
     "ads.no_seat_ads_yet": "No seat ads yet",
-    "ads.no_ads_desc": "Post when a seat opens — rent, room type, photos and contact. It shows on Seats and on the home page.",
+    "ads.no_ads_desc":
+        "Post when a seat opens — rent, room type, photos and contact. It shows on Seats and on the home page.",
     "ads.seat": "seat",
     "ads.seats": "seats",
     "ads.rent_per_seat": "Rent / Seat",
@@ -35,7 +39,8 @@ abstract final class BundledTranslations {
     "ads.mess": "Mess",
     "ads.title": "Title",
     "ads.street_address": "Street Address",
-    "ads.hide_street_address": "Hide street address on public listing — show only City & Area",
+    "ads.hide_street_address":
+        "Hide street address on public listing — show only City & Area",
     "ads.city": "City",
     "ads.area": "Area",
     "ads.room_type": "Room Type",
@@ -78,13 +83,17 @@ abstract final class BundledTranslations {
     "auth.single_mess": "Single mess",
     "auth.many_messes": "Many messes",
     "auth.choose_role": "Choose your role for Google account",
-    "auth.choose_role_then_continue": "Choose your role for this Google account, then Continue.",
-    "auth.first_choose_role": "First choose I AM A: Hostel owner or Individual, then Continue with Google.",
+    "auth.choose_role_then_continue":
+        "Choose your role for this Google account, then Continue.",
+    "auth.first_choose_role":
+        "First choose I AM A: Hostel owner or Individual, then Continue with Google.",
     "auth.connecting_google": "Connecting to Google...",
     "auth.signing_in": "Signing in...",
     "auth.popup_closed": "Popup closed — try again.",
-    "auth.domain_not_authorized": "This domain is not authorized in Firebase Console → Authentication → Authorized domains. Add",
-    "auth.google_not_configured": "Google login is not configured yet — ask admin to fill Firebase settings.",
+    "auth.domain_not_authorized":
+        "This domain is not authorized in Firebase Console → Authentication → Authorized domains. Add",
+    "auth.google_not_configured":
+        "Google login is not configured yet — ask admin to fill Firebase settings.",
     "auth.sign_in_failed": "Sign-in failed — try again.",
     "auth.cancel": "Cancel",
     "auth.continue": "Continue",
@@ -97,7 +106,8 @@ abstract final class BundledTranslations {
     "auth.full_name_hint": "e.g. Goutam Sharma",
     "auth.full_name_required": "Please enter your full name",
     "auth.invalid_email": "Please enter a valid email address",
-    "auth.ledger_tagline": "MessMax keeps your ledger: meals, bazar, and monthly settlement — just like the paper sheet, but always in sync.",
+    "auth.ledger_tagline":
+        "MessMax keeps your ledger: meals, bazar, and monthly settlement — just like the paper sheet, but always in sync.",
     "auth.one_account_unlimited": "One account, unlimited mess management",
     "auth.password_hint": "At least 6 characters",
     "auth.password_too_short": "Password must be at least 6 characters",
@@ -117,7 +127,8 @@ abstract final class BundledTranslations {
     "dashboard.mess_manager_dashboard": "Mess Manager Dashboard",
     "dashboard.active_ledger": "Active Ledger",
     "dashboard.create_mess": "Create Mess",
-    "dashboard.description": "Every mess where you're owner, manager or member — daily meals, bazar roster & instant settlements.",
+    "dashboard.description":
+        "Every mess where you're owner, manager or member — daily meals, bazar roster & instant settlements.",
     "dashboard.messes": "Messes",
     "dashboard.owned": "owned",
     "dashboard.members": "Members",
@@ -147,7 +158,8 @@ abstract final class BundledTranslations {
     "dashboard.requests_applications": "Requests & Applications",
     "dashboard.pending": "pending",
     "dashboard.all_clear": "All Clear!",
-    "dashboard.no_pending_requests": "No pending join requests, meal-offs, or guest meals.",
+    "dashboard.no_pending_requests":
+        "No pending join requests, meal-offs, or guest meals.",
     "dashboard.approve": "Approve",
     "dashboard.decline": "Decline",
     "dashboard.guest_meal": "guest meal",
@@ -155,7 +167,8 @@ abstract final class BundledTranslations {
     "dashboard.meal_reenable": "re-enable",
     "dashboard.join_request_pending": "Join Request Pending Approval",
     "dashboard.requested_to_join": "You requested to join",
-    "dashboard.manager_will_review": "The manager will review your request shortly.",
+    "dashboard.manager_will_review":
+        "The manager will review your request shortly.",
     "dashboard.awaiting_manager": "Awaiting Manager",
     "dashboard.bazar_duty_schedule": "Bazar Duty Schedule",
     "dashboard.schedule": "Schedule",
@@ -163,13 +176,16 @@ abstract final class BundledTranslations {
     "dashboard.assign_shopping_duties": "Assign shopping duties in",
     "dashboard.today": "Today",
     "dashboard.mess_board_empty": "Your Mess Board is Empty",
-    "dashboard.empty_description_individual": "Set up your mess to start managing meals, or join an existing mess with a secret code.",
-    "dashboard.empty_description_hostel": "Create your hostel mess or join an existing mess to start tracking daily meals & bazar.",
+    "dashboard.empty_description_individual":
+        "Set up your mess to start managing meals, or join an existing mess with a secret code.",
+    "dashboard.empty_description_hostel":
+        "Create your hostel mess or join an existing mess to start tracking daily meals & bazar.",
     "dashboard.setup_new_mess": "Setup New Mess",
     "dashboard.create_mess_now": "Create Mess Now",
     "dashboard.join_a_mess": "Join a Mess",
     "dashboard.join_with_code": "Join a Mess with Code",
-    "dashboard.enter_mess_code": "Enter the secret mess code provided by your manager (e.g.",
+    "dashboard.enter_mess_code":
+        "Enter the secret mess code provided by your manager (e.g.",
     "dashboard.or_mess_slug": "or mess slug).",
     "dashboard.mess_code_or_slug": "MESS CODE OR SLUG",
     "dashboard.join_mess": "Join Mess",
@@ -191,10 +207,12 @@ abstract final class BundledTranslations {
     "dashboard.invite_by_email": "Invite by email",
     "dashboard.manager_invites": "Manager invites → monthly rotation",
     "dashboard.free_unlimited": "Free · one account, unlimited messes",
-    "dashboard.log_meals_bazar": "Log meals & bazar daily — rate, spend & balance auto-calculate exactly like your sheet.",
+    "dashboard.log_meals_bazar":
+        "Log meals & bazar daily — rate, spend & balance auto-calculate exactly like your sheet.",
     "home.hero_pitch_title_1": "Your mess, searched",
     "home.hero_pitch_title_2": "and settled in one place.",
-    "home.hero_pitch_body": "MessMax — one live page for decimal meals, bazar and seats. Pick a seat or run the whole mess — daily sheet, guest meals and monthly handover, all on one page.",
+    "home.hero_pitch_body":
+        "MessMax — one live page for decimal meals, bazar and seats. Pick a seat or run the whole mess — daily sheet, guest meals and monthly handover, all on one page.",
     "home.create_mess_free": "Create your mess — free",
     "home.find_mess": "Find mess",
     "home.auto_rate": "Rate auto",
@@ -211,7 +229,8 @@ abstract final class BundledTranslations {
     "home.verified": "Verified",
     "home.seats_posted_by": "Seats · posted by managers",
     "home.find_mess_near_you": "Find Mess near you",
-    "home.find_mess_near_sub": "Individual managers and hostel owners post when a seat opens — browse, then contact the poster directly.",
+    "home.find_mess_near_sub":
+        "Individual managers and hostel owners post when a seat opens — browse, then contact the poster directly.",
     "home.browse_all": "Browse all",
     "home.fresh": "Fresh",
     "home.fresh_messes": "New messes",
@@ -223,28 +242,38 @@ abstract final class BundledTranslations {
     "home.from_the_sheet": "From the sheet",
     "home.everything_group_tracks_1": "Everything your group already tracks —",
     "home.everything_group_tracks_2": "now inked online.",
-    "home.sheet_math_sub": "We kept the sheet's math pixel-perfect. Your group just logs — MessMax settles.",
+    "home.sheet_math_sub":
+        "We kept the sheet's math pixel-perfect. Your group just logs — MessMax settles.",
     "home.entry_01_title": "The live spreadsheet",
-    "home.entry_01_desc": "Date 1–31, Bazar(৳), per-member meals, TOTAL = SUM(D:I). Click any cell — it auto-saves with a warm flash.",
+    "home.entry_01_desc":
+        "Date 1–31, Bazar(৳), per-member meals, TOTAL = SUM(D:I). Click any cell — it auto-saves with a warm flash.",
     "home.entry_01_suffix": "decimals welcome.",
     "home.entry_02_title": "Invite by email",
-    "home.entry_02_desc": "Manager sends an invite to an address — the invitee accepts within 7 days and lands on their exact row.",
+    "home.entry_02_desc":
+        "Manager sends an invite to an address — the invitee accepts within 7 days and lands on their exact row.",
     "home.entry_03_title": "Monthly manager rotation",
-    "home.entry_03_desc": "One manager per month. Handover is one click — optionally demote the previous manager to member.",
+    "home.entry_03_desc":
+        "One manager per month. Handover is one click — optionally demote the previous manager to member.",
     "home.settlement_done": "Settlement, done itself",
-    "home.settlement_done_sub": "Spend = Rate×meals + Extra/N · Balance = Given − Spend.",
+    "home.settlement_done_sub":
+        "Spend = Rate×meals + Extra/N · Balance = Given − Spend.",
     "home.roles_not_chaos": "Roles, not chaos",
-    "home.roles_not_chaos_sub": "Owner / mess manager / monthly manager / member — only this month's manager edits the sheet.",
+    "home.roles_not_chaos_sub":
+        "Owner / mess manager / monthly manager / member — only this month's manager edits the sheet.",
     "home.one_account_multi": "One account, ∞ messes",
-    "home.one_account_multi_sub": "University hall, family flat, office mess — each gets its own book, members and months.",
+    "home.one_account_multi_sub":
+        "University hall, family flat, office mess — each gets its own book, members and months.",
     "home.zero_to_settled": "Zero to settled in three entries.",
     "home.handover_thrice": "The handover, thrice",
     "home.step_1_title": "Create the mess",
-    "home.step_1_desc": "Name it, add members with bazar days — exactly like your sheet headers.",
+    "home.step_1_desc":
+        "Name it, add members with bazar days — exactly like your sheet headers.",
     "home.step_2_title": "Invite & rotate",
-    "home.step_2_desc": "Invites by email, a manager per month — hand over the book with one click.",
+    "home.step_2_desc":
+        "Invites by email, a manager per month — hand over the book with one click.",
     "home.step_3_title": "Log & settle",
-    "home.step_3_desc": "Fill bazar & meals, add deposits — the settlement page writes itself.",
+    "home.step_3_desc":
+        "Fill bazar & meals, add deposits — the settlement page writes itself.",
     "home.spreadsheet_hell": "Spreadsheet hell →",
     "home.one_tap_settle": "settlement in one tap.",
     "home.the_old_way": "The old way",
@@ -261,8 +290,10 @@ abstract final class BundledTranslations {
     "home.switch_to_messmax": "Switch to MessMax",
     "home.before_after": "Before → After",
     "home.close_manual_books": "Close the manual books",
-    "home.retire_xlsx_title": "Retire the forwarded .xlsx — and the diary that never balances.",
-    "home.retire_xlsx_sub": "MessMax keeps your sheet for you: no re-typing, no overwriting, no calculator at midnight. Free in 30 seconds.",
+    "home.retire_xlsx_title":
+        "Retire the forwarded .xlsx — and the diary that never balances.",
+    "home.retire_xlsx_sub":
+        "MessMax keeps your sheet for you: no re-typing, no overwriting, no calculator at midnight. Free in 30 seconds.",
     "home.open_free": "Open MessMax — free",
     "home.talk_to_us": "Talk to us",
     "home.hero_stamp": "Mess ledger · est. 2026",
@@ -271,9 +302,11 @@ abstract final class BundledTranslations {
     "home.ticker_invite_by_email": "Invite by Email",
     "home.ticker_decimals": "34.5 Decimals",
     "home.ticker_spend_given_rest": "Spend / Given / Rest",
-    "home.testimonial_1": "\"No more Excel fights. The rate math is exactly our sheet.\"",
+    "home.testimonial_1":
+        "\"No more Excel fights. The rate math is exactly our sheet.\"",
     "home.testimonial_1_attr": "— member · may 2026",
-    "home.testimonial_2": "\"Manager rotation is finally sane. I handed it over in one click.\"",
+    "home.testimonial_2":
+        "\"Manager rotation is finally sane. I handed it over in one click.\"",
     "home.testimonial_2_attr": "— manager · 5-person mess",
     "home.testimonial_3": "\"Invites via email — took two minutes to set up.\"",
     "home.testimonial_3_attr": "— mess manager",
@@ -329,7 +362,8 @@ abstract final class BundledTranslations {
     "mess.open_sheet": "Open sheet",
     "mess.add_month": "Add month",
     "mess.no_months": "No months yet",
-    "mess.create_first_month": "Create the first month to start tracking meals.",
+    "mess.create_first_month":
+        "Create the first month to start tracking meals.",
     "mess.bazar_schedule": "Bazar Schedule",
     "mess.assign_duty": "Assign duty",
     "mess.duty_date": "Duty date",
@@ -383,9 +417,12 @@ abstract final class BundledTranslations {
     "mess.bfast": "B'fast",
     "mess.view_only": "View only",
     "mess.duplicate_next_month": "Duplicate to next month",
-    "mess.daily_edit_tip": "Each day has an <b>Edit</b> — change meals and bazar items together in one modal.",
-    "mess.daily_settings_tip": "Meals default from member settings · Bazar = Σ qty×price",
-    "mess.next_day_appear_after": "Next day will appear after 12 AM — manager can add manually.",
+    "mess.daily_edit_tip":
+        "Each day has an <b>Edit</b> — change meals and bazar items together in one modal.",
+    "mess.daily_settings_tip":
+        "Meals default from member settings · Bazar = Σ qty×price",
+    "mess.next_day_appear_after":
+        "Next day will appear after 12 AM — manager can add manually.",
     "mess.save_changes": "Save changes",
     "mess.cancel": "Cancel",
     "mess.delete": "Delete",
@@ -403,7 +440,8 @@ abstract final class BundledTranslations {
     "mess.invite_expired": "Invite expired",
     "mess.wrong_email": "Wrong email",
     "mess.hero_title": "Your mess ledger, digitised.",
-    "mess.hero_sub": "Track daily meals, bazar spend & member balances — exactly like your handwritten sheet, but instant.",
+    "mess.hero_sub":
+        "Track daily meals, bazar spend & member balances — exactly like your handwritten sheet, but instant.",
     "mess.get_started": "Get started free",
     "mess.learn_more": "Learn more",
     "mess.contact_us": "Contact us",
@@ -412,8 +450,10 @@ abstract final class BundledTranslations {
     "pages.about_title": "Built from a spreadsheet",
     "pages.about_title_2": "passed around in a group chat.",
     "pages.about_intro": "MealMax started with one file:",
-    "pages.about_intro_2": "Date, Bazar(TK), 6 members, TOTAL MEAL = SUM, Meal Rate, SPEND, GIVEN & REST(TK).",
-    "pages.about_p2": "Every month the same diary book got photographed, re-typed, overwritten, argued over. So we rebuilt it — a universal, invite-by-email web app for any community, so no one overwrites anyone ever again.",
+    "pages.about_intro_2":
+        "Date, Bazar(TK), 6 members, TOTAL MEAL = SUM, Meal Rate, SPEND, GIVEN & REST(TK).",
+    "pages.about_p2":
+        "Every month the same diary book got photographed, re-typed, overwritten, argued over. So we rebuilt it — a universal, invite-by-email web app for any community, so no one overwrites anyone ever again.",
     "pages.entry_sheet_live": "Sheet → live",
     "pages.entry_sheet_sub": "Same math, now auto-save",
     "pages.entry_manager_rotation": "Manager rotation",
@@ -421,12 +461,14 @@ abstract final class BundledTranslations {
     "pages.entry_smtp": "You own SMTP",
     "pages.entry_smtp_sub": "Your mailer, your invites",
     "pages.questions_title": "Questions?",
-    "pages.questions_body": "The contact page reaches us via the SMTP you configure.",
+    "pages.questions_body":
+        "The contact page reaches us via the SMTP you configure.",
     "pages.reach_out": "Reach out",
     "pages.write_back": "— we write back.",
     "pages.write_to_us": "Write to us",
     "pages.drop_note": "Drop a note in the margin.",
-    "pages.contact_intro": "Send us a message — it travels via the SMTP configured in the admin panel (or lands in the log, in dev).",
+    "pages.contact_intro":
+        "Send us a message — it travels via the SMTP configured in the admin panel (or lands in the log, in dev).",
     "pages.name": "Name",
     "pages.email": "Email",
     "pages.message": "Message",
@@ -435,21 +477,26 @@ abstract final class BundledTranslations {
     "pages.privacy_policy": "Privacy Policy",
     "pages.policy": "Policy",
     "pages.last_updated": "Last updated:",
-    "pages.privacy_intro": "MessMax stores your account, your messes, and the emails you send via your SMTP. We do not sell data.",
+    "pages.privacy_intro":
+        "MessMax stores your account, your messes, and the emails you send via your SMTP. We do not sell data.",
     "pages.what_we_collect": "What we collect",
     "pages.collect_account": "Account: name, email, password (hashed)",
-    "pages.collect_mess": "Mess data: members, meals, bazar, deposits — owned by your mess.",
+    "pages.collect_mess":
+        "Mess data: members, meals, bazar, deposits — owned by your mess.",
     "pages.collect_cookies": "Cookies: Session cookie only — for login.",
     "pages.contact_q": "Contact: Questions? Use the Contact page.",
     "pages.terms_conditions": "Terms & Conditions",
     "pages.agreement": "Agreement",
     "pages.terms_intro": "By using MessMax you agree to these terms.",
     "pages.accounts": "Accounts",
-    "pages.accounts_body": "One account per email. You are responsible for your password.",
+    "pages.accounts_body":
+        "One account per email. You are responsible for your password.",
     "pages.invites": "Invites",
-    "pages.invites_body": "Invite links expire in 7 days and can bind to an existing row.",
+    "pages.invites_body":
+        "Invite links expire in 7 days and can bind to an existing row.",
     "pages.liability": "Liability",
-    "pages.liability_body": "Meal calculations follow your Excel logic (Rate = SUM(C)/SUM(J)). We are not liable for data loss — keep your own backups.",
+    "pages.liability_body":
+        "Meal calculations follow your Excel logic (Rate = SUM(C)/SUM(J)). We are not liable for data loss — keep your own backups.",
     "pages.blog": "Blog",
     "pages.notes_margin": "Notes from the margin",
     "pages.notes_sub": "For mess managers with pens.",
@@ -483,7 +530,8 @@ abstract final class BundledTranslations {
     "ui.mess_name": "Mess name",
     "ui.mess_name_placeholder": "e.g. Dhaka North Hostel",
     "ui.mess_slug": "Mess URL slug",
-    "ui.mess_slug_hint": "Auto-generated from name. Letters, numbers, hyphens only.",
+    "ui.mess_slug_hint":
+        "Auto-generated from name. Letters, numbers, hyphens only.",
     "ui.location": "Location (optional)",
     "ui.location_placeholder": "e.g. Mirpur, Dhaka",
     "ui.timezone": "Timezone",
@@ -501,7 +549,8 @@ abstract final class BundledTranslations {
     "ui.update_password": "Update password",
     "ui.danger_zone": "Danger zone",
     "ui.delete_account": "Delete account",
-    "ui.delete_account_warning": "This will permanently delete your account and all associated data.",
+    "ui.delete_account_warning":
+        "This will permanently delete your account and all associated data.",
     "ui.delete_confirm": "Delete",
     "ui.language_preference": "Language preference",
     "ui.account_avatar_label": "AVATAR / PROFILE PHOTO",
@@ -510,7 +559,8 @@ abstract final class BundledTranslations {
     "ui.account_confirm_new_pass": "CONFIRM NEW PASSWORD",
     "ui.account_current_pass": "CURRENT PASSWORD",
     "ui.account_current_required": "Enter your current password",
-    "ui.account_danger_desc": "Deleting your account is permanent. All your personal data, mess memberships, and seat listings will be immediately deleted.",
+    "ui.account_danger_desc":
+        "Deleting your account is permanent. All your personal data, mess memberships, and seat listings will be immediately deleted.",
     "ui.account_danger_zone": "Danger Zone",
     "ui.account_delete_btn": "Delete Account",
     "ui.account_deleted": "Your account has been deleted successfully.",
@@ -564,11 +614,13 @@ abstract final class BundledTranslations {
     "ui.ad_detail_room_type": "Room Type",
     "ui.ad_detail_seats_open_suffix": "Seats Open",
     "ui.ad_detail_sharing": "Sharing seat listing details",
-    "ui.ad_detail_street_hidden": "Street address hidden by manager for privacy. Contact manager to visit.",
+    "ui.ad_detail_street_hidden":
+        "Street address hidden by manager for privacy. Contact manager to visit.",
     "ui.ad_detail_verified": "VERIFIED",
     "ui.ad_detail_verified_listing": "MessMax Verified Listing",
     "ui.ad_detail_whatsapp": "WhatsApp",
-    "ui.ad_detail_whatsapp_missing": "WhatsApp number not provided for this listing.",
+    "ui.ad_detail_whatsapp_missing":
+        "WhatsApp number not provided for this listing.",
     "ui.ad_detail_whatsapp_open_fail": "Could not open WhatsApp",
     "ui.ad_form_ad_title": "AD TITLE *",
     "ui.ad_form_add_photo": "Add Photo",
@@ -588,7 +640,8 @@ abstract final class BundledTranslations {
     "ui.ad_form_create_title": "Post New Seat Listing",
     "ui.ad_form_customize": "Customize",
     "ui.ad_form_desc_contact": "DESCRIPTION & CONTACT",
-    "ui.ad_form_desc_hint": "Describe room environment, student/jobholder preference, university proximity, rules, etc.",
+    "ui.ad_form_desc_hint":
+        "Describe room environment, student/jobholder preference, university proximity, rules, etc.",
     "ui.ad_form_deselect_all": "Deselect All",
     "ui.ad_form_edit_title": "Edit Seat Listing",
     "ui.ad_form_hide_address": "Hide street address for privacy",
@@ -608,7 +661,8 @@ abstract final class BundledTranslations {
     "ui.ad_form_room_capacity": "ROOM CAPACITY",
     "ui.ad_form_room_facilities": "ROOM & FACILITIES",
     "ui.ad_form_room_type": "ROOM TYPE *",
-    "ui.ad_form_room_type_hint": "Choose the layout that best describes your space",
+    "ui.ad_form_room_type_hint":
+        "Choose the layout that best describes your space",
     "ui.ad_form_save": "Save Changes",
     "ui.ad_form_save_failed": "Failed to save ad",
     "ui.ad_form_seats_hint": "e.g. 2",
@@ -618,18 +672,21 @@ abstract final class BundledTranslations {
     "ui.ad_form_selected_of": "Selected {count} of {total}",
     "ui.ad_form_street": "STREET ADDRESS / BUILDING LOCATION",
     "ui.ad_form_street_hint": "e.g. House 14, Road 3, Block A, Mirpur 10",
-    "ui.ad_form_title_hint": "e.g. 2 seats available in student mess — Mirpur 10",
+    "ui.ad_form_title_hint":
+        "e.g. 2 seats available in student mess — Mirpur 10",
     "ui.ad_form_title_required": "Please enter an ad title",
     "ui.ad_form_total_hint": "e.g. 10500",
     "ui.ad_form_total_rent": "TOTAL ROOM RENT (৳)",
     "ui.ad_form_updated": "Seat ad updated successfully!",
-    "ui.ad_form_upload_sub": "Tap to add up to 6 high quality images. First photo will be the cover.",
+    "ui.ad_form_upload_sub":
+        "Tap to add up to 6 high quality images. First photo will be the cover.",
     "ui.ad_form_upload_title": "Upload Room & Mess Photos",
     "ui.ad_form_whatsapp": "WHATSAPP NUMBER",
     "ui.ads_all_rooms": "All Room Types",
     "ui.ads_clear_all": "Clear All",
     "ui.ads_clear_filters": "Clear Filters",
-    "ui.ads_empty_sub": "Try adjusting your search query, location or room type filter.",
+    "ui.ads_empty_sub":
+        "Try adjusting your search query, location or room type filter.",
     "ui.ads_empty_title": "No matching seats found",
     "ui.ads_find_title": "Find Mess Seats",
     "ui.ads_load_error": "Could not load mess seats",
@@ -645,9 +702,11 @@ abstract final class BundledTranslations {
     "ui.bazar_announce": "Announce",
     "ui.bazar_announce_all": "ANNOUNCEMENT TO ALL MEMBERS",
     "ui.bazar_announce_desc": "One message to every member of",
-    "ui.bazar_announce_desc2": "everyone gets the same email (staff rows skipped).",
+    "ui.bazar_announce_desc2":
+        "everyone gets the same email (staff rows skipped).",
     "ui.bazar_announcement_empty": "Please write an announcement message",
-    "ui.bazar_announcement_hint": "Write important mess announcement for all members...",
+    "ui.bazar_announcement_hint":
+        "Write important mess announcement for all members...",
     "ui.bazar_announcement_msg": "ANNOUNCEMENT MESSAGE *",
     "ui.bazar_assign_duty": "Assign Duty",
     "ui.bazar_assign_first": "Assign First Duty",
@@ -655,7 +714,8 @@ abstract final class BundledTranslations {
     "ui.bazar_broadcast_sub": "SMTP broadcast to all",
     "ui.bazar_broadcast_title": "Broadcast Announcement",
     "ui.bazar_broadcasting": "Broadcasting...",
-    "ui.bazar_current_not_in_month": "Current day is not in this month schedule",
+    "ui.bazar_current_not_in_month":
+        "Current day is not in this month schedule",
     "ui.bazar_days_assigned": "Days Assigned",
     "ui.bazar_days_open": "Days Open",
     "ui.bazar_days_scheduled": "day(s) scheduled in",
@@ -667,13 +727,16 @@ abstract final class BundledTranslations {
     "ui.bazar_member_hint": "Choose mess member...",
     "ui.bazar_next3": "Next 3 Days",
     "ui.bazar_no_assignments": "No Assignments Yet for",
-    "ui.bazar_no_assignments_sub": "Add one date or date range at a time using the calendar picker above.",
-    "ui.bazar_no_instructions": "No instructions — manager can add what to bring via Edit or Notify.",
+    "ui.bazar_no_assignments_sub":
+        "Add one date or date range at a time using the calendar picker above.",
+    "ui.bazar_no_instructions":
+        "No instructions — manager can add what to bring via Edit or Notify.",
     "ui.bazar_none_staff": "— None (Use Staff Name Below) —",
     "ui.bazar_note_hint": "e.g. Buy fish, vegetables, and 5kg Miniket rice",
     "ui.bazar_note_label": "DUTY NOTE / SHOPPING LIST (OPTIONAL)",
     "ui.bazar_notes_instructions": "NOTES / INSTRUCTIONS",
-    "ui.bazar_notify_note_hint": "e.g. Please bring 5kg Ruhi fish, onions, and oil",
+    "ui.bazar_notify_note_hint":
+        "e.g. Please bring 5kg Ruhi fish, onions, and oil",
     "ui.bazar_notify_title": "Notify Assignee via Email",
     "ui.bazar_quick_presets": "QUICK PRESETS",
     "ui.bazar_recipient_email": "RECIPIENT EMAIL *",
@@ -705,7 +768,8 @@ abstract final class BundledTranslations {
     "ui.bazar_with_email": "with email",
     "ui.bengali": "Bengali",
     "ui.blog_article_summary": "ARTICLE SUMMARY",
-    "ui.blog_editorial_sub": "Tips & guides for mess managers, seat seekers & members.",
+    "ui.blog_editorial_sub":
+        "Tips & guides for mess managers, seat seekers & members.",
     "ui.blog_editorial_team": "MessMax Editorial Team",
     "ui.blog_empty": "No guides found",
     "ui.blog_empty_sub": "No articles match your search or filter.",
@@ -715,7 +779,8 @@ abstract final class BundledTranslations {
     "ui.blog_saved": "Saved",
     "ui.blog_search": "Search articles, guides, topics…",
     "ui.blog_sharing": "Sharing",
-    "ui.blog_subtitle": "Articles & tips on room hunting and mess meal management",
+    "ui.blog_subtitle":
+        "Articles & tips on room hunting and mess meal management",
     "ui.blog_title": "MessMax Guides",
     "ui.card_details": "Details →",
     "ui.card_new_listing": "New listing",
@@ -729,25 +794,33 @@ abstract final class BundledTranslations {
     "ui.card_view_details": "View Details",
     "ui.change_language": "Change Language",
     "ui.confirm_clear_month_label": "Clear Month",
-    "ui.confirm_clear_month_message": "Are you sure you want to remove all bazar duties and assignments for {month}? This cannot be undone.",
+    "ui.confirm_clear_month_message":
+        "Are you sure you want to remove all bazar duties and assignments for {month}? This cannot be undone.",
     "ui.confirm_clear_month_title": "Clear Entire Month?",
     "ui.confirm_delete_ad_label": "Delete Ad",
-    "ui.confirm_delete_ad_message": "Are you sure you want to delete this seat listing? It will no longer be visible to prospective members.",
+    "ui.confirm_delete_ad_message":
+        "Are you sure you want to delete this seat listing? It will no longer be visible to prospective members.",
     "ui.confirm_delete_ad_title": "Delete Seat Ad?",
     "ui.confirm_delete_deposit_label": "Delete Deposit",
-    "ui.confirm_delete_deposit_message": "This will permanently remove this deposit entry and recalculate member balances.",
+    "ui.confirm_delete_deposit_message":
+        "This will permanently remove this deposit entry and recalculate member balances.",
     "ui.confirm_delete_deposit_title": "Delete Deposit?",
     "ui.confirm_delete_mess_label": "Delete Mess",
-    "ui.confirm_delete_mess_message": "Are you sure you want to delete this mess? All data, member accounts, sheets, and bazar records will be permanently removed. This action cannot be undone.",
+    "ui.confirm_delete_mess_message":
+        "Are you sure you want to delete this mess? All data, member accounts, sheets, and bazar records will be permanently removed. This action cannot be undone.",
     "ui.confirm_delete_mess_title": "Delete Mess?",
     "ui.confirm_delete_sheet_label": "Delete Sheet",
-    "ui.confirm_delete_sheet_message": "Are you sure you want to delete this monthly sheet? All daily meals, bazar entries, deposits, requests and receipts for this month will be permanently removed. This action cannot be undone.",
-    "ui.confirm_delete_sheet_message_dynamic": "Delete {label}? All daily meals, bazar entries, deposits, requests and receipts for this month will be permanently removed. This action cannot be undone.",
+    "ui.confirm_delete_sheet_message":
+        "Are you sure you want to delete this monthly sheet? All daily meals, bazar entries, deposits, requests and receipts for this month will be permanently removed. This action cannot be undone.",
+    "ui.confirm_delete_sheet_message_dynamic":
+        "Delete {label}? All daily meals, bazar entries, deposits, requests and receipts for this month will be permanently removed. This action cannot be undone.",
     "ui.confirm_delete_sheet_title": "Delete Monthly Sheet?",
-    "ui.confirm_remove_bazar_message": "Are you sure you want to remove this assigned duty on day {day}?",
+    "ui.confirm_remove_bazar_message":
+        "Are you sure you want to remove this assigned duty on day {day}?",
     "ui.confirm_remove_bazar_title": "Remove Bazar Duty?",
     "ui.confirm_remove_member_label": "Remove Member",
-    "ui.confirm_remove_member_message": "Are you sure you want to remove {name} from the active mess roster? All active associations will be removed.",
+    "ui.confirm_remove_member_message":
+        "Are you sure you want to remove {name} from the active mess roster? All active associations will be removed.",
     "ui.confirm_remove_member_title": "Remove Member?",
     "ui.dash_active": "Active",
     "ui.dash_active_month": "Active Month",
@@ -762,8 +835,10 @@ abstract final class BundledTranslations {
     "ui.dash_current_month_spend": "Current month spend",
     "ui.dash_current_rate": "Current Rate",
     "ui.dash_day_prefix": "Day",
-    "ui.dash_empty_desc_hostel": "Create a new mess or join an existing mess with a secret code to start tracking meals.",
-    "ui.dash_empty_desc_individual": "Set up your mess ledger to manage meals, or join an existing mess with a secret code.",
+    "ui.dash_empty_desc_hostel":
+        "Create a new mess or join an existing mess with a secret code to start tracking meals.",
+    "ui.dash_empty_desc_individual":
+        "Set up your mess ledger to manage meals, or join an existing mess with a secret code.",
     "ui.dash_full_schedule": "Full Schedule",
     "ui.dash_full_sheet": "Full Sheet",
     "ui.dash_guest_requests": "Guest requests awaiting manager approval",
@@ -800,7 +875,8 @@ abstract final class BundledTranslations {
     "ui.dash_send_request": "Send Request",
     "ui.dash_sending": "Sending...",
     "ui.dash_setup_new_mess": "Setup New Mess",
-    "ui.dash_sign_in_desc": "Your mess dashboard is only available after you sign in. No guest data is shown.",
+    "ui.dash_sign_in_desc":
+        "Your mess dashboard is only available after you sign in. No guest data is shown.",
     "ui.dash_spent": "Spent",
     "ui.dash_stat_meals": "MEALS",
     "ui.dash_stat_members": "MEMBERS",
@@ -817,7 +893,8 @@ abstract final class BundledTranslations {
     "ui.dash_your_messes": "YOUR MANAGED & MEMBER MESSES",
     "ui.dashboard_subtitle": "Access meal ledger, bazar roster & mess drawer",
     "ui.decline": "Decline",
-    "ui.delete_account_message": "This action is irreversible. All your profile data, mess memberships, seat listings, and active sessions will be permanently removed.",
+    "ui.delete_account_message":
+        "This action is irreversible. All your profile data, mess memberships, seat listings, and active sessions will be permanently removed.",
     "ui.delete_account_title": "Delete Account?",
     "ui.delete_confirm_password_hint": "Enter your password to verify",
     "ui.delete_confirm_password_label": "Confirm Password",
@@ -847,7 +924,8 @@ abstract final class BundledTranslations {
     "ui.drawer_your_messes": "YOUR MESSES",
     "ui.english": "English",
     "ui.exit_confirm": "Exit",
-    "ui.exit_message": "Are you sure you want to close and exit the application?",
+    "ui.exit_message":
+        "Are you sure you want to close and exit the application?",
     "ui.exit_title": "Exit MessMax?",
     "ui.featured_label": "FEATURED",
     "ui.filter_all_areas": "All Areas",
@@ -874,7 +952,8 @@ abstract final class BundledTranslations {
     "ui.home_no_seats": "No seats currently listed.",
     "ui.home_search": "Find Mess",
     "ui.home_search_placeholder": "Search seats, area, city or mess name…",
-    "ui.home_title": "Find & manage your mess  ·  meals, seats and bazar in one place",
+    "ui.home_title":
+        "Find & manage your mess  ·  meals, seats and bazar in one place",
     "ui.language": "Language",
     "ui.language_desc": "Change app language. All screens update instantly.",
     "ui.left_label": "left",
@@ -887,7 +966,8 @@ abstract final class BundledTranslations {
     "ui.members_list_defaults": "Member List & Meal Defaults",
     "ui.members_member_list": "Member List",
     "ui.members_no_members": "No Members Found",
-    "ui.members_no_members_sub": "Add members to start managing daily meals and bazar roster.",
+    "ui.members_no_members_sub":
+        "Add members to start managing daily meals and bazar roster.",
     "ui.members_remove_member": "Remove Member",
     "ui.members_removed": "removed successfully.",
     "ui.members_switch_mess": "Switch Mess:",
@@ -924,8 +1004,10 @@ abstract final class BundledTranslations {
     "ui.mess_new_month": "New Month",
     "ui.mess_no_location": "No location set",
     "ui.mess_no_sheets": "No Active Sheets",
-    "ui.mess_no_sheets_manager": "Open a monthly ledger sheet to start logging daily meals and bazar.",
-    "ui.mess_no_sheets_member": "Waiting for manager or owner to open a month sheet.",
+    "ui.mess_no_sheets_manager":
+        "Open a monthly ledger sheet to start logging daily meals and bazar.",
+    "ui.mess_no_sheets_member":
+        "Waiting for manager or owner to open a month sheet.",
     "ui.mess_now_active": "{label} is now active",
     "ui.mess_open_first_sheet": "Open First Month Sheet",
     "ui.mess_open_matrix": "Open Daily Meal Matrix",
@@ -941,7 +1023,8 @@ abstract final class BundledTranslations {
     "ui.mess_role_admin": "Admin access",
     "ui.mess_role_regular": "Regular tracker",
     "ui.mess_select_active_month": "Select Active Month",
-    "ui.mess_select_active_month_sub": "Choose the sheet to display across the app",
+    "ui.mess_select_active_month_sub":
+        "Choose the sheet to display across the app",
     "ui.mess_send_invite": "Send Invite",
     "ui.mess_set_active": "Set Active",
     "ui.mess_settlement_header": "MEMBER SETTLEMENT",
@@ -956,7 +1039,8 @@ abstract final class BundledTranslations {
     "ui.mess_total": "Total",
     "ui.mess_year_label": "Year",
     "ui.messes_create": "Create Mess",
-    "ui.messes_empty_sub": "Create a mess or ask your manager for an invite to start managing meals and expenses.",
+    "ui.messes_empty_sub":
+        "Create a mess or ask your manager for an invite to start managing meals and expenses.",
     "ui.messes_empty_title": "No Mess Joined Yet",
     "ui.messes_manageable": "manageable",
     "ui.messes_members": "members",
@@ -974,7 +1058,8 @@ abstract final class BundledTranslations {
     "ui.myads_delete_failed": "Failed to delete ad",
     "ui.myads_deleted": "Seat ad deleted successfully",
     "ui.myads_edit": "Edit",
-    "ui.myads_empty_sub": "Post your vacant hostel / mess seats on MessMax to reach thousands of students & jobholders looking for mess seats.",
+    "ui.myads_empty_sub":
+        "Post your vacant hostel / mess seats on MessMax to reach thousands of students & jobholders looking for mess seats.",
     "ui.myads_empty_title": "No Seat Ads Posted Yet",
     "ui.myads_open": "OPEN",
     "ui.myads_per_month": "/ month",
@@ -988,7 +1073,8 @@ abstract final class BundledTranslations {
     "ui.nav_profile": "Profile",
     "ui.no_matches": "No matches",
     "ui.notif_all_read": "All notifications marked as read.",
-    "ui.notif_empty_sub": "Stay tuned! New seat alerts, verified mess announcements, and exclusive student promos will appear here.",
+    "ui.notif_empty_sub":
+        "Stay tuned! New seat alerts, verified mess announcements, and exclusive student promos will appear here.",
     "ui.notif_empty_title": "No Marketing Notifications",
     "ui.notif_filter_alerts": "Seat Alerts",
     "ui.notif_filter_all": "All",
@@ -1136,17 +1222,21 @@ abstract final class BundledTranslations {
     "ui.sign_in_required": "Sign in required",
     "ui.sign_in_to_continue": "Sign in to continue.",
     "ui.sign_out": "Sign Out",
-    "ui.sign_out_message": "Are you sure you want to sign out? You will need to log back in to manage your mess, meals, or seat listings.",
+    "ui.sign_out_message":
+        "Are you sure you want to sign out? You will need to log back in to manage your mess, meals, or seat listings.",
     "ui.sign_out_title": "Sign Out?",
     "ui.signup_choose_sub": "Select how you will use MessMax",
     "ui.signup_choose_title": "Choose Account Type",
     "ui.signup_hostel_badge": "MULTI-MESS",
-    "ui.signup_hostel_desc": "Manage multiple messes, post seat vacancy ads, meal counters, bazar ledgers & member deposits.",
+    "ui.signup_hostel_desc":
+        "Manage multiple messes, post seat vacancy ads, meal counters, bazar ledgers & member deposits.",
     "ui.signup_hostel_title": "Hostel Owner / Manager",
     "ui.signup_individual_badge": "SINGLE MESS",
-    "ui.signup_individual_desc": "Join a mess, track your daily meal count, monthly bills, bazar balance & browse available seats.",
+    "ui.signup_individual_desc":
+        "Join a mess, track your daily meal count, monthly bills, bazar balance & browse available seats.",
     "ui.signup_individual_title": "Individual / Member",
-    "ui.signup_info_banner": "You can create or join messes anytime after registration.",
+    "ui.signup_info_banner":
+        "You can create or join messes anytime after registration.",
     "ui.splash_tagline": "Find, manage & run your mess",
     "ui.splash_version": "v1.0.0",
     "ui.try_again": "Try Again",
@@ -1162,7 +1252,8 @@ abstract final class BundledTranslations {
     "ui.welcome_find_messes": "Find Messes",
     "ui.welcome_login": "Log in",
     "ui.welcome_network": "UNIVERSAL MESS NETWORK",
-    "ui.welcome_subtitle": "The complete all-in-one ecosystem for mess members, managers & seat seekers across Bangladesh.",
+    "ui.welcome_subtitle":
+        "The complete all-in-one ecosystem for mess members, managers & seat seekers across Bangladesh.",
     "ui.welcome_title": "Manage Messes, Meals & Find Seats",
     "web.home": "Home",
     "web.find_mess": "Find Mess",
@@ -1181,29 +1272,39 @@ abstract final class BundledTranslations {
     "web.product": "Product",
     "web.support": "Support",
     "web.language": "Language",
-    "web.footer_tagline": "Find a seat or run the whole mess — seats, meals, bazar and balance in one place. Live sheet, monthly handover, invites by email.",
+    "web.footer_tagline":
+        "Find a seat or run the whole mess — seats, meals, bazar and balance in one place. Live sheet, monthly handover, invites by email.",
     "web.footer_stamp": "Free",
     "web.footer_promo_title": "Your mess, finally online.",
-    "web.footer_promo_desc": "Free, universal — the sheet your group already keeps, but shareable in 30 seconds.",
+    "web.footer_promo_desc":
+        "Free, universal — the sheet your group already keeps, but shareable in 30 seconds.",
     "web.create_mess": "Create mess",
-    "web.footer_copyright": "Find & manage your mess · meals, seats and bazar in one place",
+    "web.footer_copyright":
+        "Find & manage your mess · meals, seats and bazar in one place",
     "web.hero_pill": "Live digital mess ledger · Universal & instant",
     "web.hero_title": "Your mess ledger, digitised.",
-    "web.hero_sub": "Track daily meals, bazar spend & member balances — exactly like your handwritten sheet, but instant.",
+    "web.hero_sub":
+        "Track daily meals, bazar spend & member balances — exactly like your handwritten sheet, but instant.",
     "web.open_free_mess": "Open a free mess",
     "web.browse_seats": "Browse seats available",
     "web.features_title": "Everything you need to manage your mess ledger",
-    "web.features_sub": "From daily meals to shared bazar receipts and monthly settlements.",
+    "web.features_sub":
+        "From daily meals to shared bazar receipts and monthly settlements.",
     "web.daily_meal_tracking": "Daily Meal Tracking",
-    "web.daily_meal_desc": "Track breakfast, lunch, dinner for every member per day. Mark meal-off with one click.",
+    "web.daily_meal_desc":
+        "Track breakfast, lunch, dinner for every member per day. Mark meal-off with one click.",
     "web.bazar_records": "Bazar & Receipt Records",
-    "web.bazar_desc": "Record itemized bazar with prices and receipts. Automatic meal rate calculation.",
+    "web.bazar_desc":
+        "Record itemized bazar with prices and receipts. Automatic meal rate calculation.",
     "web.settlement_title": "Transparent Settlements",
-    "web.settlement_desc": "Instant balance calculations. Know exactly who owes or gets a refund at month end.",
+    "web.settlement_desc":
+        "Instant balance calculations. Know exactly who owes or gets a refund at month end.",
     "web.seat_finder_title": "Find Open Mess Seats",
-    "web.seat_finder_desc": "Discover available seats in messes and hostels across major cities in Bangladesh.",
+    "web.seat_finder_desc":
+        "Discover available seats in messes and hostels across major cities in Bangladesh.",
     "web.seats_posted_by_managers": "Seats · posted by managers",
-    "web.ads_find_mess_desc": "Individual mess managers and hostel owners post here when a seat opens. Contact the poster directly — MessMax just hosts the board.",
+    "web.ads_find_mess_desc":
+        "Individual mess managers and hostel owners post here when a seat opens. Contact the poster directly — MessMax just hosts the board.",
     "web.post_a_seat": "Post a seat",
     "web.create_mess_to_post": "Create mess to post",
     "web.ads_search": "Search",
@@ -1218,7 +1319,8 @@ abstract final class BundledTranslations {
     "web.results": "results",
     "web.result": "result",
     "web.no_seats_yet": "No seats posted yet",
-    "web.no_seats_desc": "When a manager posts a seat, it appears here — with rent, room type and contact.",
+    "web.no_seats_desc":
+        "When a manager posts a seat, it appears here — with rent, room type and contact.",
     "web.room_type": "Room type",
     "web.amenities": "Amenities",
     "web.details": "Details",
@@ -1234,7 +1336,8 @@ abstract final class BundledTranslations {
     "web.at_a_glance": "At a glance",
     "web.browse_more_seats": "Browse more seats",
     "web.more_in_nearby": "More in :area nearby",
-    "web.about_title": "Built from a spreadsheet passed around in a group chat.",
+    "web.about_title":
+        "Built from a spreadsheet passed around in a group chat.",
     "web.contact_title": "Drop a note in the margin.",
     "web.contact_name": "Name",
     "web.contact_email": "Email",
@@ -1253,8 +1356,10 @@ abstract final class BundledTranslations {
     "web.just_posted_newest_first": "Just posted — newest first.",
     "web.no_new_listings": "No new listings yet.",
     "web.from_the_sheet": "From the sheet",
-    "web.everything_group_tracks": "Everything your group already tracks — now inked online.",
-    "web.sheet_math_sub": "We kept the sheet's math pixel-perfect. Your group just logs — MessMax settles.",
+    "web.everything_group_tracks":
+        "Everything your group already tracks — now inked online.",
+    "web.sheet_math_sub":
+        "We kept the sheet's math pixel-perfect. Your group just logs — MessMax settles.",
     "web.live_spreadsheet": "The live spreadsheet",
     "web.invite_by_email": "Invite by email",
     "web.monthly_manager_rotation": "Monthly manager rotation",
@@ -1262,7 +1367,8 @@ abstract final class BundledTranslations {
     "web.old_way": "The old way",
     "web.messmax_way": "The MessMax way",
     "web.switch_to_messmax": "Switch to MessMax",
-    "web.retire_xlsx": "Retire the forwarded .xlsx — and the diary that never balances.",
+    "web.retire_xlsx":
+        "Retire the forwarded .xlsx — and the diary that never balances.",
     "web.open_messmax_free": "Open MessMax — free",
     "web.talk_to_us": "Talk to us",
   };
