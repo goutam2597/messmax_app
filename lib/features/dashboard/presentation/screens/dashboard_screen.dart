@@ -1955,31 +1955,91 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'ui.dash_member_name'.tr2,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.inkFaded,
+                    Expanded(
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.dash_member_name'.tr2,
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
                       ),
                     ),
-                    Text(
-                      'ui.dash_bld'.tr2,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.inkFaded,
-                        letterSpacing: 1,
+                    SizedBox(
+                      width: 78,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 22,
+                            child: Center(
+                              child: ValueListenableBuilder<int>(
+                                valueListenable: AppTranslations.notifier,
+                                builder: (context, _, _) => Text(
+                                  AppTranslations.locale == 'bn' ? 'স' : 'B',
+                                  style: const TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            width: 22,
+                            child: Center(
+                              child: ValueListenableBuilder<int>(
+                                valueListenable: AppTranslations.notifier,
+                                builder: (context, _, _) => Text(
+                                  AppTranslations.locale == 'bn' ? 'দু' : 'L',
+                                  style: const TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            width: 22,
+                            child: Center(
+                              child: ValueListenableBuilder<int>(
+                                valueListenable: AppTranslations.notifier,
+                                builder: (context, _, _) => Text(
+                                  AppTranslations.locale == 'bn' ? 'রা' : 'D',
+                                  style: const TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      'ui.dash_total'.tr2,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.inkFaded,
+                    const SizedBox(width: 20),
+                    SizedBox(
+                      width: 32,
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          'ui.dash_total'.tr2,
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
                       ),
                     ),
                   ],

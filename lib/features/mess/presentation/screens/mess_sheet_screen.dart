@@ -1441,20 +1441,40 @@ class _SheetViewState extends State<_SheetView>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
-            Icon(
-              Icons.restaurant_menu_rounded,
-              size: 14,
-              color: AppColors.brandDark,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.restaurant_menu_rounded,
+                  size: 14,
+                  color: AppColors.brandDark,
+                ),
+                const SizedBox(width: 5),
+                ValueListenableBuilder<int>(
+                  valueListenable: AppTranslations.notifier,
+                  builder: (context, _, _) => Text(
+                    'ui.sheet_tab_logs'.tr2 == 'Daily Log' ? 'MEAL ATTENDANCE' : 'দৈনিক মিল',
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.inkFaded,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 5),
-            Text(
-              'MEAL ATTENDANCE (B · L · D)',
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w800,
-                color: AppColors.inkFaded,
-                letterSpacing: 0.5,
+            ValueListenableBuilder<int>(
+              valueListenable: AppTranslations.notifier,
+              builder: (context, _, _) => Text(
+                'ui.dash_bld'.tr2,
+                style: const TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.inkFaded,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
           ],
@@ -5500,13 +5520,32 @@ class _SheetViewState extends State<_SheetView>
                               color: AppColors.paperLine,
                             ),
                             const SizedBox(height: 14),
-                            const Text(
-                              'MEMBER MEALS (B · L · D)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.inkFaded,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Text(
+                                    'ui.members_total'.tr2.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.inkFaded,
+                                    ),
+                                  ),
+                                ),
+                                ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Text(
+                                    'ui.dash_bld'.tr2,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.inkFaded,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 10),
                             for (final m in members) ...[
