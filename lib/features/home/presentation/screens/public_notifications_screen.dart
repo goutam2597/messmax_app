@@ -620,34 +620,6 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
               const PopupMenuItem(value: 'clear_all', child: Text('Clear all', style: TextStyle(color: Color(0xFFD32F2F)))),
             ],
           ),
-          if (_unreadCount > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: Center(
-                child: TextButton(
-                  onPressed: _markAllAsRead,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: ValueListenableBuilder<int>(
-                    valueListenable: AppTranslations.notifier,
-                    builder: (context, _, _) => Text(
-                      'ui.notif_mark_read'.tr2,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.brandDark,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
       body: SafeArea(
