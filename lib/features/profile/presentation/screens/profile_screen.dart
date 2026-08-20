@@ -573,9 +573,9 @@ class ProfileScreen extends StatelessWidget {
               subtitle: 'ui.quick_post_seat_sub'.tr2,
               isAccent: true,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('ui.quick_post_seat_soon'.tr2)),
-                );
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
               },
             ),
           ),
@@ -588,8 +588,8 @@ class ProfileScreen extends StatelessWidget {
               subtitle: 'ui.quick_meal_counter_sub'.tr2,
               isAccent: false,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('ui.quick_meal_counter_soon'.tr2)),
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
                 );
               },
             ),
@@ -655,6 +655,8 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 11.5,
                 color: isAccent
@@ -714,6 +716,10 @@ class ProfileScreen extends StatelessWidget {
         Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const MyAdsScreen()));
+      } else if (item.icon == Icons.event_note_rounded) {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const DashboardScreen()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${item.title} \u2014 coming soon')),

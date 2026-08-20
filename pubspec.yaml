@@ -78,3 +78,18 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/fonts/
+
+  fonts:
+    - family: LiAdorNoirrit
+      fonts:
+        - asset: assets/fonts/Li_Ador_Noirrit_Light.ttf
+          weight: 300
+        - asset: assets/fonts/Li_Ador_Noirrit_Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Li_Ador_Noirrit_SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Li_Ador_Noirrit_Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Li_Ador_Noirrit_Italic.ttf
+          style: italic

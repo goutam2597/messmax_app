@@ -635,7 +635,7 @@ class _MembersViewState extends State<_MembersView> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      member.defaultDisplay,
+                      member.defaultDisplay.toBnNum(),
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w900,

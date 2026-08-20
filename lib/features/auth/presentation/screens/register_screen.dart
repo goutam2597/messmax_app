@@ -401,7 +401,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                             color: AppColors.brandDark,
-                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),

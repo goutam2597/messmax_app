@@ -421,7 +421,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                         ).showSnackBar(
                                           SnackBar(
                                             content: Text(
-                                              'ui.bazar_current_not_in_month'.tr2,
+                                              'ui.bazar_current_not_in_month'
+                                                  .tr2,
                                             ),
                                           ),
                                         );
@@ -552,16 +553,19 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                               items: [
                                 DropdownMenuItem<int?>(
                                   value: null,
-                                  child: Text(
-                                    'ui.bazar_none_staff'.tr2,
-                                  ),
+                                  child: Text('ui.bazar_none_staff'.tr2),
                                 ),
-                                ...data.members.map(
-                                  (m) => DropdownMenuItem<int?>(
+                                ...data.members.map((m) {
+                                  final rLabel = m.role.toLowerCase() == 'owner'
+                                      ? 'ui.role_owner'.tr2
+                                      : (m.role.toLowerCase() == 'manager'
+                                            ? 'ui.role_manager'.tr2
+                                            : 'ui.role_member'.tr2);
+                                  return DropdownMenuItem<int?>(
                                     value: m.id,
-                                    child: Text('${m.name} (${m.role})'),
-                                  ),
-                                ),
+                                    child: Text('${m.name} ($rLabel)'),
+                                  );
+                                }),
                               ],
                               onChanged: (val) {
                                 setSheetState(() {
@@ -616,8 +620,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             TextField(
                               controller: noteController,
                               decoration: InputDecoration(
-                                hintText:
-                                    'ui.bazar_note_hint'.tr2,
+                                hintText: 'ui.bazar_note_hint'.tr2,
                                 prefixIcon: Icon(
                                   Icons.notes_rounded,
                                   size: 20,
@@ -717,14 +720,23 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
     BazarDayItemModel item,
   ) {
     final notesController = TextEditingController();
-    final member = item.messMemberId != null
-        ? data.members.firstWhere(
-            (m) => m.id == item.messMemberId,
-            orElse: () => const BazarMemberModel(id: 0, name: '', role: ''),
-          )
-        : null;
-    final defaultEmail = member?.email ?? '';
-    final emailController = TextEditingController(text: defaultEmail);
+
+    // Filter members that have a non-empty email
+    final membersWithEmail = data.members
+        .where((m) => m.email != null && m.email!.trim().isNotEmpty)
+        .toList();
+
+    // Determine initial selected member ID
+    int? selectedMemberId = item.messMemberId;
+    if (selectedMemberId != null) {
+      final exists = membersWithEmail.any((m) => m.id == selectedMemberId);
+      if (!exists && membersWithEmail.isNotEmpty) {
+        selectedMemberId = membersWithEmail.first.id;
+      }
+    } else if (membersWithEmail.isNotEmpty) {
+      selectedMemberId = membersWithEmail.first.id;
+    }
+
     bool isSendingNotify = false;
 
     showDialog(
@@ -733,6 +745,12 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            final selectedMember = membersWithEmail.firstWhere(
+              (m) => m.id == selectedMemberId,
+              orElse: () => const BazarMemberModel(id: 0, name: '', role: ''),
+            );
+            final targetEmail = selectedMember.email ?? '';
+
             return Dialog(
               backgroundColor: AppColors.paperRaised,
               insetPadding: const EdgeInsets.symmetric(
@@ -776,7 +794,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                               children: [
                                 Text(
                                   'ui.bazar_notify_title'.tr2,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w900,
                                     color: AppColors.ink,
@@ -784,7 +802,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 ),
                                 const SizedBox(height: 1),
                                 Text(
-                                  '${item.dateLabel} (${item.displayName})',
+                                  selectedMember.name,
                                   style: const TextStyle(
                                     fontSize: 11.5,
                                     color: AppColors.inkFaded,
@@ -831,30 +849,73 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                           children: [
                             Text(
                               'ui.bazar_recipient_email'.tr2,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.inkSoft,
                               ),
                             ),
                             const SizedBox(height: 6),
-                            TextField(
-                              controller: emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
-                                hintText: 'ui.bazar_email_hint'.tr2,
-                                prefixIcon: Icon(
-                                  Icons.email_outlined,
-                                  size: 20,
-                                  color: AppColors.inkFaded,
+                            if (membersWithEmail.isEmpty)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.paper,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.paperLine,
+                                  ),
                                 ),
+                                child: Text(
+                                  'ui.bazar_no_members_with_email'.tr2,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                ),
+                              )
+                            else
+                              DropdownButtonFormField<int>(
+                                initialValue: selectedMemberId,
+                                isExpanded: true,
+                                decoration: const InputDecoration(
+                                  prefixIcon: Icon(
+                                    Icons.email_outlined,
+                                    size: 20,
+                                    color: AppColors.inkFaded,
+                                  ),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                items: membersWithEmail.map((m) {
+                                  return DropdownMenuItem<int>(
+                                    value: m.id,
+                                    child: Text(
+                                      '${m.name} (${m.email})',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setSheetState(() {
+                                      selectedMemberId = val;
+                                    });
+                                  }
+                                },
                               ),
-                            ),
                             const SizedBox(height: 14),
 
                             Text(
                               'ui.bazar_additional_notes'.tr2,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.inkSoft,
@@ -865,8 +926,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                               controller: notesController,
                               maxLines: 3,
                               decoration: InputDecoration(
-                                hintText:
-                                    'ui.bazar_notify_note_hint'.tr2,
+                                hintText: 'ui.bazar_notify_note_hint'.tr2,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -874,24 +934,10 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             SizedBox(
                               width: double.infinity,
                               child: FilledButton.icon(
-                                onPressed: isSendingNotify
+                                onPressed:
+                                    (isSendingNotify || targetEmail.isEmpty)
                                     ? null
                                     : () async {
-                                        final email = emailController.text
-                                            .trim();
-                                        if (email.isEmpty ||
-                                            !email.contains('@')) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                'ui.bazar_invalid_email'.tr2,
-                                              ),
-                                            ),
-                                          );
-                                          return;
-                                        }
                                         setSheetState(
                                           () => isSendingNotify = true,
                                         );
@@ -902,7 +948,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                                 day: item.day,
                                                 notes: notesController.text
                                                     .trim(),
-                                                emailOverride: email,
+                                                emailOverride: targetEmail,
                                               );
                                           if (context.mounted) {
                                             Navigator.pop(ctx);
@@ -976,200 +1022,200 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           elevation: 0,
           scrolledUnderElevation: 0.5,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
-          leading: AppBackButton(
-            onPressed: _backToDashboard,
-          ),
-        title: BlocBuilder<BazarScheduleCubit, BazarScheduleState>(
-          builder: (context, state) {
-            final mess = state is BazarScheduleLoaded
-                ? state.schedule.mess
-                : null;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                                Text(
-                                  'ui.bazar_schedule_title'.tr2,
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.ink,
-                  ),
-                ),
-                Text(
-                  mess != null ? mess.name : 'ui.bazar_shopping_rota'.tr2,
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color: AppColors.inkFaded,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => context
-                      .read<BazarScheduleCubit>()
-                      .loadSchedule(forceRefresh: true),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.paper,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.paperLine),
+          leading: AppBackButton(onPressed: _backToDashboard),
+          title: BlocBuilder<BazarScheduleCubit, BazarScheduleState>(
+            builder: (context, state) {
+              final mess = state is BazarScheduleLoaded
+                  ? state.schedule.mess
+                  : null;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ui.bazar_schedule_title'.tr2,
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.ink,
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.refresh_rounded,
-                        color: AppColors.ink,
-                        size: 18,
+                  ),
+                  Text(
+                    mess != null ? mess.name : 'ui.bazar_shopping_rota'.tr2,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.inkFaded,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context
+                        .read<BazarScheduleCubit>()
+                        .loadSchedule(forceRefresh: true),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.paper,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.paperLine),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.refresh_rounded,
+                          color: AppColors.ink,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: BlocConsumer<BazarScheduleCubit, BazarScheduleState>(
-          listener: (context, state) {
-            if (state is BazarScheduleLoaded && state.successMessage != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.successMessage!),
-                  backgroundColor: AppColors.brandDark,
-                ),
-              );
-            } else if (state is BazarScheduleError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppColors.danger,
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            if (state is BazarScheduleLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.brandDark),
-              );
-            }
-
-            if (state is BazarScheduleError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: const BoxDecoration(
-                          color: AppColors.accentSoft,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.error_outline_rounded,
-                          size: 36,
-                          color: AppColors.accentDark,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        state.message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.inkSoft,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      FilledButton.icon(
-                        onPressed: () => context
-                            .read<BazarScheduleCubit>()
-                            .loadSchedule(forceRefresh: true),
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: Text('ui.try_again'.tr2),
-                      ),
-                    ],
+          ],
+        ),
+        body: SafeArea(
+          child: BlocConsumer<BazarScheduleCubit, BazarScheduleState>(
+            listener: (context, state) {
+              if (state is BazarScheduleLoaded &&
+                  state.successMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.successMessage!),
+                    backgroundColor: AppColors.brandDark,
                   ),
-                ),
-              );
-            }
+                );
+              } else if (state is BazarScheduleError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: AppColors.danger,
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              if (state is BazarScheduleLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.brandDark),
+                );
+              }
 
-            if (state is BazarScheduleLoaded) {
-              final data = state.schedule;
-              final assignedRows = data.schedules
-                  .where((s) => s.isAssigned)
-                  .toList();
+              if (state is BazarScheduleError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: const BoxDecoration(
+                            color: AppColors.accentSoft,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.error_outline_rounded,
+                            size: 36,
+                            color: AppColors.accentDark,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          state.message,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.inkSoft,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        FilledButton.icon(
+                          onPressed: () => context
+                              .read<BazarScheduleCubit>()
+                              .loadSchedule(forceRefresh: true),
+                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                          label: Text('ui.try_again'.tr2),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
 
-              return RefreshIndicator(
-                color: AppColors.brandDark,
-                onRefresh: () => context
-                    .read<BazarScheduleCubit>()
-                    .loadSchedule(forceRefresh: true),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // --- 1. HERO MONTH HEADER & STATS CARD ---
-                      _buildHeroMonthCard(context, data),
-                      const SizedBox(height: 20),
+              if (state is BazarScheduleLoaded) {
+                final data = state.schedule;
+                final assignedRows = data.schedules
+                    .where((s) => s.isAssigned)
+                    .toList();
 
-                      // --- 2. MANAGER ACTIONS TOOLBAR ---
-                      _buildSectionHeader(
-                        Icons.list_alt_rounded,
-                        '${'ui.bazar_rota_header'.tr2} (${bnDigits(data.assignedCount)}/${bnDigits(data.daysInMonth)} ${'ui.bazar_days_assigned'.tr2})',
-                      ),
-                    const SizedBox(height: 10),
-                    if (data.canManage)
-                      _buildManagerToolbar(context, data, assignedRows),
-                    const SizedBox(height: 14),
+                return RefreshIndicator(
+                  color: AppColors.brandDark,
+                  onRefresh: () => context
+                      .read<BazarScheduleCubit>()
+                      .loadSchedule(forceRefresh: true),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // --- 1. HERO MONTH HEADER & STATS CARD ---
+                        _buildHeroMonthCard(context, data),
+                        const SizedBox(height: 20),
 
-                    // --- 3. ASSIGNED ROTA DAY CARDS OR ELEGANT EMPTY STATE ---
-                    if (assignedRows.isEmpty)
-                      _buildEmptyRotaCard(context, data)
-                    else
-                      Column(
-                        children: [
-                          for (int i = 0; i < assignedRows.length; i++) ...[
-                            if (i > 0) const SizedBox(height: 12),
-                            _buildAssignedDayCard(
-                              context,
-                              data,
-                              assignedRows[i],
-                            ),
-                          ],
-                        ],
-                      ),
-                    const SizedBox(height: 24),
+                        // --- 2. MANAGER ACTIONS TOOLBAR ---
+                        _buildSectionHeader(
+                          Icons.list_alt_rounded,
+                          '${'ui.bazar_rota_header'.tr2} (${bnDigits(data.assignedCount)}/${bnDigits(data.daysInMonth)} ${'ui.bazar_days_assigned'.tr2})',
+                        ),
+                        const SizedBox(height: 10),
+                        if (data.canManage)
+                          _buildManagerToolbar(context, data, assignedRows),
+                        const SizedBox(height: 14),
 
-                    // --- 4. ANNOUNCEMENT BROADCAST CARD AT BOTTOM ---
-                    if (data.canManage) _buildAnnouncementCard(context, data),
-                  ],
-                ),
-              ),
-              );
-            }
+                        // --- 3. ASSIGNED ROTA DAY CARDS OR ELEGANT EMPTY STATE ---
+                        if (assignedRows.isEmpty)
+                          _buildEmptyRotaCard(context, data)
+                        else
+                          Column(
+                            children: [
+                              for (int i = 0; i < assignedRows.length; i++) ...[
+                                if (i > 0) const SizedBox(height: 12),
+                                _buildAssignedDayCard(
+                                  context,
+                                  data,
+                                  assignedRows[i],
+                                ),
+                              ],
+                            ],
+                          ),
+                        const SizedBox(height: 24),
 
-            return const SizedBox.shrink();
-          },
+                        // --- 4. ANNOUNCEMENT BROADCAST CARD AT BOTTOM ---
+                        if (data.canManage)
+                          _buildAnnouncementCard(context, data),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
-    ),
     );
   }
 
@@ -1428,7 +1474,10 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                   context,
                   title: 'ui.confirm_clear_month_title'.tr2,
                   itemName: data.monthLabel,
-                  message: 'ui.confirm_clear_month_message'.tr2.replaceAll('{month}', data.monthLabel),
+                  message: 'ui.confirm_clear_month_message'.tr2.replaceAll(
+                    '{month}',
+                    data.monthLabel,
+                  ),
                   confirmLabel: 'ui.confirm_clear_month_label'.tr2,
                   icon: Icons.delete_sweep_outlined,
                 );
@@ -1646,8 +1695,10 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                           final confirm = await ConfirmDeleteDialog.show(
                             context,
                             title: 'ui.confirm_remove_bazar_title'.tr2,
-                            itemName: member?.name ?? item.memberName ?? 'Member',
-                            message: 'ui.confirm_remove_bazar_message'.tr2.replaceAll('{day}', item.day.toString()),
+                            itemName:
+                                member?.name ?? item.memberName ?? 'Member',
+                            message: 'ui.confirm_remove_bazar_message'.tr2
+                                .replaceAll('{day}', item.day.toString()),
                             confirmLabel: 'ui.bazar_remove_duty'.tr2,
                             icon: Icons.assignment_late_outlined,
                           );
@@ -1751,16 +1802,16 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.sticky_note_2_outlined,
-                size: 14,
-                color: AppColors.brandDark,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'ui.bazar_notes_instructions'.tr2,
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.sticky_note_2_outlined,
+                      size: 14,
+                      color: AppColors.brandDark,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'ui.bazar_notes_instructions'.tr2,
                       style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w900,
@@ -1939,8 +1990,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                               controller: messageController,
                               maxLines: 4,
                               decoration: InputDecoration(
-                                hintText:
-                                    'ui.bazar_announcement_hint'.tr2,
+                                hintText: 'ui.bazar_announcement_hint'.tr2,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -1959,7 +2009,8 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                           ).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'ui.bazar_announcement_empty'.tr2,
+                                                'ui.bazar_announcement_empty'
+                                                    .tr2,
                                               ),
                                             ),
                                           );
@@ -2061,7 +2112,11 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
         children: [
           Row(
             children: [
-              const Icon(Icons.campaign_outlined, color: Color(0xFFFFD1A3), size: 22),
+              const Icon(
+                Icons.campaign_outlined,
+                color: Color(0xFFFFD1A3),
+                size: 22,
+              ),
               const SizedBox(width: 8),
               Text(
                 'ui.bazar_announce_all'.tr2,
@@ -2170,9 +2225,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                       if (msg.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                              'ui.bazar_announcement_empty'.tr2,
-                            ),
+                            content: Text('ui.bazar_announcement_empty'.tr2),
                           ),
                         );
                         return;

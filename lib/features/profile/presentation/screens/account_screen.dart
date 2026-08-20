@@ -833,51 +833,59 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(height: 14),
           for (var i = 0; i < messes.length; i++) ...[
             if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(10),
+            InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandSoft,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.home_work_rounded,
+                        size: 18,
+                        color: AppColors.brandDark,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.home_work_rounded,
-                      size: 18,
-                      color: AppColors.brandDark,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          messes[i].name,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.ink,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            messes[i].name,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '${messes[i].membersCount} ${'ui.messes_members'.tr2} • ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.inkFaded,
+                          Text(
+                            '${messes[i].membersCount} ${'ui.messes_members'.tr2} • ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              color: AppColors.inkFaded,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.inkFaded,
-                    size: 20,
-                  ),
-                ],
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.inkFaded,
+                      size: 20,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

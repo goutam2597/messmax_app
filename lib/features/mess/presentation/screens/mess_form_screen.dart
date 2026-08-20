@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../data/models/mess_model.dart';
@@ -206,7 +207,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              widget.mess == null ? 'Mess created successfully' : 'Mess updated successfully',
+              widget.mess == null ? 'ui.mess_created'.tr2 : 'ui.mess_updated_success'.tr2,
             ),
           ),
         );
@@ -237,9 +238,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'BASIC INFORMATION',
-                  style: TextStyle(
+                Text(
+                  'ui.mess_basic_info'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     color: AppColors.inkFaded,
@@ -247,9 +248,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'MESS NAME *',
-                  style: TextStyle(
+                Text(
+                  'ui.mess_name_required'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: AppColors.inkFaded,
@@ -259,19 +260,19 @@ class _MessFormScreenState extends State<MessFormScreen> {
                 TextFormField(
                   controller: _name,
                   validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Name required' : null,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Sunrise Mess / Green View',
-                    prefixIcon: Icon(
+                      v == null || v.trim().isEmpty ? 'ui.mess_name_required_error'.tr2 : null,
+                  decoration: InputDecoration(
+                    hintText: 'ui.mess_name_hint'.tr2,
+                    prefixIcon: const Icon(
                       Icons.apartment_rounded,
                       color: AppColors.inkFaded,
                     ),
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
-                  'LOCATION / ADDRESS (OPTIONAL)',
-                  style: TextStyle(
+                Text(
+                  'ui.mess_location_label'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: AppColors.inkFaded,
@@ -280,9 +281,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _location,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Mirpur 10, Dhaka',
-                    prefixIcon: Icon(
+                  decoration: InputDecoration(
+                    hintText: 'ui.mess_location_hint'.tr2,
+                    prefixIcon: const Icon(
                       Icons.location_on_outlined,
                       color: AppColors.inkFaded,
                     ),
@@ -306,10 +307,10 @@ class _MessFormScreenState extends State<MessFormScreen> {
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'BILLING CYCLE & SCHEDULE',
-                        style: TextStyle(
+                        'ui.mess_billing_cycle_schedule'.tr2,
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w900,
                           color: AppColors.inkFaded,
@@ -331,7 +332,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                           ),
                         ),
                         child: Text(
-                          '${_billingEndDate!.difference(_billingStartDate!).inDays + 1} Days Cycle',
+                          '${(_billingEndDate!.difference(_billingStartDate!).inDays + 1).toString().toBnNum()} ${'ui.days_cycle'.tr2}',
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
@@ -351,9 +352,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'BILLING START DATE',
-                            style: TextStyle(
+                          Text(
+                            'ui.mess_billing_start_date'.tr2,
+                            style: const TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -391,7 +392,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                                     child: Text(
                                       _billingStartDate != null
                                           ? _formatDate(_billingStartDate)
-                                          : 'Select start',
+                                          : 'ui.mess_select_start'.tr2,
                                       style: TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: _billingStartDate != null
@@ -430,9 +431,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'BILLING END DATE',
-                            style: TextStyle(
+                          Text(
+                            'ui.mess_billing_end_date'.tr2,
+                            style: const TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -470,7 +471,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                                     child: Text(
                                       _billingEndDate != null
                                           ? _formatDate(_billingEndDate)
-                                          : 'Select end',
+                                          : 'ui.mess_select_end'.tr2,
                                       style: TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: _billingEndDate != null
@@ -505,9 +506,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Pick any custom range (e.g. 10th to 9th next month, or 1st to 30th). Each month can also override.',
-                  style: TextStyle(
+                Text(
+                  'ui.mess_custom_range_desc'.tr2,
+                  style: const TextStyle(
                     fontSize: 10.5,
                     color: AppColors.inkFaded,
                     height: 1.3,
@@ -516,9 +517,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                 const SizedBox(height: 14),
 
                 // Fallback Cycle Start Day
-                const Text(
-                  'DEFAULT CYCLE START DAY (1..28)',
-                  style: TextStyle(
+                Text(
+                  'ui.mess_default_cycle_day'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: AppColors.inkFaded,
@@ -539,9 +540,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                 const SizedBox(height: 14),
 
                 // Timezone
-                const Text(
-                  'TIMEZONE *',
-                  style: TextStyle(
+                Text(
+                  'ui.mess_timezone_required'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: AppColors.inkFaded,
@@ -571,9 +572,9 @@ class _MessFormScreenState extends State<MessFormScreen> {
                       setState(() => _timezone = v ?? 'Asia/Dhaka'),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Per-mess clock — meal count cut-off and daily sheets roll at 12 AM in this timezone.',
-                  style: TextStyle(
+                Text(
+                  'ui.mess_timezone_desc'.tr2,
+                  style: const TextStyle(
                     fontSize: 10.5,
                     color: AppColors.inkFaded,
                   ),
@@ -606,11 +607,11 @@ class _MessFormScreenState extends State<MessFormScreen> {
               label: Text(
                 _saving
                     ? (isEdit
-                        ? 'Saving...'
-                        : (widget.isIndividual ? 'Setting up...' : 'Creating...'))
+                        ? 'ui.saving'.tr2
+                        : (widget.isIndividual ? 'ui.setting_up'.tr2 : 'ui.creating'.tr2))
                     : (isEdit
-                        ? 'Save Changes'
-                        : (widget.isIndividual ? 'Setup Mess' : 'Create Mess')),
+                        ? 'ui.save_changes'.tr2
+                        : (widget.isIndividual ? 'ui.setup_mess'.tr2 : 'ui.create_new_mess'.tr2)),
                 style: const TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 14,
@@ -659,10 +660,10 @@ class _MessFormScreenState extends State<MessFormScreen> {
                     children: [
                       Text(
                         isEdit
-                            ? 'Edit Mess Details'
+                            ? 'ui.edit_mess_details'.tr2
                             : (widget.isIndividual
-                                ? 'Setup New Mess'
-                                : 'Create New Mess'),
+                                ? 'ui.setup_new_mess'.tr2
+                                : 'ui.create_new_mess'.tr2),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
@@ -672,10 +673,10 @@ class _MessFormScreenState extends State<MessFormScreen> {
                       const SizedBox(height: 1),
                       Text(
                         isEdit
-                            ? 'Update name, location & billing cycle'
+                            ? 'ui.edit_mess_subtitle'.tr2
                             : (widget.isIndividual
-                                ? 'Setup your mess ledger & meal system'
-                                : 'Setup a new shared mess ledger'),
+                                ? 'ui.setup_mess_sub'.tr2
+                                : 'ui.create_mess_sub'.tr2),
                         style: const TextStyle(
                           fontSize: 11.5,
                           color: AppColors.inkFaded,
@@ -728,7 +729,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
         elevation: 0,
         leading: const AppBackButton(),
         title: Text(
-          isEdit ? 'Edit Mess' : 'Create Mess',
+          isEdit ? 'ui.edit_mess_details'.tr2 : 'ui.create_new_mess'.tr2,
           style: const TextStyle(
             fontWeight: FontWeight.w900,
             color: AppColors.ink,

@@ -22,7 +22,12 @@ class AppTheme {
       onError: Colors.white,
     );
 
-    final base = ThemeData(useMaterial3: true, colorScheme: scheme);
+    final base = ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      fontFamily: 'LiAdorNoirrit',
+      fontFamilyFallback: const ['LiAdorNoirrit', 'Roboto', 'sans-serif'],
+    );
 
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.paper,

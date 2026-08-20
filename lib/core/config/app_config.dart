@@ -7,16 +7,16 @@ class AppConfig {
 
   /// Host LAN IP address for backend connection across physical mobile devices,
   /// emulators, and local development environments.
-  // static const String baseDomain = 'mess-max-7c0b977fb506.herokuapp.com';
-  static const String baseDomain = '192.168.0.187';
+  static const String baseDomain = 'mess-max-7c0b977fb506.herokuapp.com';
+  // static const String baseDomain = '192.168.0.173';
 
   /// Backend origin base URL using host IP.
   static String get apiBaseUrl {
     const override = String.fromEnvironment('API_BASE_URL');
     if (override.isNotEmpty) return override;
 
-    return 'http://$baseDomain/messmax/backend/public/api';
-    // return 'https://$baseDomain/api';
+    // return 'http://$baseDomain/messmax/backend/public/api';
+    return 'https://$baseDomain/api';
   }
 
   /// Ensure image URLs pointing to localhost or 10.0.2.2 map to the host IP.

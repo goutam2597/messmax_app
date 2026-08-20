@@ -38,7 +38,10 @@ class RemoteTranslationService {
           final localeMap = (data['data'] as Map)[locale];
           if (localeMap is Map) {
             final flat = <String, String>{};
-            localeMap.forEach((k, v) => flat[k.toString()] = v.toString());
+            localeMap.forEach((k, v) {
+              final valStr = v.toString().replaceAll(r'\n', '\n').replaceAll('\\n', '\n');
+              flat[k.toString()] = valStr;
+            });
             // Persist to local cache
             await prefs.setString(cacheKey, _encodeMap(flat));
             if (data['checksum'] is String) {

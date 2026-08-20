@@ -10,6 +10,7 @@ import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import 'auth_widgets.dart';
+import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -272,7 +273,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                  ),
+                  child: Text(
+                    'auth.forgot_password_title'.tr2,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.brandDark,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               ValueListenableBuilder<int>(
                 valueListenable: AppTranslations.notifier,
                 builder: (context, _, _) => FilledButton(
@@ -338,7 +356,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: AppColors.brandDark,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),

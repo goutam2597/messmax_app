@@ -27,7 +27,8 @@ class AppTranslations {
   }
 
   static String t(String key, {String? fallback}) {
-    return _current[key] ?? fallback ?? key;
+    final val = _current[key] ?? fallback ?? key;
+    return val.replaceAll(r'\n', '\n').replaceAll('\\n', '\n');
   }
 
   static Future<void> preloadAll() async {}
@@ -35,4 +36,26 @@ class AppTranslations {
 
 extension AppTranslateX on String {
   String get tr2 => AppTranslations.t(this);
+
+  String toBnNum() {
+    if (AppTranslations.locale != 'bn') return this;
+    const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    var res = this;
+    for (var i = 0; i < en.length; i++) {
+      res = res.replaceAll(en[i], bn[i]);
+    }
+    return res;
+  }
+}
+
+extension AppIntTranslateX on int {
+  String toBnNum() => toString().toBnNum();
+}
+
+extension AppDoubleTranslateX on double {
+  String toBnNum([int fractionDigits = 2]) {
+    final str = toStringAsFixed(fractionDigits).replaceAll(RegExp(r'\.?0+$'), '');
+    return str.toBnNum();
+  }
 }

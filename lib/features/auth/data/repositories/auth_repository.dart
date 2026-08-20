@@ -123,6 +123,67 @@ class AuthRepository {
     DioClient.clearAuthToken();
   }
 
+  Future<void> sendForgotPasswordOtp(String email) async {
+    try {
+      final res = await _dio.post(
+        ApiEndpoints.authForgotPassword,
+        data: {'email': email},
+      );
+      final body = res.data as Map<String, dynamic>;
+      if (res.statusCode != null && res.statusCode! >= 400) {
+        throw _asDioException(res, body);
+      }
+    } catch (e, st) {
+      AppLogger.e('AuthRepository.sendForgotPasswordOtp failed', e, st);
+      rethrow;
+    }
+  }
+
+  Future<void> verifyForgotPasswordOtp({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final res = await _dio.post(
+        ApiEndpoints.authVerifyOtp,
+        data: {'email': email, 'otp': otp},
+      );
+      final body = res.data as Map<String, dynamic>;
+      if (res.statusCode != null && res.statusCode! >= 400) {
+        throw _asDioException(res, body);
+      }
+    } catch (e, st) {
+      AppLogger.e('AuthRepository.verifyForgotPasswordOtp failed', e, st);
+      rethrow;
+    }
+  }
+
+  Future<void> resetPasswordWithOtp({
+    required String email,
+    required String otp,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      final res = await _dio.post(
+        ApiEndpoints.authResetPassword,
+        data: {
+          'email': email,
+          'otp': otp,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+      final body = res.data as Map<String, dynamic>;
+      if (res.statusCode != null && res.statusCode! >= 400) {
+        throw _asDioException(res, body);
+      }
+    } catch (e, st) {
+      AppLogger.e('AuthRepository.resetPasswordWithOtp failed', e, st);
+      rethrow;
+    }
+  }
+
   DioException _asDioException(Response res, Map<String, dynamic> body) {
     final msg = (body['message'] as String?) ??
         (body['errors'] != null ? (body['errors'] as Map).values.expand((v) => (v as List)).join(' ') : null) ??

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../locale/app_translations.dart';
 import '../theme/app_colors.dart';
 
 class ConfirmDeleteDialog extends StatelessWidget {
@@ -44,6 +45,9 @@ class ConfirmDeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveCancel = cancelLabel == 'Cancel' ? 'ui.cancel'.tr2 : cancelLabel;
+    final effectiveConfirm = confirmLabel == 'Delete' ? 'ui.delete'.tr2 : confirmLabel;
+
     return Dialog(
       backgroundColor: AppColors.paperRaised,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -149,7 +153,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        cancelLabel,
+                        effectiveCancel,
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 13.5,
@@ -163,7 +167,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
                       onPressed: () => Navigator.pop(context, true),
                       icon: const Icon(Icons.delete_outline_rounded, size: 16),
                       label: Text(
-                        confirmLabel,
+                        effectiveConfirm,
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 13.5,

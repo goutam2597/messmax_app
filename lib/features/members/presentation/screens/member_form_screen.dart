@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/network/auth_storage.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
@@ -60,15 +61,15 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
     return false;
   }
 
-  final List<Map<String, String>> _daysOptions = const [
-    {'value': '1', 'label': 'Saturday (Day 1)'},
-    {'value': '2', 'label': 'Sunday (Day 2)'},
-    {'value': '3', 'label': 'Monday (Day 3)'},
-    {'value': '4', 'label': 'Tuesday (Day 4)'},
-    {'value': '5', 'label': 'Wednesday (Day 5)'},
-    {'value': '6', 'label': 'Thursday (Day 6)'},
-    {'value': '7', 'label': 'Friday (Day 7)'},
-  ];
+  List<Map<String, String>> get _daysOptions => [
+        {'value': '1', 'label': 'ui.day_sat'.tr2},
+        {'value': '2', 'label': 'ui.day_sun'.tr2},
+        {'value': '3', 'label': 'ui.day_mon'.tr2},
+        {'value': '4', 'label': 'ui.day_tue'.tr2},
+        {'value': '5', 'label': 'ui.day_wed'.tr2},
+        {'value': '6', 'label': 'ui.day_thu'.tr2},
+        {'value': '7', 'label': 'ui.day_fri'.tr2},
+      ];
 
   @override
   void initState() {
@@ -206,7 +207,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
         scrolledUnderElevation: 0.5,
         leading: const AppBackButton(),
         title: Text(
-          isEdit ? 'Edit Mess Member' : 'Add New Member',
+          isEdit ? 'ui.edit_member_title'.tr2 : 'ui.add_member_title'.tr2,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w900,
@@ -277,18 +278,18 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Center(
+                Center(
                   child: Text(
-                    'Tap to select profile photo',
-                    style: TextStyle(fontSize: 12, color: AppColors.inkFaded),
+                    'ui.tap_select_photo'.tr2,
+                    style: const TextStyle(fontSize: 12, color: AppColors.inkFaded),
                   ),
                 ),
                 const SizedBox(height: 24),
 
                 // --- MEMBER NAME & EMAIL ---
-                const Text(
-                  'FULL NAME *',
-                  style: TextStyle(
+                Text(
+                  'ui.full_name'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     color: AppColors.inkFaded,
@@ -298,10 +299,10 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                 TextFormField(
                   controller: _nameController,
                   validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Name is required' : null,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Sadman Sakib',
-                    prefixIcon: Icon(
+                      v == null || v.trim().isEmpty ? 'ui.name_required'.tr2 : null,
+                  decoration: InputDecoration(
+                    hintText: 'ui.name_hint'.tr2,
+                    prefixIcon: const Icon(
                       Icons.person_outline_rounded,
                       color: AppColors.inkFaded,
                     ),
@@ -309,9 +310,9 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                const Text(
-                  'EMAIL ADDRESS *',
-                  style: TextStyle(
+                Text(
+                  'ui.email_label'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     color: AppColors.inkFaded,
@@ -323,14 +324,14 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
-                      return 'Email is required';
+                      return 'ui.email_required'.tr2;
                     }
-                    if (!v.contains('@')) return 'Enter a valid email';
+                    if (!v.contains('@')) return 'ui.email_invalid'.tr2;
                     return null;
                   },
-                  decoration: const InputDecoration(
-                    hintText: 'member@example.com',
-                    prefixIcon: Icon(
+                  decoration: InputDecoration(
+                    hintText: 'ui.email_hint'.tr2,
+                    prefixIcon: const Icon(
                       Icons.email_outlined,
                       color: AppColors.inkFaded,
                     ),
@@ -339,9 +340,9 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                 const SizedBox(height: 20),
 
                 // --- MEMBER ROLE SELECTOR ---
-                const Text(
-                  'MESS MEMBER ROLE *',
-                  style: TextStyle(
+                Text(
+                  'ui.role_label'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     color: AppColors.inkFaded,
@@ -355,16 +356,16 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                       color: AppColors.brandSoft,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.workspace_premium_rounded,
                           color: AppColors.brandDark,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
-                          'MESS OWNER (Role locked)',
-                          style: TextStyle(
+                          'ui.role_owner_locked'.tr2,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: AppColors.brandDark,
                           ),
@@ -379,14 +380,14 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                       color: AppColors.paperLine,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.lock_rounded, color: AppColors.inkFaded),
-                        SizedBox(width: 8),
+                        const Icon(Icons.lock_rounded, color: AppColors.inkFaded),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Your own role cannot be changed by yourself',
-                            style: TextStyle(
+                            'ui.role_self_locked'.tr2,
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.inkFaded,
                             ),
@@ -400,8 +401,8 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                     children: [
                       Expanded(
                         child: _roleOptionTile(
-                          title: 'Member',
-                          subtitle: 'Standard View',
+                          title: 'ui.role_member'.tr2,
+                          subtitle: 'ui.role_member_sub'.tr2,
                           value: 'member',
                           icon: Icons.person_rounded,
                         ),
@@ -409,8 +410,8 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _roleOptionTile(
-                          title: 'Manager',
-                          subtitle: 'Full Ledger Access',
+                          title: 'ui.role_manager'.tr2,
+                          subtitle: 'ui.role_manager_sub'.tr2,
                           value: 'manager',
                           icon: Icons.admin_panel_settings_rounded,
                         ),
@@ -420,9 +421,9 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                 const SizedBox(height: 20),
 
                 // --- BAZAR DUTY DAY ---
-                const Text(
-                  'ASSIGNED BAZAR DAY',
-                  style: TextStyle(
+                Text(
+                  'ui.bazar_day_label'.tr2,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     color: AppColors.inkFaded,
@@ -462,17 +463,17 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.restaurant_rounded,
                             size: 18,
                             color: AppColors.brandDark,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
-                            'DEFAULT DAILY MEAL COUNT (B · L · D)',
-                            style: TextStyle(
+                            'ui.default_meal_count_title'.tr2,
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
                               color: AppColors.ink,
@@ -481,9 +482,9 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        '0 = OFF for that slot (red). Empty = no default. If any B/L/D is set (even 0), B·L·D is used; else legacy total.',
-                        style: TextStyle(
+                      Text(
+                        'ui.default_meal_count_sub'.tr2,
+                        style: const TextStyle(
                           fontSize: 11.5,
                           color: AppColors.inkFaded,
                         ),
@@ -493,21 +494,21 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                         children: [
                           Expanded(
                             child: _mealInputCell(
-                              'B\'FAST (0=OFF)',
+                              'ui.bfast_slot'.tr2,
                               _breakfastController,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: _mealInputCell(
-                              'LUNCH (0=OFF)',
+                              'ui.lunch_slot'.tr2,
                               _lunchController,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: _mealInputCell(
-                              'DINNER (0=OFF)',
+                              'ui.dinner_slot'.tr2,
                               _dinnerController,
                             ),
                           ),
@@ -536,10 +537,10 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                                 color: AppColors.inkFaded,
                               ),
                               const SizedBox(width: 6),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
-                                  'Legacy total — Default meal',
-                                  style: TextStyle(
+                                  'ui.legacy_total_default_meal'.tr2,
+                                  style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.inkFaded,
@@ -612,8 +613,8 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                           )
                         : Text(
                             isEdit
-                                ? 'Save Member Changes'
-                                : 'Add & Send Invite',
+                                ? 'ui.save_changes'.tr2
+                                : 'ui.add_send_invite'.tr2,
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,

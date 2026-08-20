@@ -70,7 +70,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
       await _repository.deleteAd(ad.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seat ad deleted successfully')),
+        SnackBar(content: Text('ui.myads_deleted'.tr2)),
       );
       _loadMyAds(forceRefresh: true);
     } catch (e) {

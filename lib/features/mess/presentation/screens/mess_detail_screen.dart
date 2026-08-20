@@ -1960,7 +1960,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
               ),
             ),
             child: Text(
-              parts[i],
+              parts[i].toBnNum(),
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w800,

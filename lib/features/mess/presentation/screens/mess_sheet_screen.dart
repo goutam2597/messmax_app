@@ -308,7 +308,7 @@ class _SheetViewState extends State<_SheetView>
                     OutlinedButton.icon(
                       onPressed: _refresh,
                       icon: const Icon(Icons.refresh_rounded, size: 16),
-                      label: const Text('Try Again'),
+                      label: Text('ui.try_again'.tr2),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.brandDark,
                         side: const BorderSide(color: AppColors.paperLine),
@@ -525,7 +525,7 @@ class _SheetViewState extends State<_SheetView>
                           ),
                         ),
                         TextSpan(
-                          text: ' / ${'ui.sheet_per_meal'.tr2}',
+                          text: ' ${'ui.sheet_per_meal'.tr2}',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -1329,8 +1329,8 @@ class _SheetViewState extends State<_SheetView>
         ),
         const SizedBox(height: 6),
         if (bazarTotal == 0 && items.isEmpty)
-          const Text(
-            'No bazar recorded for this day.',
+          Text(
+            'ui.sheet_no_bazar'.tr2,
             style: TextStyle(
               fontSize: 11.5,
               color: AppColors.inkFaded,
@@ -1568,7 +1568,7 @@ class _SheetViewState extends State<_SheetView>
                       )
                     else
                       Text(
-                        '${count % 1 == 0 ? count.toInt() : count.toStringAsFixed(1)} meals',
+                        '${(count % 1 == 0 ? count.toInt().toString() : count.toStringAsFixed(1)).toBnNum()} ${'ui.sheet_meals_unit'.tr2}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -1633,7 +1633,7 @@ class _SheetViewState extends State<_SheetView>
                           ),
                         ),
                         Text(
-                          '+${_toD(g['count']).toStringAsFixed(1)} meals',
+                          '+${_toD(g['count']).toStringAsFixed(1).toBnNum()} ${'ui.sheet_meals_unit'.tr2}',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
@@ -1906,9 +1906,9 @@ class _SheetViewState extends State<_SheetView>
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'TOTAL MEALS CONSUMED',
-                                      style: TextStyle(
+                                    Text(
+                                      'ui.sheet_total_meals_consumed'.tr2,
+                                      style: const TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w800,
                                         color: AppColors.inkFaded,
@@ -1917,7 +1917,7 @@ class _SheetViewState extends State<_SheetView>
                                     ),
                                     const SizedBox(height: 1),
                                     Text(
-                                      '$mealsStr meals',
+                                      '${mealsStr.toBnNum()} ${'ui.sheet_meals_unit'.tr2}',
                                       style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w900,
@@ -1944,16 +1944,18 @@ class _SheetViewState extends State<_SheetView>
                                       crossAxisAlignment:
                                           CrossAxisAlignment.end,
                                       children: [
-                                        const Text(
-                                          'DAILY DEFAULT',
-                                          style: TextStyle(
+                                        Text(
+                                          'ui.sheet_daily_default'.tr2,
+                                          style: const TextStyle(
                                             fontSize: 8,
                                             fontWeight: FontWeight.w800,
                                             color: AppColors.inkFaded,
                                           ),
                                         ),
                                         Text(
-                                          '${fmtBld(memberRaw['default_breakfast'])}B · ${fmtBld(memberRaw['default_lunch'])}L · ${fmtBld(memberRaw['default_dinner'])}D',
+                                          AppTranslations.locale == 'bn'
+                                              ? '${fmtBld(memberRaw['default_breakfast']).toBnNum()}স · ${fmtBld(memberRaw['default_lunch']).toBnNum()}দু · ${fmtBld(memberRaw['default_dinner']).toBnNum()}রা'
+                                              : '${fmtBld(memberRaw['default_breakfast'])}B · ${fmtBld(memberRaw['default_lunch'])}L · ${fmtBld(memberRaw['default_dinner'])}D',
                                           style: const TextStyle(
                                             fontSize: 10.5,
                                             fontWeight: FontWeight.w800,
@@ -1988,9 +1990,9 @@ class _SheetViewState extends State<_SheetView>
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
-                                          'TOTAL SPENT',
-                                          style: TextStyle(
+                                        Text(
+                                          'ui.sheet_total_spent'.tr2,
+                                          style: const TextStyle(
                                             fontSize: 8.5,
                                             fontWeight: FontWeight.w800,
                                             color: AppColors.inkFaded,
@@ -1998,7 +2000,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '৳${spend.toStringAsFixed(0)}',
+                                          '৳${spend.toStringAsFixed(0).toBnNum()}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2028,9 +2030,9 @@ class _SheetViewState extends State<_SheetView>
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
-                                          'DEPOSITED',
-                                          style: TextStyle(
+                                        Text(
+                                          'ui.sheet_deposited'.tr2,
+                                          style: const TextStyle(
                                             fontSize: 8.5,
                                             fontWeight: FontWeight.w800,
                                             color: AppColors.emerald,
@@ -2038,7 +2040,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '৳${given.toStringAsFixed(0)}',
+                                          '৳${given.toStringAsFixed(0).toBnNum()}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2076,8 +2078,8 @@ class _SheetViewState extends State<_SheetView>
                                       children: [
                                         Text(
                                           isPositive
-                                              ? 'REFUND / BAL'
-                                              : 'DUE BALANCE',
+                                              ? 'ui.sheet_refund_bal'.tr2
+                                              : 'ui.sheet_due_balance'.tr2,
                                           style: TextStyle(
                                             fontSize: 8.5,
                                             fontWeight: FontWeight.w800,
@@ -2088,7 +2090,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${isPositive ? '+' : ''}৳${balance.toStringAsFixed(0)}',
+                                          '${isPositive ? '+' : ''}৳${balance.toStringAsFixed(0).toBnNum()}',
                                           style: TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2168,9 +2170,9 @@ class _SheetViewState extends State<_SheetView>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'TOTAL DEPOSITS COLLECTED',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_total_deposits_collected'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -2179,7 +2181,7 @@ class _SheetViewState extends State<_SheetView>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '৳${totalDeposits.toStringAsFixed(0)}',
+                            '৳${totalDeposits.toInt().toBnNum()}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
@@ -2193,7 +2195,7 @@ class _SheetViewState extends State<_SheetView>
                       FilledButton.icon(
                         onPressed: () => _showAddDepositModal(members),
                         icon: const Icon(Icons.add, size: 16),
-                        label: const Text('Add'),
+                        label: Text('ui.add'.tr2),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.brandDark,
                           padding: const EdgeInsets.symmetric(
@@ -2209,12 +2211,12 @@ class _SheetViewState extends State<_SheetView>
               const SizedBox(height: 14),
 
               if (deposits.isEmpty) ...[
-                const Center(
+                Center(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(32),
                     child: Text(
-                      'No deposits recorded yet for this month.',
-                      style: TextStyle(color: AppColors.inkFaded),
+                      'ui.no_deposits_yet'.tr2,
+                      style: const TextStyle(color: AppColors.inkFaded),
                     ),
                   ),
                 ),
@@ -2286,7 +2288,7 @@ class _SheetViewState extends State<_SheetView>
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '৳${_toD(d['amount']).toStringAsFixed(0)}',
+                            '৳${_toD(d['amount']).toInt().toBnNum()}',
                             style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w900,
@@ -2372,25 +2374,25 @@ class _SheetViewState extends State<_SheetView>
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(
+            children: [
+              const Icon(
                 Icons.check_circle_outline_rounded,
                 size: 48,
                 color: AppColors.emerald,
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
-                'All caught up!',
-                style: TextStyle(
+                'ui.sheet_all_caught_up'.tr2,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: AppColors.ink,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'No pending meal-off or guest meal requests.',
-                style: TextStyle(fontSize: 12, color: AppColors.inkFaded),
+                'ui.sheet_no_requests'.tr2,
+                style: const TextStyle(fontSize: 12, color: AppColors.inkFaded),
               ),
             ],
           ),
@@ -3444,20 +3446,20 @@ class _SheetViewState extends State<_SheetView>
                         children: [
                           // 1. Daily Meal Defaults
                           Row(
-                            children: const [
+                            children: [
                               Text(
-                                'DAILY MEAL DEFAULTS',
-                                style: TextStyle(
+                                'ui.daily_meal_defaults'.tr2,
+                                style: const TextStyle(
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.inkFaded,
                                   letterSpacing: 0.6,
                                 ),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               Text(
-                                'Auto applied daily',
-                                style: TextStyle(
+                                'ui.auto_applied_daily'.tr2,
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: AppColors.inkFaded,
                                 ),
@@ -3468,19 +3470,19 @@ class _SheetViewState extends State<_SheetView>
 
                           // 3 Meal Input Rows
                           buildMealInputRow(
-                            title: 'Breakfast',
+                            title: 'ui.breakfast'.tr2,
                             icon: Icons.free_breakfast_outlined,
                             controller: bfCtrl,
                             hint: '1.0',
                           ),
                           buildMealInputRow(
-                            title: 'Lunch',
+                            title: 'ui.lunch'.tr2,
                             icon: Icons.lunch_dining_outlined,
                             controller: lCtrl,
                             hint: '1.0',
                           ),
                           buildMealInputRow(
-                            title: 'Dinner',
+                            title: 'ui.dinner'.tr2,
                             icon: Icons.dinner_dining_outlined,
                             controller: dCtrl,
                             hint: '1.0',
@@ -3488,9 +3490,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 2. Add Quick Deposit Card
-                          const Text(
-                            'QUICK DEPOSIT (OPTIONAL)',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_quick_deposit_optional'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -3517,8 +3519,8 @@ class _SheetViewState extends State<_SheetView>
                                     color: AppColors.ink,
                                   ),
                                   decoration: InputDecoration(
-                                    labelText: 'Deposit Amount (৳)',
-                                    hintText: 'e.g. 2000',
+                                    labelText: 'ui.deposit_amount_label'.tr2,
+                                    hintText: 'ui.deposit_amount_hint'.tr2,
                                     prefixIcon: const Icon(
                                       Icons.payments_outlined,
                                       size: 17,
@@ -3586,7 +3588,7 @@ class _SheetViewState extends State<_SheetView>
                                                 ),
                                               ),
                                               child: Text(
-                                                '+৳$amt',
+                                                '+৳${amt.toBnNum()}',
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.w700,
@@ -3608,8 +3610,8 @@ class _SheetViewState extends State<_SheetView>
                                     color: AppColors.ink,
                                   ),
                                   decoration: InputDecoration(
-                                    labelText: 'Payment Note',
-                                    hintText: 'e.g. bKash TrxID, Cash, Bank',
+                                    labelText: 'ui.deposit_note_label'.tr2,
+                                    hintText: 'ui.deposit_note_hint'.tr2,
                                     prefixIcon: const Icon(
                                       Icons.note_alt_outlined,
                                       size: 17,
@@ -3669,9 +3671,9 @@ class _SheetViewState extends State<_SheetView>
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
+                            child: Text(
+                              'ui.cancel'.tr2,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12.5,
                               ),
@@ -3962,7 +3964,7 @@ class _SheetViewState extends State<_SheetView>
                               Expanded(
                                 child: OutlinedButton(
                                   onPressed: () => Navigator.pop(ctx2),
-                                  child: const Text('Cancel'),
+                                  child: Text('ui.cancel'.tr2),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -4076,9 +4078,9 @@ class _SheetViewState extends State<_SheetView>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Request Guest Meal',
-                                style: TextStyle(
+                              Text(
+                                'ui.request_guest_meal'.tr2,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                   color: AppColors.ink,
@@ -4086,7 +4088,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                'Day $selectedDay · Select meal slots',
+                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toBnNum()} · ${'ui.select_meal_slots'.tr2}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
@@ -4129,9 +4131,9 @@ class _SheetViewState extends State<_SheetView>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // 1. Target Day
-                          const Text(
-                            'SELECT DAY',
-                            style: TextStyle(
+                          Text(
+                            'ui.select_day'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -4147,9 +4149,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 2. Guest Name & Count Row
-                          const Text(
-                            'GUEST DETAILS',
-                            style: TextStyle(
+                          Text(
+                            'ui.guest_details'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -4165,7 +4167,7 @@ class _SheetViewState extends State<_SheetView>
                               color: AppColors.ink,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'e.g. Friend / Guest Name *',
+                              hintText: 'ui.guest_name_hint'.tr2,
                               hintStyle: const TextStyle(
                                 fontSize: 12.5,
                                 color: AppColors.inkFaded,
@@ -4223,9 +4225,9 @@ class _SheetViewState extends State<_SheetView>
                                   color: AppColors.inkSoft,
                                 ),
                                 const SizedBox(width: 8),
-                                const Text(
-                                  'Guest Count',
-                                  style: TextStyle(
+                                Text(
+                                  'ui.guest_count'.tr2,
+                                  style: const TextStyle(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.ink,
@@ -4262,7 +4264,7 @@ class _SheetViewState extends State<_SheetView>
                                     horizontal: 12,
                                   ),
                                   child: Text(
-                                    '$guestCount',
+                                    guestCount.toBnNum(),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w900,
                                       fontSize: 15,
@@ -4296,9 +4298,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 3. Meal Slot Selectors
-                          const Text(
-                            'SELECT MEAL SLOTS *',
-                            style: TextStyle(
+                          Text(
+                            'ui.select_meal_slots'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -4310,7 +4312,7 @@ class _SheetViewState extends State<_SheetView>
                             children: [
                               Expanded(
                                 child: _buildMealSlotChip(
-                                  label: 'Breakfast',
+                                  label: 'ui.breakfast'.tr2,
                                   icon: Icons.free_breakfast_outlined,
                                   isSelected: b,
                                   onTap: () => setS(() => b = !b),
@@ -4319,7 +4321,7 @@ class _SheetViewState extends State<_SheetView>
                               const SizedBox(width: 8),
                               Expanded(
                                 child: _buildMealSlotChip(
-                                  label: 'Lunch',
+                                  label: 'ui.lunch'.tr2,
                                   icon: Icons.lunch_dining_outlined,
                                   isSelected: l,
                                   onTap: () => setS(() => l = !l),
@@ -4328,7 +4330,7 @@ class _SheetViewState extends State<_SheetView>
                               const SizedBox(width: 8),
                               Expanded(
                                 child: _buildMealSlotChip(
-                                  label: 'Dinner',
+                                  label: 'ui.dinner'.tr2,
                                   icon: Icons.dinner_dining_outlined,
                                   isSelected: dn,
                                   onTap: () => setS(() => dn = !dn),
@@ -4340,9 +4342,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 4. Optional Note
-                          const Text(
-                            'NOTE (OPTIONAL)',
-                            style: TextStyle(
+                          Text(
+                            'ui.note_optional'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -4357,7 +4359,7 @@ class _SheetViewState extends State<_SheetView>
                               color: AppColors.ink,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'Any special dietary note...',
+                              hintText: 'ui.guest_note_hint'.tr2,
                               hintStyle: const TextStyle(
                                 fontSize: 12.5,
                                 color: AppColors.inkFaded,
@@ -4418,9 +4420,9 @@ class _SheetViewState extends State<_SheetView>
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
+                            child: Text(
+                              'ui.cancel'.tr2,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12.5,
                               ),
@@ -4473,9 +4475,9 @@ class _SheetViewState extends State<_SheetView>
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text(
-                                    'Send Request',
-                                    style: TextStyle(
+                                : Text(
+                                    'ui.send_request'.tr2,
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12.5,
                                     ),
@@ -4614,9 +4616,9 @@ class _SheetViewState extends State<_SheetView>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // 1. Host Member Dropdown
-                          const Text(
-                            'HOST MEMBER *',
-                            style: TextStyle(
+                          Text(
+                            'ui.sheet_host_member_required'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -4663,9 +4665,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 2. Target Day Picker
-                          const Text(
-                            'SELECT DAY',
-                            style: TextStyle(
+                          Text(
+                            'ui.select_day'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -4681,9 +4683,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 3. Guest Name
-                          const Text(
-                            'GUEST NAME *',
-                            style: TextStyle(
+                          Text(
+                            'ui.guest_name_label'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -4699,7 +4701,7 @@ class _SheetViewState extends State<_SheetView>
                               color: AppColors.ink,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'e.g. Guest / Friend',
+                              hintText: 'ui.guest_name_hint'.tr2,
                               hintStyle: const TextStyle(
                                 fontSize: 12.5,
                                 color: AppColors.inkFaded,
@@ -4757,9 +4759,9 @@ class _SheetViewState extends State<_SheetView>
                                   color: AppColors.inkSoft,
                                 ),
                                 const SizedBox(width: 8),
-                                const Text(
-                                  'Guest Count',
-                                  style: TextStyle(
+                                Text(
+                                  'ui.guest_count'.tr2,
+                                  style: const TextStyle(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.ink,
@@ -4796,7 +4798,7 @@ class _SheetViewState extends State<_SheetView>
                                     horizontal: 12,
                                   ),
                                   child: Text(
-                                    '$guestCount',
+                                    guestCount.toBnNum(),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w900,
                                       fontSize: 15,
@@ -4830,9 +4832,9 @@ class _SheetViewState extends State<_SheetView>
                           const SizedBox(height: 14),
 
                           // 4. Meal Slot Selection
-                          const Text(
-                            'SELECT MEAL SLOTS *',
-                            style: TextStyle(
+                          Text(
+                            'ui.select_meal_slots'.tr2,
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.inkFaded,
@@ -4844,7 +4846,7 @@ class _SheetViewState extends State<_SheetView>
                             children: [
                               Expanded(
                                 child: _buildMealSlotChip(
-                                  label: 'Breakfast',
+                                  label: 'ui.breakfast'.tr2,
                                   icon: Icons.free_breakfast_outlined,
                                   isSelected: b,
                                   onTap: () => setS(() => b = !b),
@@ -4853,7 +4855,7 @@ class _SheetViewState extends State<_SheetView>
                               const SizedBox(width: 8),
                               Expanded(
                                 child: _buildMealSlotChip(
-                                  label: 'Lunch',
+                                  label: 'ui.lunch'.tr2,
                                   icon: Icons.lunch_dining_outlined,
                                   isSelected: l,
                                   onTap: () => setS(() => l = !l),
@@ -4862,7 +4864,7 @@ class _SheetViewState extends State<_SheetView>
                               const SizedBox(width: 8),
                               Expanded(
                                 child: _buildMealSlotChip(
-                                  label: 'Dinner',
+                                  label: 'ui.dinner'.tr2,
                                   icon: Icons.dinner_dining_outlined,
                                   isSelected: dn,
                                   onTap: () => setS(() => dn = !dn),
@@ -4894,9 +4896,9 @@ class _SheetViewState extends State<_SheetView>
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
+                            child: Text(
+                              'ui.cancel'.tr2,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12.5,
                               ),
@@ -5622,7 +5624,7 @@ class _SheetViewState extends State<_SheetView>
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(ctx2),
-                            child: const Text('Cancel'),
+                            child: Text('ui.cancel'.tr2),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -5694,7 +5696,7 @@ class _SheetViewState extends State<_SheetView>
                               }
                             },
                             icon: const Icon(Icons.check_rounded, size: 16),
-                            label: const Text('Save Entry'),
+                            label: Text('ui.sheet_save_entry'.tr2),
                             style: FilledButton.styleFrom(
                               backgroundColor: AppColors.brandDark,
                             ),
@@ -5752,7 +5754,7 @@ class _SheetViewState extends State<_SheetView>
               ),
               child: Center(
                 child: Text(
-                  '$d',
+                  d.toBnNum(),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,

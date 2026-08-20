@@ -240,9 +240,9 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('All notifications marked as read.'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text('ui.all_notifications_marked_read'.tr2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

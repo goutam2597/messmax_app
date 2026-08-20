@@ -14,6 +14,9 @@ class ApiEndpoints {
   static const String authLogin = '/v1/auth/login';
   static const String authFirebase = '/v1/auth/firebase';
   static const String authLogout = '/v1/auth/logout';
+  static const String authForgotPassword = '/v1/auth/forgot-password';
+  static const String authVerifyOtp = '/v1/auth/verify-otp';
+  static const String authResetPassword = '/v1/auth/reset-password';
   static const String me = '/v1/me';
   static const String dashboard = '/v1/dashboard';
   static const String account = '/v1/account';

@@ -18,8 +18,8 @@ import 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _repo;
   AuthCubit({AuthRepository? repo})
-      : _repo = repo ?? AuthRepository(),
-        super(const AuthInitial());
+    : _repo = repo ?? AuthRepository(),
+      super(const AuthInitial());
 
   String? _extractMessage(Object e) {
     if (e is DioException) {
@@ -124,7 +124,9 @@ class AuthCubit extends Cubit<AuthState> {
         provider.setCustomParameters({'prompt': 'select_account'});
         final cred = await auth.signInWithPopup(provider);
         idToken = await cred.user?.getIdToken();
-        AppLogger.i('Web popup: idToken present=${idToken != null && idToken.isNotEmpty}');
+        AppLogger.i(
+          'Web popup: idToken present=${idToken != null && idToken.isNotEmpty}',
+        );
       } else {
         // Re-init with explicit serverClientId so the plugin does NOT
         // call Pigeon getGoogleServicesJsonServerClientId (which throws
@@ -141,7 +143,9 @@ class AuthCubit extends Cubit<AuthState> {
 
         AppLogger.i('Google sign-in: native authenticate() — in-app sheet');
         final googleUser = await GoogleSignIn.instance.authenticate();
-        AppLogger.i('Native account email=${googleUser.email} id=${googleUser.id}');
+        AppLogger.i(
+          'Native account email=${googleUser.email} id=${googleUser.id}',
+        );
         final googleAuth = googleUser.authentication;
         idToken = googleAuth.idToken;
         AppLogger.d('Native idToken len=${idToken?.length ?? 0}');
@@ -149,10 +153,12 @@ class AuthCubit extends Cubit<AuthState> {
         if (idToken != null && idToken.isNotEmpty) {
           AppLogger.d('Firebase signInWithCredential ...');
           final credential = GoogleAuthProvider.credential(idToken: idToken);
-          final userCredential =
-              await FirebaseAuth.instance.signInWithCredential(credential);
+          final userCredential = await FirebaseAuth.instance
+              .signInWithCredential(credential);
           final refreshed = await userCredential.user?.getIdToken();
-          AppLogger.i('Firebase OK uid=${userCredential.user?.uid} refreshed=${refreshed != null}');
+          AppLogger.i(
+            'Firebase OK uid=${userCredential.user?.uid} refreshed=${refreshed != null}',
+          );
           idToken = refreshed ?? idToken;
         }
       }
@@ -167,15 +173,22 @@ class AuthCubit extends Cubit<AuthState> {
         idToken: idToken,
         accountType: accountType,
       );
-      AppLogger.i('Sanctum success user=${res.user.id} email=${res.user.email}');
+      AppLogger.i(
+        'Sanctum success user=${res.user.id} email=${res.user.email}',
+      );
       emit(AuthAuthenticated(res.user));
       PushNotificationService.syncDeviceToken();
       return true;
     } on GoogleSignInException catch (e, st) {
-      AppLogger.e('GoogleSignInException code=${e.code} desc=${e.description}', e, st);
+      AppLogger.e(
+        'GoogleSignInException code=${e.code} desc=${e.description}',
+        e,
+        st,
+      );
       final desc = (e.description ?? '').toLowerCase();
       final codeStr = e.code.toString().toLowerCase();
-      final isCancel = e.code == GoogleSignInExceptionCode.canceled ||
+      final isCancel =
+          e.code == GoogleSignInExceptionCode.canceled ||
           e.code == GoogleSignInExceptionCode.interrupted ||
           desc.contains('cancel') ||
           desc.contains('dismiss') ||
@@ -191,18 +204,30 @@ class AuthCubit extends Cubit<AuthState> {
       final lower = (e.description ?? '').toLowerCase();
       if (lower.contains('channel-error') ||
           lower.contains('getgoogleservicesjsonserverclientid')) {
-        AppLogger.e('Pigeon channel-error: stale binding. Fix: flutter clean, uninstall app, flutter run. No Chrome involved.', e, st);
-        emit(const AuthError(
-            'Google Sign-In not ready. Run: flutter clean, uninstall the app from the device, then flutter run.'));
+        AppLogger.e(
+          'Pigeon channel-error: stale binding. Fix: flutter clean, uninstall app, flutter run. No Chrome involved.',
+          e,
+          st,
+        );
+        emit(
+          const AuthError(
+            'Google Sign-In not ready. Run: flutter clean, uninstall the app from the device, then flutter run.',
+          ),
+        );
         return false;
       }
       emit(AuthError(e.description ?? 'Google sign-in failed'));
       return false;
     } on FirebaseAuthException catch (e, st) {
-      AppLogger.e('FirebaseAuthException code=${e.code} msg=${e.message}', e, st);
+      AppLogger.e(
+        'FirebaseAuthException code=${e.code} msg=${e.message}',
+        e,
+        st,
+      );
       final fCode = e.code.toLowerCase();
       final fMsg = (e.message ?? '').toLowerCase();
-      final isCancel = fCode.contains('cancel') ||
+      final isCancel =
+          fCode.contains('cancel') ||
           fCode.contains('dismiss') ||
           fCode.contains('popup-closed') ||
           fCode.contains('web-context-cancel') ||
@@ -217,9 +242,16 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(e.message ?? 'Google sign-in failed'));
       return false;
     } on MissingPluginException catch (e, st) {
-      AppLogger.e('MissingPluginException — hot-restart stale channel (popup never opened)', e, st);
-      emit(const AuthError(
-          'Google Sign-In not ready (hot-restart). Stop and run again — do not hot-restart.'));
+      AppLogger.e(
+        'MissingPluginException — hot-restart stale channel (popup never opened)',
+        e,
+        st,
+      );
+      emit(
+        const AuthError(
+          'Google Sign-In not ready (hot-restart). Stop and run again — do not hot-restart.',
+        ),
+      );
       return false;
     } on PlatformException catch (e, st) {
       // The Pigeon channel-error surfaces as PlatformException(channel-error, ...)
@@ -227,9 +259,16 @@ class AuthCubit extends Cubit<AuthState> {
       final msg = '${e.code} ${e.message} ${e.details ?? ''}'.toLowerCase();
       if (msg.contains('channel-error') ||
           msg.contains('getgoogleservicesjsonserverclientid')) {
-        AppLogger.e('Pigeon channel-error on PlatformException — stale binding', e, st);
-        emit(const AuthError(
-            'Google Sign-In not ready. Run: flutter clean, uninstall the app from the device, then flutter run.'));
+        AppLogger.e(
+          'Pigeon channel-error on PlatformException — stale binding',
+          e,
+          st,
+        );
+        emit(
+          const AuthError(
+            'Google Sign-In not ready. Run: flutter clean, uninstall the app from the device, then flutter run.',
+          ),
+        );
         return false;
       }
       if (msg.contains('cancel') ||
@@ -249,8 +288,11 @@ class AuthCubit extends Cubit<AuthState> {
       final errStr = e.toString().toLowerCase();
       if (errStr.contains('channel-error') ||
           errStr.contains('getgoogleservicesjsonserverclientid')) {
-        emit(const AuthError(
-            'Google Sign-In not ready. Run: flutter clean, uninstall app, then flutter run.'));
+        emit(
+          const AuthError(
+            'Google Sign-In not ready. Run: flutter clean, uninstall app, then flutter run.',
+          ),
+        );
         return false;
       }
       if (errStr.contains('cancel') ||
@@ -260,13 +302,16 @@ class AuthCubit extends Cubit<AuthState> {
           errStr.contains('popup-closed') ||
           errStr.contains('interrupted') ||
           errStr.contains('user_cancelled')) {
-        AppLogger.i('Google sign-in cancelled (catch-all) -> idle (spinner off)');
+        AppLogger.i(
+          'Google sign-in cancelled (catch-all) -> idle (spinner off)',
+        );
         emit(const AuthUnauthenticated());
         return false;
       }
       final friendly = _extractMessage(e);
       final lowerFriendly = friendly?.toLowerCase() ?? '';
-      final needsType = lowerFriendly.contains('needs_account_type') ||
+      final needsType =
+          lowerFriendly.contains('needs_account_type') ||
           errStr.contains('needs_account_type') ||
           (e is DioException &&
               e.response?.data is Map &&
@@ -278,7 +323,9 @@ class AuthCubit extends Cubit<AuthState> {
             final m = e.response!.data as Map;
             email = (m['email'] as String?) ?? '';
             if (email.isEmpty) {
-              final tokenEmail = m['data'] is Map ? (m['data'] as Map)['email'] : null;
+              final tokenEmail = m['data'] is Map
+                  ? (m['data'] as Map)['email']
+                  : null;
               if (tokenEmail is String) email = tokenEmail;
             }
           }
@@ -295,13 +342,17 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> completeGoogleWithAccountType(
-      {required String idToken, required String accountType}) async {
+  Future<void> completeGoogleWithAccountType({
+    required String idToken,
+    required String accountType,
+  }) async {
     emit(const AuthLoading(AuthLoadingType.google));
     AppLogger.i('Google completing with accountType=$accountType');
     try {
-      final res =
-          await _repo.loginWithFirebase(idToken: idToken, accountType: accountType);
+      final res = await _repo.loginWithFirebase(
+        idToken: idToken,
+        accountType: accountType,
+      );
       AppLogger.i('Google complete success user=${res.user.id}');
       emit(AuthAuthenticated(res.user));
       PushNotificationService.syncDeviceToken();
@@ -319,11 +370,17 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// For mobile native Google flow: caller provides idToken directly
-  Future<void> loginWithIdToken({required String idToken, String? accountType}) async {
+  Future<void> loginWithIdToken({
+    required String idToken,
+    String? accountType,
+  }) async {
     emit(const AuthLoading(AuthLoadingType.google));
     AppLogger.i('loginWithIdToken called');
     try {
-      final res = await _repo.loginWithFirebase(idToken: idToken, accountType: accountType);
+      final res = await _repo.loginWithFirebase(
+        idToken: idToken,
+        accountType: accountType,
+      );
       AppLogger.i('loginWithIdToken success user=${res.user.id}');
       emit(AuthAuthenticated(res.user));
       PushNotificationService.syncDeviceToken();
