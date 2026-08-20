@@ -83,7 +83,6 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
   late final StreamController<List<PublicNotificationItem>>
   _notificationsStreamController;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
-  Timer? _livePollTimer;
 
   @override
   void initState() {
@@ -95,17 +94,10 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
     // 1. Initial fetch
     _fetchNotifications();
 
-    // 2. Real-time FCM stream listener (triggers instant silent sync on incoming broadcast)
+    // 2. FCM stream — refresh only when a push actually arrives (no polling)
     _fcmSubscription = PushNotificationService.onForegroundMessage.listen((
       RemoteMessage message,
     ) {
-      if (mounted) {
-        _fetchNotifications(isSilent: true);
-      }
-    });
-
-    // 3. Periodic real-time stream sync while user is on this screen (every 6 seconds)
-    _livePollTimer = Timer.periodic(const Duration(seconds: 6), (_) {
       if (mounted) {
         _fetchNotifications(isSilent: true);
       }
@@ -123,7 +115,6 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _fcmSubscription?.cancel();
-    _livePollTimer?.cancel();
     _notificationsStreamController.close();
     super.dispose();
   }
