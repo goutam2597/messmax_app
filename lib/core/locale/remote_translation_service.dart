@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/dio_client.dart';
@@ -9,6 +10,7 @@ class RemoteTranslationService {
   static const _kTranslationsPrefix = 'remote_translations_';
   static const _kChecksumPrefix = 'remote_translations_checksum_';
   static const _endpoint = '/v1/translations';
+  static const _fallbackEndpoint = '/api/v1/translations';
 
   /// Fetch translations for a locale, merge with fallback.
   /// Returns flat map "group.key" => value.
@@ -20,12 +22,16 @@ class RemoteTranslationService {
     final cacheKey = '$_kTranslationsPrefix$locale';
 
     // Always try API first to pick up admin edits; use cached only as fallback.
-    // Previous early-return from SharedPreferences caused stale auth keys to persist
-    // until app reinstall — now we fetch fresh every cold start / locale switch.
-
     try {
       final dio = DioClient.instance;
-      final res = await dio.get(_endpoint, queryParameters: {'locale': locale});
+      Response<dynamic>? res;
+      try {
+        res = await dio.get(_endpoint, queryParameters: {'locale': locale});
+      } catch (_) {
+        // Try direct /api prefix fallback if domain root routing differed
+        res = await dio.get(_fallbackEndpoint, queryParameters: {'locale': locale});
+      }
+
       if (res.statusCode == 200 && res.data is Map) {
         final data = res.data as Map<String, dynamic>;
         if (data['success'] == true && data['data'] is Map) {
@@ -33,7 +39,7 @@ class RemoteTranslationService {
           if (localeMap is Map) {
             final flat = <String, String>{};
             localeMap.forEach((k, v) => flat[k.toString()] = v.toString());
-            // Persist
+            // Persist to local cache
             await prefs.setString(cacheKey, _encodeMap(flat));
             if (data['checksum'] is String) {
               await prefs.setString(
@@ -54,9 +60,13 @@ class RemoteTranslationService {
 
     // Fallback to cached
     final fallback = prefs.getString(cacheKey);
-    if (fallback != null) {
+    if (fallback != null && fallback.isNotEmpty) {
       try {
-        return _decodeMap(fallback);
+        final cachedMap = _decodeMap(fallback);
+        if (cachedMap.isNotEmpty) {
+          AppLogger.i('Using cached translations for $locale (${cachedMap.length} keys)');
+          return cachedMap;
+        }
       } catch (_) {}
     }
     return {};

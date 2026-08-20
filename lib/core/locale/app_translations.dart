@@ -1,13 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../logger/app_logger.dart';
+import 'bundled_translations.dart';
 import 'remote_translation_service.dart';
 
-/// Simple translation registry backed by API + SharedPreferences cache.
-/// No bundled JSON — 100% API-driven.
+/// Translation registry backed by bundled zero-network fallback + API + SharedPreferences cache.
 class AppTranslations {
-  static Map<String, String> _current = {};
+  static Map<String, String> _current = BundledTranslations.get('en');
   static String _locale = 'en';
   static final ValueNotifier<int> _notifier = ValueNotifier(0);
 
@@ -17,25 +16,19 @@ class AppTranslations {
 
   static Future<void> load(String locale) async {
     _locale = locale;
+    // Set bundled fallback synchronously first so no raw keys flash
+    _current = Map<String, String>.from(BundledTranslations.get(locale));
+    _notifier.value++;
+
+    // Fetch fresh translations from API (with SharedPreferences cache fallback)
     final remote = await RemoteTranslationService.fetchLocale(locale);
     if (remote.isNotEmpty) {
-      _current = remote;
+      _current = {..._current, ...remote};
       _notifier.value++;
       return;
     }
-    // No API response — try stale cache for same locale
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cached = prefs.getString('remote_translations_$locale');
-      if (cached != null && cached.isNotEmpty) {
-        AppLogger.w('API unavailable for $locale, using stale cache');
-        _notifier.value++;
-        return;
-      }
-    } catch (_) {}
-    AppLogger.w('No translations for $locale, keys will show as-is');
-    _current = {};
-    _notifier.value++;
+
+    AppLogger.i('Using bundled translations for $locale (${_current.length} keys)');
   }
 
   static String t(String key, {String? fallback}) {
