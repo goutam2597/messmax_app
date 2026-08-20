@@ -1,4 +1,4 @@
-package com.example.messmax_app
+package com.messmax.net.app
 
 import io.flutter.embedding.android.FlutterActivity
 

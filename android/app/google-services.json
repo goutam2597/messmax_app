@@ -183,7 +183,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:66639149544:android:7b710948d24038b45d4c5d",
         "android_client_info": {
-          "package_name": "com.example.messmax_app"
+          "package_name": "com.messmax.net.app"
         }
       },
       "oauth_client": [
@@ -191,7 +191,7 @@
           "client_id": "66639149544-lu3o3rped3f9teemt3bisdokf6o0lsvr.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.messmax_app",
+            "package_name": "com.messmax.net.app",
             "certificate_hash": "6b2cde7eb9f8f225142f855cc45d358a3326f6a9"
           }
         },

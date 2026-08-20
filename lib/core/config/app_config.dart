@@ -7,7 +7,7 @@ class AppConfig {
 
   /// Host LAN IP address for backend connection across physical mobile devices,
   /// emulators, and local development environments.
-  static const String baseDomain = 'mess-max-7c0b977fb506.herokuapp.com';
+  static const String baseDomain = 'messmax.net';
   // static const String baseDomain = '192.168.0.173';
 
   /// Backend origin base URL using host IP.
