@@ -52,27 +52,6 @@ class PushNotificationService {
 
       // ── Set up flutter_local_notifications ──────────────────────────────────
       if (!kIsWeb) {
-        final androidImplementation = _localNotif
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
-
-        // Create high-importance channels on Android
-        await androidImplementation?.createNotificationChannel(_channel);
-        await androidImplementation?.createNotificationChannel(_fallbackChannel);
-
-        // Request Android 13+ (API 33+) local notification permission explicitly
-        if (Platform.isAndroid) {
-          await androidImplementation?.requestNotificationsPermission();
-        }
-
-        // iOS: set foreground presentation options
-        await _fcm.setForegroundNotificationPresentationOptions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-
         const initAndroid = AndroidInitializationSettings(
           '@mipmap/ic_launcher',
         );
@@ -85,12 +64,33 @@ class PushNotificationService {
           android: initAndroid,
           iOS: initDarwin,
         );
-        await _localNotif.initialize(settings: initSettings);
+        await _localNotif.initialize(
+          settings: initSettings,
+          onDidReceiveNotificationResponse: (NotificationResponse r) {
+            AppLogger.i('Local notif tapped: ${r.payload}');
+          },
+        );
+
+        final androidImplementation = _localNotif
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+
+        // Create high-importance channels on Android (must exist before show())
+        await androidImplementation?.createNotificationChannel(_channel);
+        await androidImplementation?.createNotificationChannel(_fallbackChannel);
+
+        // iOS: set foreground presentation options
+        await _fcm.setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
       }
 
       // ── Foreground message → show local notification ─────────────────────────
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        AppLogger.i('FCM Foreground: ${message.notification?.title ?? message.data['title']}');
+        AppLogger.i('FCM Foreground: ${message.notification?.title ?? message.data['title']} id=${message.messageId}');
         _showLocalNotification(message);
       });
 
@@ -115,36 +115,59 @@ class PushNotificationService {
     }
   }
 
-  // ── Show local notification banner ──────────────────────────────────────────
-  static void _showLocalNotification(RemoteMessage message) {
+  // ── Show local notification banner (foreground FCM → heads-up) ─────────────
+  static Future<void> _showLocalNotification(RemoteMessage message) async {
     if (kIsWeb) return;
     final notification = message.notification;
     final title = notification?.title ?? message.data['title'] ?? message.data['subject'] ?? 'MessMax';
     final body = notification?.body ?? message.data['body'] ?? message.data['message'] ?? '';
 
-    if (title.isEmpty && body.isEmpty) return;
+    if (title.isEmpty && body.isEmpty) {
+      AppLogger.w('Local notif skipped: empty title/body data=${message.data}');
+      return;
+    }
 
-    _localNotif.show(
-      id: message.hashCode,
-      title: title,
-      body: body,
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channel.id,
-          _channel.name,
-          channelDescription: _channel.description,
-          importance: Importance.max,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-          playSound: true,
+    // Android 13+ needs POST_NOTIFICATIONS — check explicitly before show()
+    if (Platform.isAndroid) {
+      final androidImpl = _localNotif.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final granted = await androidImpl?.areNotificationsEnabled() ?? true;
+      if (granted == false) {
+        AppLogger.w('Local notif not shown: POST_NOTIFICATIONS denied (title=$title). User must allow notifications in system settings.');
+        return;
+      }
+    }
+
+    try {
+      await _localNotif.show(
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+        title: title,
+        body: body,
+        payload: message.data['notification_id']?.toString(),
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channel.id,
+            _channel.name,
+            channelDescription: _channel.description,
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher',
+            playSound: true,
+            enableVibration: true,
+            channelShowBadge: true,
+            visibility: NotificationVisibility.public,
+            category: AndroidNotificationCategory.message,
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
         ),
-        iOS: const DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
-    );
+      );
+      AppLogger.i('Local notif shown: $title — $body');
+    } catch (e, st) {
+      AppLogger.e('Local notif show failed: $e', e, st);
+    }
   }
 
   // ── Permission + token sync (called after splash) ───────────────────────────
