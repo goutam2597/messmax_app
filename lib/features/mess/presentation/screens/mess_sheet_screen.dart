@@ -1029,11 +1029,14 @@ class _SheetViewState extends State<_SheetView>
     final hasPendingReq = () {
       final offReqs = sheet['offReqByDay'];
       if (offReqs is Map &&
-          (offReqs[day.toString()] != null || offReqs[day] != null))
+          (offReqs[day.toString()] != null || offReqs[day] != null)) {
         return true;
+      }
       final myOff = sheet['myOffReqByDay'];
-      if (myOff is Map && (myOff[day.toString()] != null || myOff[day] != null))
+      if (myOff is Map &&
+          (myOff[day.toString()] != null || myOff[day] != null)) {
         return true;
+      }
       return false;
     }();
 
@@ -1932,7 +1935,8 @@ class _SheetViewState extends State<_SheetView>
               if (v is Map) pendingGuests.add(v);
               if (v is List) pendingGuests.addAll(v);
             }
-            if (pendingGuests.isEmpty && sheet['pendingGuestRequests'] is List) {
+            if (pendingGuests.isEmpty &&
+                sheet['pendingGuestRequests'] is List) {
               for (final r in sheet['pendingGuestRequests'] as List) {
                 if (r is Map && _toI(r['day']) == day) pendingGuests.add(r);
               }
@@ -1942,13 +1946,74 @@ class _SheetViewState extends State<_SheetView>
               padding: const EdgeInsets.only(top: 8),
               child: Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: const Color(0xFFFFFBEB), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFF59E0B))),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Row(children: [Icon(Icons.hourglass_top_rounded, size: 12, color: Color(0xFFD97706)), SizedBox(width: 5), Text('PENDING GUEST', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Color(0xFFB45309)))]),
-                  const SizedBox(height: 4),
-                  for (final pg in pendingGuests)
-                    Padding(padding: const EdgeInsets.only(top: 3), child: Row(children: [Expanded(child: Text('${pg['is_cancellation'] == true ? 'Cancel: ' : ''}${pg['guest_name'] ?? 'Guest'} x${pg['guest_count'] ?? 1}', style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF92400E)))), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5), decoration: BoxDecoration(color: const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(4), border: Border.all(color: const Color(0xFFF59E0B))), child: const Text('PENDING', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFFB45309))))])),
-                ]),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFF59E0B)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.hourglass_top_rounded,
+                          size: 12,
+                          color: Color(0xFFD97706),
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          'PENDING GUEST',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFB45309),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    for (final pg in pendingGuests)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${pg['is_cancellation'] == true ? 'Cancel: ' : ''}${pg['guest_name'] ?? 'Guest'} x${pg['guest_count'] ?? 1}',
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF92400E),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: const Color(0xFFF59E0B),
+                                ),
+                              ),
+                              child: const Text(
+                                'PENDING',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFB45309),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
             );
           },
@@ -4380,7 +4445,7 @@ class _SheetViewState extends State<_SheetView>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'ui.select_day'.tr2,
+                            'ui.sheet_select_day'.tr2,
                             style: const TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w800,
@@ -4454,7 +4519,7 @@ class _SheetViewState extends State<_SheetView>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'ui.select_meal_slots'.tr2,
+                                'ui.sheet_select_meal_slots'.tr2,
                                 style: const TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w800,
@@ -4463,7 +4528,7 @@ class _SheetViewState extends State<_SheetView>
                                 ),
                               ),
                               Text(
-                                '${'ui.day'.tr2} ${selectedDay.toString().toBnNum()}',
+                                '${'ui.sheet_day'.tr2} ${selectedDay.toString().toBnNum()}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
@@ -4549,7 +4614,7 @@ class _SheetViewState extends State<_SheetView>
                                   style: FilledButton.styleFrom(
                                     backgroundColor: AppColors.brandDark,
                                   ),
-                                  child: Text('ui.sheet_save'.tr2),
+                                  child: Text('ui.sheet_save_entry'.tr2),
                                 ),
                               ),
                             ],
@@ -4632,7 +4697,7 @@ class _SheetViewState extends State<_SheetView>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'ui.request_guest_meal'.tr2,
+                                'ui.sheet_request_guest_title'.tr2,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
@@ -4641,7 +4706,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toBnNum()} · ${'ui.select_meal_slots'.tr2}',
+                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toBnNum()} · ${'ui.sheet_select_meal_slots'.tr2}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
@@ -4685,7 +4750,7 @@ class _SheetViewState extends State<_SheetView>
                         children: [
                           // 1. Target Day
                           Text(
-                            'ui.select_day'.tr2,
+                            'ui.sheet_select_day'.tr2,
                             style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
@@ -4852,7 +4917,7 @@ class _SheetViewState extends State<_SheetView>
 
                           // 3. Meal Slot Selectors
                           Text(
-                            'ui.select_meal_slots'.tr2,
+                            'ui.sheet_select_meal_slots'.tr2,
                             style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
@@ -5029,7 +5094,7 @@ class _SheetViewState extends State<_SheetView>
                                     ),
                                   )
                                 : Text(
-                                    'ui.send_request'.tr2,
+                                    'ui.sheet_send_request'.tr2,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12.5,
@@ -5117,7 +5182,7 @@ class _SheetViewState extends State<_SheetView>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'ui.add_guest_meal'.tr2,
+                                'ui.sheet_add_guest'.tr2,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
@@ -5126,7 +5191,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toString().toBnNum()} · ${'ui.direct_entry'.tr2}',
+                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toString().toBnNum()} · ${'ui.sheet_direct_entry'.tr2}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
@@ -5219,7 +5284,7 @@ class _SheetViewState extends State<_SheetView>
 
                           // 2. Target Day Picker
                           Text(
-                            'ui.select_day'.tr2,
+                            'ui.sheet_select_day'.tr2,
                             style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
@@ -5237,7 +5302,7 @@ class _SheetViewState extends State<_SheetView>
 
                           // 3. Guest Name
                           Text(
-                            'ui.guest_name_label'.tr2,
+                            'ui.sheet_guest_name_label'.tr2,
                             style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
@@ -5386,7 +5451,7 @@ class _SheetViewState extends State<_SheetView>
 
                           // 4. Meal Slot Selection
                           Text(
-                            'ui.select_meal_slots'.tr2,
+                            'ui.sheet_select_meal_slots'.tr2,
                             style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
