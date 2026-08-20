@@ -99,6 +99,8 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
       RemoteMessage message,
     ) {
       if (mounted) {
+        // ignore: avoid_print
+        print('PUBLIC FCM received: ${message.notification?.title} data=${message.data}');
         _fetchNotifications(isSilent: true);
       }
     });

@@ -112,14 +112,15 @@ class PushNotificationService {
       // ── Foreground message → show local notification ─────────────────────────
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         AppLogger.i(
-          'FCM Foreground: ${message.notification?.title ?? message.data['title']} id=${message.messageId}',
+          'FCM Foreground: ${message.notification?.title ?? message.data['title']} id=${message.messageId} data=${message.data}',
         );
+        AppLogger.i('FCM TOKEN (for test): ${message.data['notification_id'] ?? ''} — check logcat for full token above');
         _showLocalNotification(message);
       });
 
       // ── Token refresh ────────────────────────────────────────────────────────
       _fcm.onTokenRefresh.listen((newToken) {
-        AppLogger.i('FCM Token refreshed');
+        AppLogger.i('FCM Token refreshed: $newToken');
         _sendTokenToBackend(newToken);
       });
 
@@ -297,8 +298,11 @@ class PushNotificationService {
     try {
       final token = await _fcm.getToken();
       if (token != null && token.isNotEmpty) {
-        AppLogger.i('FCM token retrieved');
+        AppLogger.i('FCM TOKEN: $token');
+        AppLogger.i('FCM token retrieved (${token.substring(0, 20)}...)');
         await _sendTokenToBackend(token);
+      } else {
+        AppLogger.w('FCM token is null/empty');
       }
     } catch (e) {
       AppLogger.w('Could not get FCM token: $e');
