@@ -23,11 +23,19 @@ class PushNotificationService {
   static final FlutterLocalNotificationsPlugin _localNotif =
       FlutterLocalNotificationsPlugin();
 
-  /// Android high-importance channel for heads-up banners
+  /// Android high-importance channels matching backend payload & default fallback
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-    'messmax_high_importance',
+    'messmax_notifications',
     'MessMax Notifications',
     description: 'All MessMax push notifications',
+    importance: Importance.max,
+    playSound: true,
+  );
+
+  static const AndroidNotificationChannel _fallbackChannel = AndroidNotificationChannel(
+    'messmax_high_importance',
+    'MessMax High Importance',
+    description: 'High priority MessMax notifications',
     importance: Importance.max,
     playSound: true,
   );
@@ -44,12 +52,19 @@ class PushNotificationService {
 
       // ── Set up flutter_local_notifications ──────────────────────────────────
       if (!kIsWeb) {
-        // Android: create high-importance channel
-        await _localNotif
+        final androidImplementation = _localNotif
             .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin
-            >()
-            ?.createNotificationChannel(_channel);
+            >();
+
+        // Create high-importance channels on Android
+        await androidImplementation?.createNotificationChannel(_channel);
+        await androidImplementation?.createNotificationChannel(_fallbackChannel);
+
+        // Request Android 13+ (API 33+) local notification permission explicitly
+        if (Platform.isAndroid) {
+          await androidImplementation?.requestNotificationsPermission();
+        }
 
         // iOS: set foreground presentation options
         await _fcm.setForegroundNotificationPresentationOptions(
@@ -62,9 +77,9 @@ class PushNotificationService {
           '@mipmap/ic_launcher',
         );
         const initDarwin = DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
         );
         const initSettings = InitializationSettings(
           android: initAndroid,
@@ -75,7 +90,7 @@ class PushNotificationService {
 
       // ── Foreground message → show local notification ─────────────────────────
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        AppLogger.i('FCM Foreground: ${message.notification?.title}');
+        AppLogger.i('FCM Foreground: ${message.notification?.title ?? message.data['title']}');
         _showLocalNotification(message);
       });
 
@@ -104,12 +119,15 @@ class PushNotificationService {
   static void _showLocalNotification(RemoteMessage message) {
     if (kIsWeb) return;
     final notification = message.notification;
-    if (notification == null) return;
+    final title = notification?.title ?? message.data['title'] ?? message.data['subject'] ?? 'MessMax';
+    final body = notification?.body ?? message.data['body'] ?? message.data['message'] ?? '';
+
+    if (title.isEmpty && body.isEmpty) return;
 
     _localNotif.show(
       id: message.hashCode,
-      title: notification.title,
-      body: notification.body,
+      title: title,
+      body: body,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _channel.id,
@@ -118,6 +136,7 @@ class PushNotificationService {
           importance: Importance.max,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
+          playSound: true,
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,
