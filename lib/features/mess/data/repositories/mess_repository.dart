@@ -441,10 +441,27 @@ class MessRepository {
     bool? dOn,
     String? note,
   }) async {
-    final payload = <String, dynamic>{'day': day};
-    if (bOn != null) payload['breakfast_on'] = bOn;
-    if (lOn != null) payload['lunch_on'] = lOn;
-    if (dOn != null) payload['dinner_on'] = dOn;
+    final payload = <String, dynamic>{
+      'day': day,
+    };
+    if (bOn != null) {
+      payload['b_on'] = bOn;
+      payload['breakfast_on'] = bOn;
+      payload['b_off'] = !bOn;
+      payload['breakfast_off'] = !bOn;
+    }
+    if (lOn != null) {
+      payload['l_on'] = lOn;
+      payload['lunch_on'] = lOn;
+      payload['l_off'] = !lOn;
+      payload['lunch_off'] = !lOn;
+    }
+    if (dOn != null) {
+      payload['d_on'] = dOn;
+      payload['dinner_on'] = dOn;
+      payload['d_off'] = !dOn;
+      payload['dinner_off'] = !dOn;
+    }
     if (note != null) payload['note'] = note;
     final res = await _dio.post(
       '${ApiEndpoints.messes}/$messId/months/$monthId/meal-off',
