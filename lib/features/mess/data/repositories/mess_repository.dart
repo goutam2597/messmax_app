@@ -563,6 +563,21 @@ class MessRepository {
     if ((res.data as Map)['success'] != true) throw Exception((res.data as Map)['message'] ?? 'Failed');
   }
 
+  Future<void> requestGuestCancel(
+    int messId,
+    int monthId,
+    int guestMealId, {
+    String? note,
+  }) async {
+    final res = await _dio.post(
+      '${ApiEndpoints.messes}/$messId/months/$monthId/guest-cancel',
+      data: {'guest_meal_id': guestMealId, 'note': note},
+    );
+    if ((res.data as Map)['success'] != true) {
+      throw Exception((res.data as Map)['message'] ?? 'Failed');
+    }
+  }
+
   Future<void> storeInvite(
     int messId,
     String email,
