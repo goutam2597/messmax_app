@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 
 /// Single app-wide logger.
@@ -16,8 +17,8 @@ class AppLogger {
       printEmojis: false,
       dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
     ),
-    // TODO(mvp): switch to Level.warning for release builds.
-    level: Level.debug,
+    // Show debug/info only in debug builds — silent in release.
+    level: kDebugMode ? Level.debug : Level.warning,
   );
 
   static void d(String message) => _logger.d(message);

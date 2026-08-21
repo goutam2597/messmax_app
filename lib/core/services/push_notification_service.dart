@@ -52,8 +52,9 @@ class PushNotificationService {
   // ── Public stream: broadcasts when a foreground FCM arrives ─────────────────
   // Listeners (e.g. NotificationCubit, PublicNotificationsScreen) subscribe to
   // auto-refresh UI. Use broadcast so multiple listeners don't lose events.
-  static final Stream<RemoteMessage> onForegroundMessage =
-      FirebaseMessaging.onMessage.asBroadcastStream();
+  static final Stream<RemoteMessage> onForegroundMessage = FirebaseMessaging
+      .onMessage
+      .asBroadcastStream();
 
   // ── Initialize ──────────────────────────────────────────────────────────────
   static Future<void> initialize() async {
@@ -111,28 +112,23 @@ class PushNotificationService {
 
       // ── Foreground message → show local notification ─────────────────────────
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        AppLogger.i(
-          'FCM Foreground: ${message.notification?.title ?? message.data['title']} id=${message.messageId} data=${message.data}',
-        );
-        AppLogger.i('FCM TOKEN (for test): ${message.data['notification_id'] ?? ''} — check logcat for full token above');
         _showLocalNotification(message);
       });
 
       // ── Token refresh ────────────────────────────────────────────────────────
       _fcm.onTokenRefresh.listen((newToken) {
-        AppLogger.i('FCM Token refreshed: $newToken');
         _sendTokenToBackend(newToken);
       });
 
       // ── App opened from background notification ──────────────────────────────
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        AppLogger.i('FCM opened app: ${message.data}');
+        AppLogger.d('FCM opened app: ${message.data}');
       });
 
       // ── App opened from terminated state ────────────────────────────────────
       final initialMessage = await _fcm.getInitialMessage();
       if (initialMessage != null) {
-        AppLogger.i('FCM initial message: ${initialMessage.data}');
+        AppLogger.d('FCM initial message: ${initialMessage.data}');
       }
     } catch (e, st) {
       AppLogger.e('PushNotificationService init failed: $e', e, st);
@@ -298,8 +294,7 @@ class PushNotificationService {
     try {
       final token = await _fcm.getToken();
       if (token != null && token.isNotEmpty) {
-        AppLogger.i('FCM TOKEN: $token');
-        AppLogger.i('FCM token retrieved (${token.substring(0, 20)}...)');
+        AppLogger.d('FCM token retrieved (${token.substring(0, 20)}...)');
         await _sendTokenToBackend(token);
       } else {
         AppLogger.w('FCM token is null/empty');

@@ -837,7 +837,12 @@ class _DashboardViewState extends State<_DashboardView> {
                       },
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+                        padding: EdgeInsets.fromLTRB(
+                          _isTablet(context) ? 24 : 16,
+                          14,
+                          _isTablet(context) ? 24 : 16,
+                          32,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1381,6 +1386,9 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   // --- 2. LEDGER GRID STATS ---
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.shortestSide >= 600;
+
   Widget _buildLedgerGrid(
     BuildContext context,
     LedgerStatsModel stats,
@@ -1391,20 +1399,14 @@ class _DashboardViewState extends State<_DashboardView> {
     final mealRate = stats.mealRate;
     final totalDeposits = stats.totalDeposits.toInt();
     final restMoney = stats.restMoney.toInt();
+    final isTablet = _isTablet(context);
 
-    return GridView.count(
-      padding: EdgeInsets.zero,
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.42,
-      children: [
-        _statTile(
-          icon: Icons.restaurant_rounded,
-          iconColor: AppColors.brandDark,
-          bgColor: AppColors.brandSoft,
+    final tiles = [
+      _statTile(
+        context,
+        icon: Icons.restaurant_rounded,
+        iconColor: AppColors.brandDark,
+        bgColor: AppColors.brandSoft,
           title: 'ui.dash_total_meals'.tr2,
           value: bnDigits(totalMeals),
           subtitle:
@@ -1422,6 +1424,7 @@ class _DashboardViewState extends State<_DashboardView> {
               : null,
         ),
         _statTile(
+          context,
           icon: Icons.shopping_bag_rounded,
           iconColor: const Color(0xFF0F9F59),
           bgColor: const Color(0xFFE6F4EA),
@@ -1441,6 +1444,7 @@ class _DashboardViewState extends State<_DashboardView> {
               : null,
         ),
         _statTile(
+          context,
           icon: Icons.analytics_rounded,
           iconColor: AppColors.accentDark,
           bgColor: AppColors.accentSoft,
@@ -1460,6 +1464,7 @@ class _DashboardViewState extends State<_DashboardView> {
               : null,
         ),
         _statTile(
+          context,
           icon: Icons.account_balance_wallet_rounded,
           iconColor: const Color(0xFF1A73E8),
           bgColor: const Color(0xFFE8F0FE),
@@ -1478,11 +1483,38 @@ class _DashboardViewState extends State<_DashboardView> {
                 )
               : null,
         ),
-      ],
+      ];
+
+    // Tablet: 4-column row | Phone: 2×2 grid — same tile, no font change on phone
+    if (isTablet) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < tiles.length; i++)
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: i < tiles.length - 1 ? 12 : 0),
+                child: tiles[i],
+              ),
+            ),
+        ],
+      );
+    }
+
+    return GridView.count(
+      padding: EdgeInsets.zero,
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.42,
+      children: tiles,
     );
   }
 
-  Widget _statTile({
+  Widget _statTile(
+    BuildContext context, {
     required IconData icon,
     required Color iconColor,
     required Color bgColor,
@@ -1491,6 +1523,7 @@ class _DashboardViewState extends State<_DashboardView> {
     required String subtitle,
     VoidCallback? onTap,
   }) {
+    final isTablet = _isTablet(context);
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
@@ -1509,63 +1542,71 @@ class _DashboardViewState extends State<_DashboardView> {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
+              child: Padding(
+            padding: EdgeInsets.all(isTablet ? 14 : 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: EdgeInsets.all(isTablet ? 10 : 8),
                       decoration: BoxDecoration(
                         color: bgColor,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(icon, size: 18, color: iconColor),
+                      child: Icon(icon, size: isTablet ? 20 : 18, color: iconColor),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.inkFaded,
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: isTablet ? 12 : 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.inkFaded,
+                              ),
+                            ),
                           ),
-                        ),
-                        if (onTap != null) ...[
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 9,
-                            color: AppColors.inkFaded,
-                          ),
+                          if (onTap != null) ...[
+                            SizedBox(width: isTablet ? 6 : 4),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: isTablet ? 10 : 9,
+                              color: AppColors.inkFaded,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       value,
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: TextStyle(
+                        fontSize: isTablet ? 22 : 20,
                         fontWeight: FontWeight.w900,
                         color: AppColors.ink,
                         letterSpacing: -0.4,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: isTablet ? 4 : 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        fontSize: 11,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: isTablet ? 11.5 : 11,
                         color: AppColors.inkFaded,
                         fontWeight: FontWeight.w600,
                       ),

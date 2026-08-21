@@ -40,6 +40,7 @@ class DioClient {
         receiveTimeout: AppConfig.receiveTimeout,
         headers: {
           'Accept': 'application/json',
+          'X-API-Key': AppConfig.xApiKey,
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
         },

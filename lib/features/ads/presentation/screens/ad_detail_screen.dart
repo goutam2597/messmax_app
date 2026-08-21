@@ -63,7 +63,10 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
     if (_fetching) return;
     _fetching = true;
     try {
-      final res = await _repository.getAdDetail(_ad.slug, forceRefresh: forceRefresh);
+      final res = await _repository.getAdDetail(
+        _ad.slug,
+        forceRefresh: forceRefresh,
+      );
       if (!mounted) return;
       setState(() {
         _ad = res.ad;
@@ -106,9 +109,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return _SeatDetailSkeleton(
-        onBack: () => Navigator.of(context).pop(),
-      );
+      return _SeatDetailSkeleton(onBack: () => Navigator.of(context).pop());
     }
 
     return Scaffold(
@@ -171,7 +172,8 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                         const SizedBox(height: 20),
 
                         // Description
-                        if (ad.description != null && ad.description!.isNotEmpty) ...[
+                        if (ad.description != null &&
+                            ad.description!.isNotEmpty) ...[
                           ValueListenableBuilder<int>(
                             valueListenable: AppTranslations.notifier,
                             builder: (context, _, _) => _sectionHeader(
@@ -240,8 +242,13 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                           ValueListenableBuilder<int>(
                             valueListenable: AppTranslations.notifier,
                             builder: (context, _, _) {
-                              final area = ad.areaLabel ?? ad.area ?? ad.city ?? 'the same area';
-                              final sub = 'ui.ad_detail_nearby_sub'.tr2.replaceAll('{area}', area);
+                              final area =
+                                  ad.areaLabel ??
+                                  ad.area ??
+                                  ad.city ??
+                                  'the same area';
+                              final sub = 'ui.ad_detail_nearby_sub'.tr2
+                                  .replaceAll('{area}', area);
                               return _sectionHeader(
                                 icon: Icons.explore_rounded,
                                 title: 'ui.ad_detail_nearby'.tr2,
@@ -435,7 +442,11 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   builder: (context, _, _) => Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, size: 12, color: Colors.white),
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 12,
+                        color: Colors.white,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'ui.featured_label'.tr2,
@@ -466,7 +477,10 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
               ValueListenableBuilder<int>(
                 valueListenable: AppTranslations.notifier,
                 builder: (context, _, _) => Text(
-                  'ui.ad_detail_posted'.tr2.replaceAll('{date}', bnDigits(ad.publishedAt)),
+                  'ui.ad_detail_posted'.tr2.replaceAll(
+                    '{date}',
+                    bnDigits(ad.publishedAt),
+                  ),
                   style: const TextStyle(
                     fontSize: 12.5,
                     color: AppColors.inkFaded,
@@ -491,7 +505,8 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
             valueListenable: AppTranslations.notifier,
             builder: (context, _, _) => _badgeChip(
               icon: Icons.meeting_room_rounded,
-              label: '${ad.roomType.toUpperCase()} ${'ui.ad_detail_room_suffix'.tr2}',
+              label:
+                  '${ad.roomType.toUpperCase()} ${'ui.ad_detail_room_suffix'.tr2}',
               bgColor: AppColors.brandSoft,
               textColor: AppColors.brandDark,
             ),
@@ -501,8 +516,14 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
             valueListenable: AppTranslations.notifier,
             builder: (context, _, _) {
               final seatsLabel = ad.seatsAvailable == 1
-                  ? 'ui.card_seats_open'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable))
-                  : 'ui.card_seats_open_plural'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable));
+                  ? 'ui.card_seats_open'.tr2.replaceAll(
+                      '{count}',
+                      bnDigits(ad.seatsAvailable),
+                    )
+                  : 'ui.card_seats_open_plural'.tr2.replaceAll(
+                      '{count}',
+                      bnDigits(ad.seatsAvailable),
+                    );
               return _badgeChip(
                 icon: Icons.event_seat_rounded,
                 label: seatsLabel,
@@ -623,7 +644,11 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.photo_library_rounded, size: 12, color: Colors.white),
+                      const Icon(
+                        Icons.photo_library_rounded,
+                        size: 12,
+                        color: Colors.white,
+                      ),
                       const SizedBox(width: 5),
                       ValueListenableBuilder<int>(
                         valueListenable: AppTranslations.notifier,
@@ -670,7 +695,11 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
         builder: (context, _, _) => Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.house_rounded, color: AppColors.inkFaded, size: 54),
+            const Icon(
+              Icons.house_rounded,
+              color: AppColors.inkFaded,
+              size: 54,
+            ),
             const SizedBox(height: 8),
             Text(
               'ui.ad_detail_verified_listing'.tr2,
@@ -783,7 +812,9 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: ad.seatsAvailable > 0 ? AppColors.emerald : AppColors.accent,
+                  color: ad.seatsAvailable > 0
+                      ? AppColors.emerald
+                      : AppColors.accent,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -797,8 +828,14 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   valueListenable: AppTranslations.notifier,
                   builder: (context, _, _) {
                     final seatsText = ad.seatsAvailable == 1
-                        ? 'ui.card_seats_open'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable))
-                        : 'ui.card_seats_open_plural'.tr2.replaceAll('{count}', bnDigits(ad.seatsAvailable));
+                        ? 'ui.card_seats_open'.tr2.replaceAll(
+                            '{count}',
+                            bnDigits(ad.seatsAvailable),
+                          )
+                        : 'ui.card_seats_open_plural'.tr2.replaceAll(
+                            '{count}',
+                            bnDigits(ad.seatsAvailable),
+                          );
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1040,15 +1077,29 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       valueListenable: AppTranslations.notifier,
       builder: (context, _, _) {
         final specs = <(IconData, String, String)>[
-          (Icons.meeting_room_rounded, 'ui.ad_detail_room_type'.tr2, ad.roomType.toUpperCase()),
+          (
+            Icons.meeting_room_rounded,
+            'ui.ad_detail_room_type'.tr2,
+            ad.roomType.toUpperCase(),
+          ),
           if (ad.messName != null)
-            (Icons.apartment_rounded, 'ui.ad_detail_mess_name'.tr2, ad.messName!),
+            (
+              Icons.apartment_rounded,
+              'ui.ad_detail_mess_name'.tr2,
+              ad.messName!,
+            ),
           (
             Icons.groups_rounded,
             'ui.ad_detail_room_capacity'.tr2,
-            ad.roomCapacity != null ? '${bnDigits(ad.roomCapacity)} ${'ui.ad_detail_persons'.tr2}' : 'ui.ad_detail_flexible'.tr2,
+            ad.roomCapacity != null
+                ? '${bnDigits(ad.roomCapacity)} ${'ui.ad_detail_persons'.tr2}'
+                : 'ui.ad_detail_flexible'.tr2,
           ),
-          (Icons.payments_rounded, 'ui.ad_detail_rent_period'.tr2, 'ui.ad_detail_monthly'.tr2),
+          (
+            Icons.payments_rounded,
+            'ui.ad_detail_rent_period'.tr2,
+            'ui.ad_detail_monthly'.tr2,
+          ),
         ];
 
         return GridView.count(
@@ -1117,13 +1168,27 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
 
   IconData _getAmenityIcon(String text) {
     final lower = text.toLowerCase();
-    if (lower.contains('wifi') || lower.contains('internet')) return Icons.wifi_rounded;
-    if (lower.contains('bath') || lower.contains('washroom')) return Icons.bathtub_rounded;
-    if (lower.contains('gas') || lower.contains('kitchen')) return Icons.soup_kitchen_rounded;
-    if (lower.contains('generator') || lower.contains('power')) return Icons.power_rounded;
-    if (lower.contains('lift') || lower.contains('elevator')) return Icons.elevator_rounded;
-    if (lower.contains('meal') || lower.contains('food')) return Icons.restaurant_rounded;
-    if (lower.contains('security') || lower.contains('cc')) return Icons.security_rounded;
+    if (lower.contains('wifi') || lower.contains('internet')) {
+      return Icons.wifi_rounded;
+    }
+    if (lower.contains('bath') || lower.contains('washroom')) {
+      return Icons.bathtub_rounded;
+    }
+    if (lower.contains('gas') || lower.contains('kitchen')) {
+      return Icons.soup_kitchen_rounded;
+    }
+    if (lower.contains('generator') || lower.contains('power')) {
+      return Icons.power_rounded;
+    }
+    if (lower.contains('lift') || lower.contains('elevator')) {
+      return Icons.elevator_rounded;
+    }
+    if (lower.contains('meal') || lower.contains('food')) {
+      return Icons.restaurant_rounded;
+    }
+    if (lower.contains('security') || lower.contains('cc')) {
+      return Icons.security_rounded;
+    }
     if (lower.contains('balcony')) return Icons.balcony_rounded;
     return Icons.check_circle_rounded;
   }
@@ -1139,16 +1204,14 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           decoration: BoxDecoration(
             color: AppColors.emeraldSoft,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.emerald.withValues(alpha: 0.25)),
+            border: Border.all(
+              color: AppColors.emerald.withValues(alpha: 0.25),
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 15,
-                color: AppColors.emerald,
-              ),
+              Icon(icon, size: 15, color: AppColors.emerald),
               const SizedBox(width: 6),
               Text(
                 item,
@@ -1170,12 +1233,14 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
     final text =
         '${ad.title} — ৳${ad.rentPerSeat.toInt()} /mo • ${ad.areaLabel ?? ad.city ?? 'Dhaka'}\n$webUrl';
     try {
-      await SharePlus.instance.share(ShareParams(text: text, subject: ad.title));
+      await SharePlus.instance.share(
+        ShareParams(text: text, subject: ad.title),
+      );
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ui.share_failed'.tr2)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.share_failed'.tr2)));
     }
   }
 
@@ -1211,7 +1276,8 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
   }
 
   Future<void> _openWhatsApp(BuildContext context) async {
-    final rawWhatsapp = (ad.contactWhatsapp != null && ad.contactWhatsapp!.trim().isNotEmpty)
+    final rawWhatsapp =
+        (ad.contactWhatsapp != null && ad.contactWhatsapp!.trim().isNotEmpty)
         ? ad.contactWhatsapp!.trim()
         : ad.contactPhone?.trim();
 
@@ -1235,7 +1301,8 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       digits = '880$digits';
     }
 
-    final message = 'Hi, I am interested in your seat listing on MessMax: "${ad.title}"';
+    final message =
+        'Hi, I am interested in your seat listing on MessMax: "${ad.title}"';
     final whatsappUrl = Uri.parse(
       'https://wa.me/$digits?text=${Uri.encodeComponent(message)}',
     );
@@ -1252,7 +1319,9 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${'ui.ad_detail_whatsapp_open_fail'.tr2} $rawWhatsapp'),
+          content: Text(
+            '${'ui.ad_detail_whatsapp_open_fail'.tr2} $rawWhatsapp',
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -1585,11 +1654,7 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
                 // 1. Hero Gallery Skeleton
                 Stack(
                   children: [
-                    _shimmerBox(
-                      width: double.infinity,
-                      height: 310,
-                      radius: 0,
-                    ),
+                    _shimmerBox(width: double.infinity, height: 310, radius: 0),
                     Positioned(
                       top: topPadding + 10,
                       left: 16,
@@ -1693,7 +1758,11 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
                       const SizedBox(height: 18),
 
                       // 3. Title Skeleton
-                      _shimmerBox(width: double.infinity, height: 20, radius: 6),
+                      _shimmerBox(
+                        width: double.infinity,
+                        height: 20,
+                        radius: 6,
+                      ),
                       const SizedBox(height: 8),
                       _shimmerBox(width: 220, height: 16, radius: 6),
 
@@ -1728,9 +1797,17 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _shimmerBox(width: 120, height: 14, radius: 4),
+                                  _shimmerBox(
+                                    width: 120,
+                                    height: 14,
+                                    radius: 4,
+                                  ),
                                   const SizedBox(height: 6),
-                                  _shimmerBox(width: 180, height: 11, radius: 4),
+                                  _shimmerBox(
+                                    width: 180,
+                                    height: 11,
+                                    radius: 4,
+                                  ),
                                 ],
                               ),
                             ),
@@ -1785,18 +1862,24 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               decoration: const BoxDecoration(
                 color: AppColors.paperRaised,
-                border: Border(
-                  top: BorderSide(color: AppColors.paperLine),
-                ),
+                border: Border(top: BorderSide(color: AppColors.paperLine)),
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: _shimmerBox(width: double.infinity, height: 48, radius: 14),
+                    child: _shimmerBox(
+                      width: double.infinity,
+                      height: 48,
+                      radius: 14,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: _shimmerBox(width: double.infinity, height: 48, radius: 14),
+                    child: _shimmerBox(
+                      width: double.infinity,
+                      height: 48,
+                      radius: 14,
+                    ),
                   ),
                 ],
               ),

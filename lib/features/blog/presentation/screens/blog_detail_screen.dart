@@ -90,10 +90,13 @@ class BlogDetailScreen extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () async {
-                    final webUrl = 'http://${AppConfig.baseDomain}/blog/${blog.slug.isNotEmpty ? blog.slug : blog.id}';
+                    final webUrl =
+                        'http://${AppConfig.baseDomain}/blog/${blog.slug.isNotEmpty ? blog.slug : blog.id}';
                     final text = '${blog.title}\n$webUrl';
                     try {
-                      await SharePlus.instance.share(ShareParams(text: text, subject: blog.title));
+                      await SharePlus.instance.share(
+                        ShareParams(text: text, subject: blog.title),
+                      );
                     } catch (_) {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -577,7 +580,9 @@ class BlogDetailScreen extends StatelessWidget {
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${'ui.blog_saved'.tr2} "${blog.title}"')),
+                    SnackBar(
+                      content: Text('${'ui.blog_saved'.tr2} "${blog.title}"'),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.bookmark_outline_rounded, size: 20),
@@ -585,7 +590,10 @@ class BlogDetailScreen extends StatelessWidget {
                   valueListenable: AppTranslations.notifier,
                   builder: (context, _, _) => Text(
                     'ui.blog_save_guide'.tr2,
-                    style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),

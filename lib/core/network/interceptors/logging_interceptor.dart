@@ -1,21 +1,25 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../logger/app_logger.dart';
 
 /// Logs every request, response and error that flows through the Dio client.
+/// Debug only — silent in release to avoid leaking URLs/tokens.
 class LoggingInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    AppLogger.d('→ ${options.method} ${options.uri}');
+    if (kDebugMode) AppLogger.d('→ ${options.method} ${options.uri}');
     handler.next(options);
   }
 
   @override
   void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
-    AppLogger.i(
-      '← ${response.statusCode} ${response.requestOptions.method} '
-      '${response.requestOptions.uri}',
-    );
+    if (kDebugMode) {
+      AppLogger.i(
+        '← ${response.statusCode} ${response.requestOptions.method} '
+        '${response.requestOptions.uri}',
+      );
+    }
     handler.next(response);
   }
 
