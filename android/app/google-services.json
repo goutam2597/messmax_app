@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "1069180546995-ivv4v3m9qebe9sc1h3mkgc678vu53mid.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.messmax.net.app",
+            "certificate_hash": "3307c78975a2043ff0b2ebacd3be863a690a1b88"
+          }
+        },
+        {
           "client_id": "1069180546995-kuhat3sfq0i29u8voqgktgmthb5759mp.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
