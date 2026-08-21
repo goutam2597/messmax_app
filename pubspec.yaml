@@ -53,7 +53,7 @@ dependencies:
   google_sign_in: ^7.2.0
 
   # Environment configuration
-  flutter_dotenv: ^6.0.0
+  flutter_dotenv: ^6.0.1
 
   # URL Launcher for Phone & WhatsApp
   url_launcher: ^6.3.2
@@ -82,3 +82,18 @@ flutter:
     - .env
     - assets/icons/
     - assets/images/
+    - assets/fonts/
+
+  fonts:
+    - family: LiAdorNoirrit
+      fonts:
+        - asset: assets/fonts/Li_Ador_Noirrit_Light.ttf
+          weight: 300
+        - asset: assets/fonts/Li_Ador_Noirrit_Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Li_Ador_Noirrit_SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Li_Ador_Noirrit_Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Li_Ador_Noirrit_Italic.ttf
+          style: italic
