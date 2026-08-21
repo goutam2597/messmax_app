@@ -14,11 +14,35 @@
       },
       "oauth_client": [
         {
+          "client_id": "1069180546995-1plk90mr8n96mumq8mgnedmsbfjtqpnr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.messmax.net.app",
+            "certificate_hash": "aa428e3e9ca0b86fbd39e9ac423e88c2ec5e44f4"
+          }
+        },
+        {
+          "client_id": "1069180546995-5pmhrpid33v40uc7v44ifl6dnjcreedu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.messmax.net.app",
+            "certificate_hash": "0a3578e349f4903df4a3dcf39da3d276eccff7d1"
+          }
+        },
+        {
           "client_id": "1069180546995-kuhat3sfq0i29u8voqgktgmthb5759mp.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.messmax.net.app",
             "certificate_hash": "6b2cde7eb9f8f225142f855cc45d358a3326f6a9"
+          }
+        },
+        {
+          "client_id": "1069180546995-qtpegg3iau31hlmnf0i9fgac0h9ofgj4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.messmax.net.app",
+            "certificate_hash": "ddb915c731159395f27ff8d3755dc2b5e8de8b29"
           }
         },
         {

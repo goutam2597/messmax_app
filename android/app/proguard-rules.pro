@@ -6,3 +6,5 @@
 # Keep Firebase / Google Sign-In (reflection)
 -keep class com.google.firebase.** { *; }
 -keep class com.google.android.gms.** { *; }
+# Keep Play Core deferred components (only referenced, not bundled)
+-dontwarn com.google.android.play.core.**
