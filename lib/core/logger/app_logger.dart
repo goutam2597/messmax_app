@@ -16,7 +16,7 @@ class AppLogger {
       printEmojis: false,
       dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
     ),
-    // TEMP(1.0.1+3): enable debug/info in release for internal testing — revert to kDebugMode ? debug : warning after fix.
+    // TODO(internal-test): re-enable kDebugMode gate after Play signing propagates.
     level: Level.debug,
   );
 
