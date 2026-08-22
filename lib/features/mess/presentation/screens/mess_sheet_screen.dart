@@ -118,7 +118,7 @@ class _SheetViewState extends State<_SheetView>
 
   String _fmtNumber(double val, {bool isCurrency = false}) {
     final str = val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(2);
-    return isCurrency ? '?$str' : str;
+    return isCurrency ? '৳$str' : str;
   }
 
   Future<void> _confirmDeleteMonth(BuildContext ctx) async {
@@ -518,7 +518,7 @@ class _SheetViewState extends State<_SheetView>
                       ),
                       children: [
                         const TextSpan(
-                          text: ' ?',
+                          text: ' ৳',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -1186,7 +1186,7 @@ class _SheetViewState extends State<_SheetView>
                                     const SizedBox(width: 3),
                                     Text(
                                       AppTranslations.locale == 'bn'
-                                          ? '????? ???????'
+                                          ? 'আবেদন পেন্ডিং'
                                           : 'PENDING REQ',
                                       style: const TextStyle(
                                         fontSize: 8.5,
@@ -1223,7 +1223,7 @@ class _SheetViewState extends State<_SheetView>
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  '?${bnDigits(bazarTotal.toStringAsFixed(0))} ${'ui.sheet_bazar'.tr2}',
+                                  '৳${bnDigits(bazarTotal.toStringAsFixed(0))} ${'ui.sheet_bazar'.tr2}',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w800,
@@ -1371,7 +1371,7 @@ class _SheetViewState extends State<_SheetView>
             ),
             if (bazarTotal > 0)
               Text(
-                '?${bazarTotal.toStringAsFixed(2)}',
+                '৳${bazarTotal.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w900,
@@ -1416,7 +1416,7 @@ class _SheetViewState extends State<_SheetView>
                     ),
                   ),
                   Text(
-                    '${it['qty']} � ?${it['price']} = ?${(_toD(it['qty']) * _toD(it['price'])).toStringAsFixed(0)}',
+                    '${it['qty']} × ৳${it['price']} = ৳${(_toD(it['qty']) * _toD(it['price'])).toStringAsFixed(0)}',
                     style: const TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
@@ -1503,7 +1503,7 @@ class _SheetViewState extends State<_SheetView>
                     builder: (context, _, _) => Text(
                       'ui.sheet_tab_logs'.tr2 == 'Daily Log'
                           ? 'MEAL ATTENDANCE'
-                          : '????? ???',
+                          : 'দৈনিক মিল',
                       style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w800,
@@ -1525,7 +1525,7 @@ class _SheetViewState extends State<_SheetView>
                       child: ValueListenableBuilder<int>(
                         valueListenable: AppTranslations.notifier,
                         builder: (context, _, _) => Text(
-                          AppTranslations.locale == 'bn' ? '?' : 'B',
+                          AppTranslations.locale == 'bn' ? 'স' : 'B',
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w900,
@@ -1542,7 +1542,7 @@ class _SheetViewState extends State<_SheetView>
                       child: ValueListenableBuilder<int>(
                         valueListenable: AppTranslations.notifier,
                         builder: (context, _, _) => Text(
-                          AppTranslations.locale == 'bn' ? '??' : 'L',
+                          AppTranslations.locale == 'bn' ? 'দু' : 'L',
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w900,
@@ -1559,7 +1559,7 @@ class _SheetViewState extends State<_SheetView>
                       child: ValueListenableBuilder<int>(
                         valueListenable: AppTranslations.notifier,
                         builder: (context, _, _) => Text(
-                          AppTranslations.locale == 'bn' ? '??' : 'D',
+                          AppTranslations.locale == 'bn' ? 'রা' : 'D',
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w900,
@@ -1701,7 +1701,7 @@ class _SheetViewState extends State<_SheetView>
                                 ),
                               ),
                               child: Text(
-                                '? ${memberPendingReq['label'] ?? (memberPendingReq['is_reenable'] == true ? 'ON Req' : 'OFF Req')}',
+                                '⏳ ${memberPendingReq['label'] ?? (memberPendingReq['is_reenable'] == true ? 'ON Req' : 'OFF Req')}',
                                 style: const TextStyle(
                                   fontSize: 8.5,
                                   fontWeight: FontWeight.w800,
@@ -1904,7 +1904,7 @@ class _SheetViewState extends State<_SheetView>
                       children: [
                         Expanded(
                           child: Text(
-                            '${g['guest_name'] ?? 'Guest'} �${g['guest_count'] ?? 1} (${(g['slots'] as List?)?.join(' + ') ?? ''})',
+                            '${g['guest_name'] ?? 'Guest'} .${g['guest_count'] ?? 1} (${(g['slots'] as List?)?.join(' + ') ?? ''})',
                             style: const TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
@@ -2039,7 +2039,7 @@ class _SheetViewState extends State<_SheetView>
         : 0.0;
 
     String fmtBld(dynamic v) {
-      if (v == null) return '�';
+      if (v == null) return '.';
       final d = _toD(v);
       if (d == 0) return 'OFF';
       return d % 1 == 0 ? d.toInt().toString() : d.toStringAsFixed(1);
@@ -2080,7 +2080,7 @@ class _SheetViewState extends State<_SheetView>
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Shared Extra Cost: ?${extraCost.toStringAsFixed(0)} (?${extraPerMember.toStringAsFixed(1)}/member)',
+                          'Shared Extra Cost: ৳${extraCost.toStringAsFixed(0)} (৳${extraPerMember.toStringAsFixed(1)}/member)',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -2219,7 +2219,9 @@ class _SheetViewState extends State<_SheetView>
                                     child: InkWell(
                                       onTap: () =>
                                           _showEditMemberModal(memberRaw),
-                                      borderRadius: BorderRadius.circular(DashUI.rCard),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rCard,
+                                      ),
                                       child: Container(
                                         width: 32,
                                         height: 32,
@@ -2266,7 +2268,9 @@ class _SheetViewState extends State<_SheetView>
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     color: AppColors.brandSoft,
-                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                    borderRadius: BorderRadius.circular(
+                                      DashUI.rBtn,
+                                    ),
                                   ),
                                   child: const Icon(
                                     Icons.restaurant_rounded,
@@ -2307,7 +2311,9 @@ class _SheetViewState extends State<_SheetView>
                                     ),
                                     decoration: BoxDecoration(
                                       color: AppColors.paperRaised,
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       border: Border.all(
                                         color: AppColors.paperLine,
                                       ),
@@ -2326,8 +2332,8 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         Text(
                                           AppTranslations.locale == 'bn'
-                                              ? '${fmtBld(memberRaw['default_breakfast']).toBnNum()}? � ${fmtBld(memberRaw['default_lunch']).toBnNum()}?? � ${fmtBld(memberRaw['default_dinner']).toBnNum()}??'
-                                              : '${fmtBld(memberRaw['default_breakfast'])}B � ${fmtBld(memberRaw['default_lunch'])}L � ${fmtBld(memberRaw['default_dinner'])}D',
+                                              ? '${fmtBld(memberRaw['default_breakfast']).toBnNum()}? . ${fmtBld(memberRaw['default_lunch']).toBnNum()}?? . ${fmtBld(memberRaw['default_dinner']).toBnNum()}??'
+                                              : '${fmtBld(memberRaw['default_breakfast'])}B . ${fmtBld(memberRaw['default_lunch'])}L . ${fmtBld(memberRaw['default_dinner'])}D',
                                           style: const TextStyle(
                                             fontSize: 10.5,
                                             fontWeight: FontWeight.w800,
@@ -2353,7 +2359,9 @@ class _SheetViewState extends State<_SheetView>
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
                                       color: AppColors.paper,
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       border: Border.all(
                                         color: AppColors.paperLine,
                                       ),
@@ -2372,7 +2380,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '?${spend.toStringAsFixed(0).toBnNum()}',
+                                          '৳${spend.toStringAsFixed(0).toBnNum()}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2391,7 +2399,9 @@ class _SheetViewState extends State<_SheetView>
                                       color: AppColors.emerald.withValues(
                                         alpha: 0.08,
                                       ),
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       border: Border.all(
                                         color: AppColors.emerald.withValues(
                                           alpha: 0.2,
@@ -2412,7 +2422,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '?${given.toStringAsFixed(0).toBnNum()}',
+                                          '৳${given.toStringAsFixed(0).toBnNum()}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2433,7 +2443,9 @@ class _SheetViewState extends State<_SheetView>
                                               alpha: 0.12,
                                             )
                                           : AppColors.dangerSoft,
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       border: Border.all(
                                         color: isPositive
                                             ? AppColors.emerald.withValues(
@@ -2462,7 +2474,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${isPositive ? '+' : ''}?${balance.toStringAsFixed(0).toBnNum()}',
+                                          '${isPositive ? '+' : ''}৳${balance.toStringAsFixed(0).toBnNum()}',
                                           style: TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2553,7 +2565,7 @@ class _SheetViewState extends State<_SheetView>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '?${totalDeposits.toInt().toBnNum()}',
+                            '৳${totalDeposits.toInt().toBnNum()}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
@@ -2660,7 +2672,7 @@ class _SheetViewState extends State<_SheetView>
                             borderRadius: BorderRadius.circular(DashUI.rBtn),
                           ),
                           child: Text(
-                            '?${_toD(d['amount']).toInt().toBnNum()}',
+                            '৳${_toD(d['amount']).toInt().toBnNum()}',
                             style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w900,
@@ -2838,7 +2850,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                             ),
                             Text(
-                              '${r['label'] ?? (r['is_reenable'] == true ? 'Meal ON' : 'Meal OFF')}${r['note'] != null && r['note'].toString().isNotEmpty ? ' � "${r['note']}"' : ''}',
+                              '${r['label'] ?? (r['is_reenable'] == true ? 'Meal ON' : 'Meal OFF')}${r['note'] != null && r['note'].toString().isNotEmpty ? ' . "${r['note']}"' : ''}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.inkSoft,
@@ -2937,7 +2949,7 @@ class _SheetViewState extends State<_SheetView>
                               const SizedBox(width: 3),
                               Text(
                                 AppTranslations.locale == 'bn'
-                                    ? '???????'
+                                    ? 'পেন্ডিং'
                                     : 'Pending',
                                 style: const TextStyle(
                                   fontSize: 10.5,
@@ -3003,7 +3015,7 @@ class _SheetViewState extends State<_SheetView>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${gr['member_name'] ?? gr['member']?['name'] ?? 'Member'} � ${gr['guest_name'] ?? 'Guest'} �${gr['guest_count'] ?? 1}',
+                              '${gr['member_name'] ?? gr['member']?['name'] ?? 'Member'} . ${gr['guest_name'] ?? 'Guest'} .${gr['guest_count'] ?? 1}',
                               style: const TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.w800,
@@ -3038,7 +3050,7 @@ class _SheetViewState extends State<_SheetView>
                                   const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
-                                    '${gr['is_cancellation'] == true ? 'Cancel: ' : ''}Guest Meal Request${gr['note'] != null && gr['note'].toString().isNotEmpty ? ' � "${gr['note']}"' : ''}',
+                                    '${gr['is_cancellation'] == true ? 'Cancel: ' : ''}Guest Meal Request${gr['note'] != null && gr['note'].toString().isNotEmpty ? ' . "${gr['note']}"' : ''}',
                                     style: const TextStyle(
                                       fontSize: 11.5,
                                       color: AppColors.inkSoft,
@@ -3261,13 +3273,17 @@ class _SheetViewState extends State<_SheetView>
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
@@ -3325,19 +3341,25 @@ class _SheetViewState extends State<_SheetView>
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.emerald,
                                   width: 1.5,
@@ -3361,7 +3383,9 @@ class _SheetViewState extends State<_SheetView>
                                       amountCtrl.text = amt.toString();
                                       setS(() {});
                                     },
-                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                    borderRadius: BorderRadius.circular(
+                                      DashUI.rBtn,
+                                    ),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 9,
@@ -3369,13 +3393,15 @@ class _SheetViewState extends State<_SheetView>
                                       ),
                                       decoration: BoxDecoration(
                                         color: AppColors.paper,
-                                        borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                        borderRadius: BorderRadius.circular(
+                                          DashUI.rBtn,
+                                        ),
                                         border: Border.all(
                                           color: AppColors.paperLine,
                                         ),
                                       ),
                                       child: Text(
-                                        '+?$amt',
+                                        '+৳$amt',
                                         style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
@@ -3422,13 +3448,17 @@ class _SheetViewState extends State<_SheetView>
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
@@ -3486,19 +3516,25 @@ class _SheetViewState extends State<_SheetView>
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.emerald,
                                   width: 1.5,
@@ -3527,7 +3563,9 @@ class _SheetViewState extends State<_SheetView>
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               minimumSize: const Size(0, 38),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                             child: Text(
@@ -3605,7 +3643,9 @@ class _SheetViewState extends State<_SheetView>
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               minimumSize: const Size(0, 38),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                           ),
@@ -3631,7 +3671,7 @@ class _SheetViewState extends State<_SheetView>
       context,
       title: 'ui.confirm_delete_deposit_title'.tr2,
       itemName: memberName != null && amount != null && amount > 0
-          ? '$memberName � ?${amount.toStringAsFixed(0)}'
+          ? '$memberName . ?${amount.toStringAsFixed(0)}'
           : memberName,
       message: 'ui.confirm_delete_deposit_message'.tr2,
       confirmLabel: 'ui.confirm_delete_deposit_label'.tr2,
@@ -3968,19 +4008,25 @@ class _SheetViewState extends State<_SheetView>
                                       vertical: 10,
                                     ),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       borderSide: const BorderSide(
                                         color: AppColors.paperLine,
                                       ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       borderSide: const BorderSide(
                                         color: AppColors.paperLine,
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       borderSide: const BorderSide(
                                         color: AppColors.brandDark,
                                         width: 1.5,
@@ -4017,13 +4063,15 @@ class _SheetViewState extends State<_SheetView>
                                               decoration: BoxDecoration(
                                                 color: AppColors.paperRaised,
                                                 borderRadius:
-                                                    BorderRadius.circular(DashUI.rBtn),
+                                                    BorderRadius.circular(
+                                                      DashUI.rBtn,
+                                                    ),
                                                 border: Border.all(
                                                   color: AppColors.paperLine,
                                                 ),
                                               ),
                                               child: Text(
-                                                '+?${amt.toBnNum()}',
+                                                '+৳${amt.toBnNum()}',
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.w700,
@@ -4059,19 +4107,25 @@ class _SheetViewState extends State<_SheetView>
                                       vertical: 10,
                                     ),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       borderSide: const BorderSide(
                                         color: AppColors.paperLine,
                                       ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       borderSide: const BorderSide(
                                         color: AppColors.paperLine,
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
                                       borderSide: const BorderSide(
                                         color: AppColors.brandDark,
                                         width: 1.5,
@@ -4103,7 +4157,9 @@ class _SheetViewState extends State<_SheetView>
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               minimumSize: const Size(0, 38),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                             child: Text(
@@ -4189,7 +4245,9 @@ class _SheetViewState extends State<_SheetView>
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               minimumSize: const Size(0, 38),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                           ),
@@ -4267,8 +4325,8 @@ class _SheetViewState extends State<_SheetView>
           }) {
             final isBn = AppTranslations.locale == 'bn';
             final statusText = isOn
-                ? (isBn ? '????' : 'ON')
-                : (isBn ? '????' : 'OFF');
+                ? (isBn ? 'অন' : 'ON')
+                : (isBn ? 'অফ' : 'OFF');
 
             return InkWell(
               onTap: onTap,
@@ -4489,7 +4547,9 @@ class _SheetViewState extends State<_SheetView>
                                   ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFFFBEB),
-                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                    borderRadius: BorderRadius.circular(
+                                      DashUI.rBtn,
+                                    ),
                                     border: Border.all(
                                       color: const Color(0xFFF59E0B),
                                     ),
@@ -4505,7 +4565,7 @@ class _SheetViewState extends State<_SheetView>
                                       Expanded(
                                         child: Text(
                                           AppTranslations.locale == 'bn'
-                                              ? '??? ${selectedDay.toString().toBnNum()}-?? ????? ???????: ${labelStr.isNotEmpty ? labelStr : '??? ?????'}'
+                                              ? ' ${selectedDay.toString().toBnNum()}-আবেদন পেন্ডিং: ${labelStr.isNotEmpty ? labelStr : 'আবেদন পেন্ডিং'}'
                                               : 'Pending request for Day $selectedDay: ${labelStr.isNotEmpty ? labelStr : 'Meal request'}',
                                           style: const TextStyle(
                                             fontSize: 11.5,
@@ -4714,7 +4774,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toBnNum()} � ${'ui.sheet_select_meal_slots'.tr2}',
+                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toBnNum()} . ${'ui.sheet_select_meal_slots'.tr2}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
@@ -4812,19 +4872,25 @@ class _SheetViewState extends State<_SheetView>
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.brandDark,
                                   width: 1.5,
@@ -5004,19 +5070,25 @@ class _SheetViewState extends State<_SheetView>
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.brandDark,
                                   width: 1.5,
@@ -5045,7 +5117,9 @@ class _SheetViewState extends State<_SheetView>
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               minimumSize: const Size(0, 38),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                             child: Text(
@@ -5115,7 +5189,9 @@ class _SheetViewState extends State<_SheetView>
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               minimumSize: const Size(0, 38),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                           ),
@@ -5201,7 +5277,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toString().toBnNum()} � ${'ui.sheet_direct_entry'.tr2}',
+                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toString().toBnNum()} . ${'ui.sheet_direct_entry'.tr2}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
@@ -5264,13 +5340,17 @@ class _SheetViewState extends State<_SheetView>
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
@@ -5348,19 +5428,25 @@ class _SheetViewState extends State<_SheetView>
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.paperLine,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                                 borderSide: const BorderSide(
                                   color: AppColors.brandDark,
                                   width: 1.5,
@@ -5523,7 +5609,9 @@ class _SheetViewState extends State<_SheetView>
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               minimumSize: const Size(0, 38),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                             child: Text(
@@ -5593,7 +5681,9 @@ class _SheetViewState extends State<_SheetView>
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               minimumSize: const Size(0, 38),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                           ),
@@ -5618,8 +5708,8 @@ class _SheetViewState extends State<_SheetView>
   }) {
     final isBn = AppTranslations.locale == 'bn';
     final badgeText = isSelected
-        ? (isBn ? '? ???' : '? ADD')
-        : (isBn ? '???' : 'OFF');
+        ? (isBn ? 'এড' : '? ADD')
+        : (isBn ? 'অফ' : 'OFF');
 
     return InkWell(
       onTap: onTap,
@@ -5878,7 +5968,7 @@ class _SheetViewState extends State<_SheetView>
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    'Total: ?${bazarTotal.toStringAsFixed(0)}',
+                                    'Total: ৳${bazarTotal.toStringAsFixed(0)}',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,
@@ -5947,7 +6037,7 @@ class _SheetViewState extends State<_SheetView>
                                       keyboardType: TextInputType.number,
                                       onChanged: (_) => setS(() {}),
                                       decoration: InputDecoration(
-                                        hintText: 'Price ?',
+                                        hintText: 'Price ৳',
                                         isDense: true,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
@@ -5969,7 +6059,9 @@ class _SheetViewState extends State<_SheetView>
                                       onTap: rows.length == 1
                                           ? null
                                           : () => setS(() => rows.removeAt(i)),
-                                      borderRadius: BorderRadius.circular(DashUI.rCard),
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rCard,
+                                      ),
                                       child: Container(
                                         width: 28,
                                         height: 28,
@@ -6028,7 +6120,9 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               minimumSize: const Size(0, 32),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                borderRadius: BorderRadius.circular(
+                                  DashUI.rBtn,
+                                ),
                               ),
                             ),
                           ),

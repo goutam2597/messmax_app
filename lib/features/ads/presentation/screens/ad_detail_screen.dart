@@ -642,7 +642,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                       color: Colors.white.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: Row( 
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(

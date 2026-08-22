@@ -179,7 +179,7 @@ class AdFeaturedCard extends StatelessWidget {
                         child: ValueListenableBuilder<int>(
                           valueListenable: AppTranslations.notifier,
                           builder: (context, _, _) => Text(
-                            '?${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
+                            '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w900,
@@ -350,7 +350,7 @@ class AdGridCard extends StatelessWidget {
                     child: ValueListenableBuilder<int>(
                       valueListenable: AppTranslations.notifier,
                       builder: (context, _, _) => Text(
-                        '?${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
+                        '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
                         style: const TextStyle(
                           color: AppColors.accentDark,
                           fontSize: 13,
@@ -662,7 +662,7 @@ class AdRowCard extends StatelessWidget {
                         ValueListenableBuilder<int>(
                           valueListenable: AppTranslations.notifier,
                           builder: (context, _, _) => Text(
-                            '?${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
+                            '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.card_rate_month'.tr2}',
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
