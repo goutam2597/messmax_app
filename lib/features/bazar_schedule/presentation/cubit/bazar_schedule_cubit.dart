@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/logger/app_logger.dart';
+import '../../../../core/network/network_error.dart';
 import '../../data/repositories/bazar_schedule_repository.dart';
 import 'bazar_schedule_state.dart';
 
@@ -58,7 +59,10 @@ class BazarScheduleCubit extends Cubit<BazarScheduleState> {
       if (cached != null) {
         emit(BazarScheduleLoaded(schedule: cached));
       } else {
-        emit(BazarScheduleError(e.toString().replaceAll('Exception: ', '')));
+        emit(BazarScheduleError(
+          NetworkError.subtleMessage(e),
+          code: NetworkError.codeFor(e),
+        ));
       }
     }
   }

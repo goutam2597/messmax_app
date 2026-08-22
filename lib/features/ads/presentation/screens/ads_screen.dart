@@ -5,6 +5,7 @@ import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/ad_cards.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/messmax_app_bar.dart';
 import '../../../../core/widgets/search_filter_bar.dart';
 import '../../../home/data/models/home_data_model.dart';
@@ -108,46 +109,15 @@ class _AdsScreenState extends State<AdsScreen> {
                     }
 
                     if (state is AdsError) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.error_outline_rounded,
-                                size: 48,
-                                color: AppColors.inkFaded,
-                              ),
-                              const SizedBox(height: 12),
-                              ValueListenableBuilder<int>(
-                                valueListenable: AppTranslations.notifier,
-                                builder: (context, _, _) => Text(
-                                  'ui.ads_load_error'.tr2,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.ink,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.brandDark,
-                                  foregroundColor: Colors.white,
-                                ),
-                                onPressed: () => context
-                                    .read<AdsCubit>()
-                                    .fetchAds(forceRefresh: true),
-                                child: ValueListenableBuilder<int>(
-                                  valueListenable: AppTranslations.notifier,
-                                  builder: (context, _, _) =>
-                                      Text('ui.try_again'.tr2),
-                                ),
-                              ),
-                            ],
-                          ),
+                      return ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => AppErrorView(
+                          code: state.code,
+                          title: 'ui.ads_load_error'.tr2,
+                          retryLabel: 'ui.try_again'.tr2,
+                          onRetry: () => context
+                              .read<AdsCubit>()
+                              .fetchAds(forceRefresh: true),
                         ),
                       );
                     }

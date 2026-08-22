@@ -7,6 +7,7 @@ import '../../../../core/network/cache_manager.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_exit_dialog.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/app_menu_button.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
@@ -569,55 +570,15 @@ class _DashboardViewState extends State<_DashboardView> {
                   }
 
                   if (state is DashboardError) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: const BoxDecoration(
-                                color: AppColors.accentSoft,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.wifi_off_rounded,
-                                color: AppColors.accentDark,
-                                size: 36,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'ui.dash_load_failed'.tr2,
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.ink,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              state.message,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.inkFaded,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            FilledButton.icon(
-                              onPressed: () => context
-                                  .read<DashboardCubit>()
-                                  .loadDashboard(),
-                              icon: const Icon(Icons.refresh_rounded, size: 18),
-                              label: Text('ui.try_again'.tr2),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.brandDark,
-                              ),
-                            ),
-                          ],
-                        ),
+                    return ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => AppErrorView(
+                        code: state.code,
+                        title: 'ui.dash_load_failed'.tr2,
+                        retryLabel: 'ui.try_again'.tr2,
+                        icon: Icons.wifi_off_rounded,
+                        onRetry: () =>
+                            context.read<DashboardCubit>().loadDashboard(),
                       ),
                     );
                   }

@@ -69,9 +69,10 @@ final class AdsLoaded extends AdsState {
 
 final class AdsError extends AdsState {
   final String message;
+  final String code;
 
-  const AdsError(this.message);
+  const AdsError(this.message, {this.code = 'ERR-NET-0000'});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

@@ -33,9 +33,10 @@ final class BlogLoaded extends BlogState {
 
 final class BlogError extends BlogState {
   final String message;
+  final String code;
 
-  const BlogError(this.message);
+  const BlogError(this.message, {this.code = 'ERR-NET-0000'});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

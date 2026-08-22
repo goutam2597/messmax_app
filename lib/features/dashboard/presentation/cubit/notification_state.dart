@@ -50,9 +50,10 @@ class NotificationLoaded extends NotificationState {
 
 class NotificationError extends NotificationState {
   final String message;
+  final String code;
 
-  const NotificationError(this.message);
+  const NotificationError(this.message, {this.code = 'ERR-NET-0000'});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

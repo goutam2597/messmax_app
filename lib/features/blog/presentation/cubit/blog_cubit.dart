@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/network_error.dart';
 import '../../data/repositories/blog_repository.dart';
 import 'blog_state.dart';
 
@@ -58,7 +59,10 @@ class BlogCubit extends Cubit<BlogState> {
       ));
     } catch (e) {
       if (state is! BlogLoaded) {
-        emit(BlogError(e.toString()));
+        emit(BlogError(
+          NetworkError.subtleMessage(e),
+          code: NetworkError.codeFor(e),
+        ));
       }
     }
   }

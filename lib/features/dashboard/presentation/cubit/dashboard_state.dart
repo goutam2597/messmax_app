@@ -25,8 +25,9 @@ class DashboardLoaded extends DashboardState {
 
 class DashboardError extends DashboardState {
   final String message;
-  const DashboardError(this.message);
+  final String code;
+  const DashboardError(this.message, {this.code = 'ERR-NET-0000'});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

@@ -28,8 +28,19 @@ final class HomeLoaded extends HomeState {
 final class HomeError extends HomeState {
   final String message;
 
-  const HomeError(this.message);
+  /// Stable machine-friendly code (e.g. ERR-NET-1001) shown in the UI.
+  final String code;
+
+  /// True when the whole backend is unreachable (timeout / no connection).
+  /// Callers show the full backend message; other errors stay subtle.
+  final bool isServerDown;
+
+  const HomeError(
+    this.message, {
+    this.code = 'ERR-NET-0000',
+    this.isServerDown = false,
+  });
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code, isServerDown];
 }

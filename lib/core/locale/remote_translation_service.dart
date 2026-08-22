@@ -48,7 +48,10 @@ class RemoteTranslationService {
         res = await dio.get(_endpoint, queryParameters: {'locale': locale});
       } catch (_) {
         // Try direct /api prefix fallback if domain root routing differed
-        res = await dio.get(_fallbackEndpoint, queryParameters: {'locale': locale});
+        res = await dio.get(
+          _fallbackEndpoint,
+          queryParameters: {'locale': locale},
+        );
       }
 
       if (res.statusCode == 200 && res.data is Map) {
@@ -58,7 +61,10 @@ class RemoteTranslationService {
           if (localeMap is Map) {
             final flat = <String, String>{};
             localeMap.forEach((k, v) {
-              final valStr = v.toString().replaceAll(r'\n', '\n').replaceAll('\\n', '\n');
+              final valStr = v
+                  .toString()
+                  .replaceAll(r'\n', '\n')
+                  .replaceAll('\\n', '\n');
               flat[k.toString()] = valStr;
             });
             // Persist to local cache

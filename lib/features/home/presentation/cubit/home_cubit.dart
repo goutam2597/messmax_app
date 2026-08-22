@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/network_error.dart';
 import '../../data/repositories/home_repository.dart';
 import 'home_state.dart';
 
@@ -27,7 +28,14 @@ class HomeCubit extends Cubit<HomeState> {
       emit(HomeLoaded(data));
     } catch (e) {
       if (state is! HomeLoaded) {
-        emit(HomeError(e.toString()));
+        final serverDown = NetworkError.isServerUnreachable(e);
+        emit(
+          HomeError(
+            NetworkError.subtleMessage(e),
+            code: NetworkError.codeFor(e),
+            isServerDown: serverDown,
+          ),
+        );
       }
     }
   }

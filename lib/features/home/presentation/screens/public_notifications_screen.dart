@@ -7,9 +7,11 @@ import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../../../core/locale/app_translations.dart';
+import '../../../../core/network/network_error.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/network_image_cover.dart';
 import '../../../ads/data/models/ad_model.dart';
 import '../../../ads/data/repositories/ads_repository.dart';
@@ -79,6 +81,7 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
   List<PublicNotificationItem> _notifications = [];
   bool _isLoading = true;
   String? _errorMessage;
+  String _errorCode = 'ERR-NET-0000';
 
   late final StreamController<List<PublicNotificationItem>>
   _notificationsStreamController;
@@ -127,6 +130,7 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
       setState(() {
         _isLoading = true;
         _errorMessage = null;
+          _errorCode = 'ERR-NET-0000';
       });
     }
 
@@ -154,6 +158,7 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
             setState(() {
               _isLoading = false;
               _errorMessage = null;
+          _errorCode = 'ERR-NET-0000';
             });
           }
         }
@@ -169,15 +174,17 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
       if (mounted && !isSilent) {
         setState(() {
           _isLoading = false;
+          _errorCode = NetworkError.codeFor(e);
           _errorMessage =
               e.response?.data?['message']?.toString() ??
               'Unable to reach server. Pull down to refresh.';
         });
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted && !isSilent) {
         setState(() {
           _isLoading = false;
+          _errorCode = NetworkError.codeFor(e);
           _errorMessage = 'An unexpected error occurred.';
         });
       }
@@ -1049,49 +1056,11 @@ class _PublicNotificationsScreenState extends State<PublicNotificationsScreen>
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.cloud_off_rounded,
-              size: 48,
-              color: AppColors.inkFaded,
-            ),
-            const SizedBox(height: 14),
-            Text(
-              _errorMessage ?? 'Failed to load notifications.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.ink,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.brandDark,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: _fetchNotifications,
-              icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: ValueListenableBuilder<int>(
-                valueListenable: AppTranslations.notifier,
-                builder: (context, _, _) => Text(
-                  'ui.try_again'.tr2,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AppErrorView(
+      code: _errorCode,
+      title: 'ui.notif_load_failed'.tr2,
+      retryLabel: 'ui.try_again'.tr2,
+      onRetry: _fetchNotifications,
     );
   }
 

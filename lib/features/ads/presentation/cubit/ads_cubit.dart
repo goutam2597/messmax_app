@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/network_error.dart';
 import '../../data/models/ads_response_model.dart';
 import '../../data/repositories/ads_repository.dart';
 import 'ads_state.dart';
@@ -91,7 +92,10 @@ class AdsCubit extends Cubit<AdsState> {
           isLoadingMore: prev.isLoadingMore,
         ));
       } else {
-        emit(AdsError(e.toString()));
+        emit(AdsError(
+          NetworkError.subtleMessage(e),
+          code: NetworkError.codeFor(e),
+        ));
       }
     }
   }

@@ -1,11 +1,17 @@
 import 'package:flutter/foundation.dart';
 
 import '../logger/app_logger.dart';
+import 'bundled_translation_service.dart';
 import 'remote_translation_service.dart';
 
-/// Translation registry — 100% API-driven via RemoteTranslationService.
+/// Translation registry.
+///
+/// Priority: bundled `en.json` (always) → cached/API translations for the
+/// selected locale (merged on top). A missing key in the selected locale
+/// falls back to its English value; raw keys are never shown.
 class AppTranslations {
   static Map<String, String> _current = {};
+  static Map<String, String> _english = {};
   static String _locale = 'en';
   static final ValueNotifier<int> _notifier = ValueNotifier(0);
 
@@ -15,19 +21,24 @@ class AppTranslations {
 
   static Future<void> load(String locale) async {
     _locale = locale;
-    final remote = await RemoteTranslationService.fetchLocale(locale);
-    if (remote.isNotEmpty) {
-      _current = remote;
-      AppLogger.i('Loaded $locale: ${remote.length} keys');
-    } else {
-      AppLogger.w('No translations for $locale — using fallback');
-      _current = {};
+    // 1. Bundled English is always the offline-safe base layer.
+    if (_english.isEmpty) {
+      _english = await BundledTranslationService.load('en');
     }
+    // 2. Cached translations load instantly (<1ms); API refresh happens
+    //    in background and calls updateCurrent() when it succeeds.
+    final remote = await RemoteTranslationService.fetchLocale(locale);
+    _current = {..._english, ...remote};
+    AppLogger.i(
+      'Loaded $locale: ${_current.length} keys '
+      '(${remote.length} remote, ${_english.length} bundled en)',
+    );
     _notifier.value++;
   }
 
   static void updateCurrent(Map<String, String> newMap) {
-    _current = newMap;
+    // Keep English base underneath so missing keys never show as raw keys.
+    _current = {..._english, ...newMap};
     _notifier.value++;
   }
 
@@ -36,7 +47,15 @@ class AppTranslations {
     return val.replaceAll(r'\n', '\n').replaceAll('\\n', '\n');
   }
 
-  static Future<void> preloadAll() async {}
+  /// Warm cache for other supported locales in background.
+  static Future<void> preloadAll() async {
+    for (final code in const ['en', 'bn']) {
+      if (code == _locale) continue;
+      try {
+        await RemoteTranslationService.fetchLocale(code);
+      } catch (_) {}
+    }
+  }
 }
 
 extension AppTranslateX on String {

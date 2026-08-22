@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../data/models/member_model.dart';
@@ -168,33 +169,13 @@ class _MembersViewState extends State<_MembersView> {
               }
 
               if (state is MemberError) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline_rounded,
-                          size: 42,
-                          color: Color(0xFFA02626),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          state.message,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: AppColors.inkFaded),
-                        ),
-                        const SizedBox(height: 16),
-                        FilledButton(
-                          onPressed: () => context
-                              .read<MemberCubit>()
-                              .loadMembers(forceRefresh: true),
-                          child: Text('ui.try_again'.tr2),
-                        ),
-                      ],
-                    ),
-                  ),
+                return AppErrorView(
+                  code: state.code,
+                  title: 'ui.members_load_error'.tr2,
+                  retryLabel: 'ui.try_again'.tr2,
+                  onRetry: () => context
+                      .read<MemberCubit>()
+                      .loadMembers(forceRefresh: true),
                 );
               }
 

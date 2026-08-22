@@ -5,6 +5,7 @@ import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../widgets/dash_ui.dart';
 import '../cubit/notification_cubit.dart';
 import '../cubit/notification_state.dart';
@@ -860,8 +861,17 @@ class _DashboardNotificationsScreenState
                             strokeWidth: 2.5,
                           ),
                         )
-                      : items.isEmpty
-                          ? _buildEmptyState()
+                      : state is NotificationError && items.isEmpty
+                          ? AppErrorView(
+                              code: state.code,
+                              title: 'ui.notif_load_failed'.tr2,
+                              retryLabel: 'ui.try_again'.tr2,
+                              onRetry: () => context
+                                  .read<NotificationCubit>()
+                                  .loadNotifications(filter: _selectedCategory),
+                            )
+                          : items.isEmpty
+                              ? _buildEmptyState()
                           : RefreshIndicator(
                               color: AppColors.brandDark,
                               onRefresh: () => context

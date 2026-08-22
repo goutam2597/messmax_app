@@ -4,6 +4,7 @@ import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/mess_cubit.dart';
 import '../cubit/mess_state.dart';
@@ -121,34 +122,11 @@ class _MessesViewState extends State<_MessesView> {
               );
             }
             if (state is MessError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline_rounded,
-                        size: 42,
-                        color: AppColors.danger,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        state.message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.inkFaded),
-                      ),
-                      const SizedBox(height: 16),
-                      FilledButton(
-                        onPressed: () => context.read<MessCubit>().loadMesses(),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.brandDark,
-                        ),
-                        child: Text('ui.try_again'.tr2),
-                      ),
-                    ],
-                  ),
-                ),
+              return AppErrorView(
+                code: state.code,
+                title: 'ui.messes_load_error'.tr2,
+                retryLabel: 'ui.try_again'.tr2,
+                onRetry: () => context.read<MessCubit>().loadMesses(),
               );
             }
             if (state is MessListLoaded) {

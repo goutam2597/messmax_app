@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/network_error.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../data/models/app_notification_model.dart';
 import '../../data/repositories/notification_repository.dart';
@@ -51,7 +52,10 @@ class NotificationCubit extends Cubit<NotificationState> {
         activeFilter: filter,
       ));
     } catch (e) {
-      emit(NotificationError(e.toString()));
+      emit(NotificationError(
+        NetworkError.subtleMessage(e),
+        code: NetworkError.codeFor(e),
+      ));
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/cache_manager.dart';
+import '../../../../core/network/network_error.dart';
 import '../../data/repositories/mess_repository.dart';
 import 'mess_state.dart';
 
@@ -27,7 +28,10 @@ class MessCubit extends Cubit<MessState> {
       if (cached != null) {
         emit(MessListLoaded(messes: cached, canCreate: true, isIndividual: false));
       } else {
-        emit(MessError(e.toString().replaceAll('Exception: ', '')));
+        emit(MessError(
+          NetworkError.subtleMessage(e),
+          code: NetworkError.codeFor(e),
+        ));
       }
     }
   }
@@ -54,7 +58,10 @@ class MessCubit extends Cubit<MessState> {
       if (cachedAtCatch != null) {
         emit(MessDetailLoaded(cachedAtCatch));
       } else {
-        emit(MessError(e.toString().replaceAll('Exception: ', '')));
+        emit(MessError(
+          NetworkError.subtleMessage(e),
+          code: NetworkError.codeFor(e),
+        ));
       }
     }
   }

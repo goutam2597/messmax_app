@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/filter_pill_bar.dart';
 import '../../../../core/widgets/messmax_app_bar.dart';
 import '../../../../core/widgets/network_image_cover.dart';
@@ -125,44 +126,14 @@ class _BlogScreenState extends State<BlogScreen> {
                   }
 
                   if (state is BlogError) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.error_outline_rounded,
-                              size: 48,
-                              color: AppColors.inkFaded,
-                            ),
-                            const SizedBox(height: 12),
-                            ValueListenableBuilder<int>(
-                              valueListenable: AppTranslations.notifier,
-                              builder: (context, _, _) => Text(
-                                'ui.blog_error'.tr2,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.ink,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.brandDark,
-                                foregroundColor: Colors.white,
-                              ),
-                              onPressed: () =>
-                                  context.read<BlogCubit>().fetchBlogs(forceRefresh: true),
-                              child: ValueListenableBuilder<int>(
-                                valueListenable: AppTranslations.notifier,
-                                builder: (context, _, _) => Text('ui.try_again'.tr2),
-                              ),
-                            ),
-                          ],
-                        ),
+                    return ValueListenableBuilder<int>(
+                      valueListenable: AppTranslations.notifier,
+                      builder: (context, _, _) => AppErrorView(
+                        code: state.code,
+                        title: 'ui.blog_error'.tr2,
+                        retryLabel: 'ui.try_again'.tr2,
+                        onRetry: () =>
+                            context.read<BlogCubit>().fetchBlogs(forceRefresh: true),
                       ),
                     );
                   }

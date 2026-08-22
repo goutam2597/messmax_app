@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
 import '../../data/repositories/mess_repository.dart';
 import '../cubit/mess_cubit.dart';
@@ -285,39 +286,11 @@ class _SheetViewState extends State<_SheetView>
             );
           }
           if (state is MessError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline_rounded,
-                      size: 44,
-                      color: AppColors.danger,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      state.message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: AppColors.inkFaded,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      onPressed: _refresh,
-                      icon: const Icon(Icons.refresh_rounded, size: 16),
-                      label: Text('ui.try_again'.tr2),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.brandDark,
-                        side: const BorderSide(color: AppColors.paperLine),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            return AppErrorView(
+              code: state.code,
+              title: 'ui.sheet_load_error'.tr2,
+              retryLabel: 'ui.try_again'.tr2,
+              onRetry: _refresh,
             );
           }
           if (state is! MessSheetLoaded) return const SizedBox.shrink();

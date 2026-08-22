@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../data/models/bazar_schedule_model.dart';
@@ -1113,44 +1114,13 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               }
 
               if (state is BazarScheduleError) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: const BoxDecoration(
-                            color: AppColors.accentSoft,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.error_outline_rounded,
-                            size: 36,
-                            color: AppColors.accentDark,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          state.message,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.inkSoft,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        FilledButton.icon(
-                          onPressed: () => context
-                              .read<BazarScheduleCubit>()
-                              .loadSchedule(forceRefresh: true),
-                          icon: const Icon(Icons.refresh_rounded, size: 18),
-                          label: Text('ui.try_again'.tr2),
-                        ),
-                      ],
-                    ),
-                  ),
+                return AppErrorView(
+                  code: state.code,
+                  title: 'ui.bazar_load_error'.tr2,
+                  retryLabel: 'ui.try_again'.tr2,
+                  onRetry: () => context
+                      .read<BazarScheduleCubit>()
+                      .loadSchedule(forceRefresh: true),
                 );
               }
 

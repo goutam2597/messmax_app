@@ -83,6 +83,7 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/fonts/
+    - assets/translations/
 
   fonts:
     - family: LiAdorNoirrit

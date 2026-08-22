@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/network_error.dart';
 import '../../data/repositories/dashboard_repository.dart';
 import 'dashboard_state.dart';
 
@@ -28,7 +29,10 @@ class DashboardCubit extends Cubit<DashboardState> {
       if (cached != null) {
         emit(DashboardLoaded(cached));
       } else {
-        emit(DashboardError(e.toString()));
+        emit(DashboardError(
+          NetworkError.subtleMessage(e),
+          code: NetworkError.codeFor(e),
+        ));
       }
     }
   }

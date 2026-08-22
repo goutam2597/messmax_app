@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/network_error.dart';
 import '../../data/repositories/member_repository.dart';
 import 'member_state.dart';
 
@@ -36,7 +37,10 @@ class MemberCubit extends Cubit<MemberState> {
       if (cached != null) {
         emit(MemberLoaded(response: cached));
       } else {
-        emit(MemberError(e.toString().replaceAll('Exception: ', '')));
+        emit(MemberError(
+          NetworkError.subtleMessage(e),
+          code: NetworkError.codeFor(e),
+        ));
       }
     }
   }
