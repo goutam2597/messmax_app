@@ -22,6 +22,7 @@ import '../../../mess/presentation/screens/mess_form_screen.dart';
 import '../../../mess/presentation/screens/mess_sheet_screen.dart';
 import '../../../bazar_schedule/presentation/screens/bazar_schedule_screen.dart';
 import '../widgets/mess_drawer.dart';
+import '../widgets/dash_ui.dart';
 import 'dashboard_notifications_screen.dart';
 import '../cubit/notification_cubit.dart';
 import '../cubit/notification_state.dart';
@@ -65,7 +66,7 @@ class _DashboardViewState extends State<_DashboardView> {
             vertical: 24,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(DashUI.rCard),
             side: const BorderSide(color: AppColors.paperLine),
           ),
           child: ConstrainedBox(
@@ -736,7 +737,13 @@ class _DashboardViewState extends State<_DashboardView> {
                                   spacing: 10,
                                   runSpacing: 10,
                                   children: [
-                                    FilledButton.icon(
+                                    DashUI.button(
+                                      label: isIndividual
+                                          ? 'ui.dash_setup_new_mess'.tr2
+                                          : 'ui.dash_create_mess_now'.tr2,
+                                      icon: Icons.add_rounded,
+                                      background: AppColors.brandDark,
+                                      foreground: Colors.white,
                                       onPressed: () async {
                                         final messCubit = MessCubit();
                                         final created =
@@ -754,63 +761,12 @@ class _DashboardViewState extends State<_DashboardView> {
                                               );
                                         }
                                       },
-                                      icon: const Icon(
-                                        Icons.add_rounded,
-                                        size: 18,
-                                      ),
-                                      label: Text(
-                                        isIndividual
-                                            ? 'ui.dash_setup_new_mess'.tr2
-                                            : 'ui.dash_create_mess_now'.tr2,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: AppColors.brandDark,
-                                        foregroundColor: Colors.white,
-                                        minimumSize: const Size(140, 46),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 12,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                      ),
                                     ),
-                                    OutlinedButton.icon(
+                                    DashUI.outlineButton(
+                                      label: 'ui.dash_join_a_mess'.tr2,
+                                      icon: Icons.key_rounded,
+                                      color: AppColors.brandDark,
                                       onPressed: _openJoinMessDialog,
-                                      icon: const Icon(
-                                        Icons.key_rounded,
-                                        size: 17,
-                                        color: AppColors.brandDark,
-                                      ),
-                                      label: Text(
-                                        'ui.dash_join_a_mess'.tr2,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.brandDark,
-                                        ),
-                                      ),
-                                      style: OutlinedButton.styleFrom(
-                                        side: const BorderSide(
-                                          color: AppColors.brandDark,
-                                          width: 1.4,
-                                        ),
-                                        minimumSize: const Size(140, 46),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 12,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                      ),
                                     ),
                                   ],
                                 ),
@@ -997,59 +953,12 @@ class _DashboardViewState extends State<_DashboardView> {
     String? actionLabel,
     VoidCallback? onActionTap,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 15, color: iconColor),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w900,
-                color: AppColors.inkFaded,
-                letterSpacing: 0.8,
-              ),
-            ),
-          ],
-        ),
-        if (actionLabel != null && onActionTap != null)
-          InkWell(
-            onTap: onActionTap,
-            borderRadius: BorderRadius.circular(6),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    actionLabel,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
-                      color: iconColor,
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 10,
-                    color: iconColor,
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
+    return DashUI.sectionHeader(
+      icon,
+      title,
+      iconColor: iconColor,
+      actionLabel: actionLabel,
+      onActionTap: onActionTap,
     );
   }
 
@@ -1066,7 +975,7 @@ class _DashboardViewState extends State<_DashboardView> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF1B303B).withValues(alpha: 0.25),
@@ -1085,7 +994,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                 )
               : null,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -1120,7 +1029,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFE85D04),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                                 ),
                                 child: Text(
                                   activeMess?.code ?? 'CODE',
@@ -1181,7 +1090,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                     ),
                                   )
                                 : null),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -1189,7 +1098,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.3),
                           ),
@@ -1223,7 +1132,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DashUI.rTile),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.12),
                     ),
@@ -1527,7 +1436,7 @@ class _DashboardViewState extends State<_DashboardView> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -1541,7 +1450,7 @@ class _DashboardViewState extends State<_DashboardView> {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
               child: Padding(
             padding: EdgeInsets.all(isTablet ? 14 : 14),
             child: Column(
@@ -1554,7 +1463,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       padding: EdgeInsets.all(isTablet ? 10 : 8),
                       decoration: BoxDecoration(
                         color: bgColor,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                       ),
                       child: Icon(icon, size: isTablet ? 20 : 18, color: iconColor),
                     ),
@@ -1629,7 +1538,7 @@ class _DashboardViewState extends State<_DashboardView> {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8F2),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
       ),
       child: Material(
@@ -1642,7 +1551,7 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
             );
           },
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -1651,7 +1560,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: AppColors.accent.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                   ),
                   child: const Icon(
                     Icons.pending_actions_rounded,
@@ -1703,7 +1612,7 @@ class _DashboardViewState extends State<_DashboardView> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
       ),
       child: Column(
@@ -1721,9 +1630,9 @@ class _DashboardViewState extends State<_DashboardView> {
                   );
                 },
                 borderRadius: i == 0
-                    ? const BorderRadius.vertical(top: Radius.circular(18))
+                    ? const BorderRadius.vertical(top: Radius.circular(DashUI.rCard))
                     : i == items.length - 1
-                    ? const BorderRadius.vertical(bottom: Radius.circular(18))
+                    ? const BorderRadius.vertical(bottom: Radius.circular(DashUI.rCard))
                     : BorderRadius.zero,
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -1738,7 +1647,7 @@ class _DashboardViewState extends State<_DashboardView> {
                               : (items[i].type == 'guest_meal'
                                     ? AppColors.brandSoft
                                     : const Color(0xFFFDF2F2)),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                         ),
                         child: Icon(
                           items[i].type == 'join_request'
@@ -1787,7 +1696,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           color: items[i].type == 'guest_meal'
                               ? AppColors.brandDark
                               : const Color(0xFFA02626),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                         ),
                         child: Text(
                           items[i].status.toUpperCase(),
@@ -1824,7 +1733,7 @@ class _DashboardViewState extends State<_DashboardView> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
       ),
       child: Column(
@@ -1843,9 +1752,9 @@ class _DashboardViewState extends State<_DashboardView> {
                       )
                     : null,
                 borderRadius: i == 0
-                    ? const BorderRadius.vertical(top: Radius.circular(18))
+                    ? const BorderRadius.vertical(top: Radius.circular(DashUI.rCard))
                     : i == duties.length - 1
-                    ? const BorderRadius.vertical(bottom: Radius.circular(18))
+                    ? const BorderRadius.vertical(bottom: Radius.circular(DashUI.rCard))
                     : BorderRadius.zero,
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -1858,7 +1767,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           color: duties[i].isToday
                               ? const Color(0xFFE6F4EA)
                               : AppColors.paper,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                           border: duties[i].isToday
                               ? null
                               : Border.all(color: AppColors.paperLine),
@@ -1919,7 +1828,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           color: duties[i].isToday
                               ? const Color(0xFF0F9F59)
                               : AppColors.paperLine,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                         ),
                         child: Text(
                           duties[i].dateLabel,
@@ -1958,7 +1867,7 @@ class _DashboardViewState extends State<_DashboardView> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -1982,7 +1891,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                 )
               : null,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           child: Column(
             children: [
               Container(
@@ -2192,12 +2101,12 @@ class _DashboardViewState extends State<_DashboardView> {
                   builder: (_) => MessDetailScreen(messId: messes[i].id),
                 ),
               ),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.paperRaised,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                   border: Border.all(
                     color: messes[i].id == activeMess?.id
                         ? AppColors.brandDark
@@ -2226,7 +2135,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.paper,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             border: Border.all(color: AppColors.paperLine),
                           ),
                           child: Row(
@@ -2272,7 +2181,7 @@ class _DashboardViewState extends State<_DashboardView> {
                             color: messes[i].isManager
                                 ? AppColors.brandDark
                                 : AppColors.paperLine,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                           ),
                           child: Text(
                             messes[i].displayRoleLabel.toUpperCase(),
@@ -2313,7 +2222,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.paper,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(DashUI.rTile),
                           border: Border.all(color: AppColors.paperLine),
                         ),
                         child: Row(

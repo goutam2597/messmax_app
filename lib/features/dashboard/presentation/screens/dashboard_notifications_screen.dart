@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../widgets/dash_ui.dart';
 import '../cubit/notification_cubit.dart';
 import '../cubit/notification_state.dart';
 import '../../data/models/app_notification_model.dart';
@@ -146,11 +147,11 @@ class DashboardActivityItem {
     } else if (model.type == 'deposit') {
       type = DashboardActivityType.deposit;
       tag = 'Deposit';
-      highlightValue = data['amount'] != null ? '৳${data['amount']}' : 'Deposit';
+      highlightValue = data['amount'] != null ? 'à§³${data['amount']}' : 'Deposit';
       status = statusStr == 'approved'
           ? ActivityStatus.approved
           : ActivityStatus.pending;
-      if (data['amount'] != null) details['Amount'] = '৳${data['amount']}';
+      if (data['amount'] != null) details['Amount'] = 'à§³${data['amount']}';
       if (data['trx_id'] != null) details['TrxID'] = data['trx_id'].toString();
       if (data['gateway'] != null) details['Gateway'] = data['gateway'].toString();
     } else if (model.type == 'bazar' || model.type == 'bazar_duty' || model.type == 'bazar_expense') {
@@ -159,13 +160,13 @@ class DashboardActivityItem {
           model.type == 'bazar';
       tag = isExpense ? 'Bazar Expense' : 'Bazar Duty';
       highlightValue = data['amount'] != null
-          ? '৳${data['amount']}'
+          ? 'à§³${data['amount']}'
           : (data['days']?.toString() ?? (data['date']?.toString() ?? 'Bazar'));
       status = ActivityStatus.info;
       if (data['day'] != null) details['Day'] = 'Day ${data['day']}';
-      if (data['amount'] != null) details['Amount'] = '৳${data['amount']}';
+      if (data['amount'] != null) details['Amount'] = 'à§³${data['amount']}';
       if (data['budget'] != null && data['budget'].toString().isNotEmpty) {
-        details['Budget'] = '৳${data['budget']}';
+        details['Budget'] = 'à§³${data['budget']}';
       }
       if (data['notes'] != null && data['notes'].toString().isNotEmpty) {
         details['Notes'] = data['notes'].toString();
@@ -225,7 +226,7 @@ class _DashboardNotificationsScreenState
   @override
   void initState() {
     super.initState();
-    // Always trigger a fresh load when screen opens — shows spinner if not already loaded
+    // Always trigger a fresh load when screen opens â€” shows spinner if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationCubit>().loadNotifications(
             filter: _selectedCategory,
@@ -349,7 +350,7 @@ class _DashboardNotificationsScreenState
             insetPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
               side: const BorderSide(color: AppColors.paperLine),
             ),
             child: ConstrainedBox(
@@ -368,7 +369,7 @@ class _DashboardNotificationsScreenState
                           height: 44,
                           decoration: BoxDecoration(
                             color: typeBg,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(DashUI.rTile),
                           ),
                           child: Icon(typeIcon, color: typeColor, size: 22),
                         ),
@@ -412,7 +413,7 @@ class _DashboardNotificationsScreenState
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () => Navigator.pop(ctx),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(DashUI.rCard),
                             child: Container(
                               width: 32,
                               height: 32,
@@ -463,7 +464,7 @@ class _DashboardNotificationsScreenState
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.paper,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                         border: Border.all(color: AppColors.paperLine),
                       ),
                       child: Row(
@@ -504,7 +505,7 @@ class _DashboardNotificationsScreenState
                                 ),
                                 Text(
                                   item.memberPhone.isNotEmpty
-                                      ? '${item.memberRoom} • ${item.memberPhone}'
+                                      ? '${item.memberRoom} â€¢ ${item.memberPhone}'
                                       : item.memberRoom,
                                   style: const TextStyle(
                                     fontSize: 11.5,
@@ -527,7 +528,7 @@ class _DashboardNotificationsScreenState
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.paper,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(DashUI.rCard),
                           border: Border.all(color: AppColors.paperLine),
                         ),
                         child: ValueListenableBuilder<int>(
@@ -589,7 +590,7 @@ class _DashboardNotificationsScreenState
                                     width: 1.2,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(DashUI.rCard),
                                   ),
                                   foregroundColor: const Color(0xFFC62828),
                                 ),
@@ -628,7 +629,7 @@ class _DashboardNotificationsScreenState
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(DashUI.rCard),
                                   ),
                                 ),
                                 child: Row(
@@ -669,7 +670,7 @@ class _DashboardNotificationsScreenState
                               width: 1.2,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                             ),
                           ),
                           child: ValueListenableBuilder<int>(
@@ -733,7 +734,7 @@ class _DashboardNotificationsScreenState
                             horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFA02626),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                         ),
                         child: ValueListenableBuilder<int>(
                           valueListenable: AppTranslations.notifier,
@@ -771,7 +772,7 @@ class _DashboardNotificationsScreenState
               final unread = state is NotificationLoaded ? state.unreadCount : 0;
               return PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert_rounded, color: AppColors.ink),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DashUI.rTile)),
                 onSelected: (value) {
                   if (value == 'read_all') {
                     context.read<NotificationCubit>().markAllAsRead();
@@ -881,7 +882,7 @@ class _DashboardNotificationsScreenState
                                       padding: const EdgeInsets.only(right: 20),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFEF4444),
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(DashUI.rCard),
                                       ),
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
@@ -929,7 +930,7 @@ class _DashboardNotificationsScreenState
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.brandDark.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           border: Border.all(color: AppColors.brandDark.withValues(alpha: 0.15)),
         ),
         child: Row(
@@ -938,7 +939,7 @@ class _DashboardNotificationsScreenState
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: AppColors.brandDark,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
               ),
               child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 20),
             ),
@@ -1009,14 +1010,14 @@ class _DashboardNotificationsScreenState
                   padding: const EdgeInsets.only(right: 8),
                   child: InkWell(
                     onTap: () => _onCategoryChanged(c['id']!),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
                       padding:
                           const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
                       decoration: BoxDecoration(
                         color: isSelected ? AppColors.brandDark : AppColors.paper,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.brandDark
@@ -1115,12 +1116,12 @@ class _DashboardNotificationsScreenState
 
     return InkWell(
       onTap: () => _showActivityApprovalDialog(item),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(DashUI.rCard),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.paperRaised,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           border: Border.all(
             color: isPending
                 ? const Color(0xFFE65100).withValues(alpha: 0.35)
@@ -1144,7 +1145,7 @@ class _DashboardNotificationsScreenState
               height: 40,
               decoration: BoxDecoration(
                 color: typeBg,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(DashUI.rTile),
               ),
               child: Icon(typeIcon, color: typeColor, size: 20),
             ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/config/app_config.dart';
@@ -6,6 +6,7 @@ import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/sign_out_dialog.dart';
+import 'dash_ui.dart';
 import '../../../ads/presentation/screens/my_ads_screen.dart';
 import '../../../bazar_schedule/presentation/screens/bazar_schedule_screen.dart';
 import '../../../members/presentation/screens/members_screen.dart';
@@ -356,7 +357,7 @@ class MessDrawer extends StatelessWidget {
         color: isSelected
             ? AppColors.brandDark.withValues(alpha: 0.08)
             : AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(DashUI.rTile),
         border: Border.all(
           color: isSelected
               ? AppColors.brandDark.withValues(alpha: 0.35)
@@ -374,7 +375,7 @@ class MessDrawer extends StatelessWidget {
               ),
             );
           },
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(DashUI.rTile),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Row(
@@ -386,7 +387,7 @@ class MessDrawer extends StatelessWidget {
                     color: isSelected
                         ? AppColors.brandDark
                         : AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                   ),
                   child: Icon(
                     Icons.apartment_rounded,
@@ -415,7 +416,7 @@ class MessDrawer extends StatelessWidget {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        '${bnDigits(mess.membersCount)} ${'ui.dash_members'.tr2} • ${mess.code}',
+                        '${bnDigits(mess.membersCount)} ${'ui.dash_members'.tr2} â€¢ ${mess.code}',
                         style: const TextStyle(
                           fontSize: 10.5,
                           color: AppColors.inkFaded,
@@ -444,7 +445,7 @@ class MessDrawer extends StatelessWidget {
     required String userRoleLabel,
   }) {
     // This header is built inside Drawer.build's context, so it sees whatever cubits
-    // are above the Scaffold that owns the drawer — not necessarily DashboardCubit.
+    // are above the Scaffold that owns the drawer â€” not necessarily DashboardCubit.
     // On routes like Members/MessDetail the drawer is hosted above a different BlocProvider,
     // so we watch whatever is available and fall back to a static label instead of hiding.
     DashboardState? dashboardState;
@@ -532,9 +533,9 @@ class MessDrawer extends StatelessWidget {
         } catch (_) {}
       }
     }
-    // Final fallback — never hide the header completely
+    // Final fallback â€” never hide the header completely
     if (headerMessName.isEmpty) headerMessName = 'MessMax';
-    if (headerMessCode.isEmpty) headerMessCode = '—';
+    if (headerMessCode.isEmpty) headerMessCode = 'â€”';
     final messName = headerMessName;
     final messCode = headerMessCode;
     final consoleSub = isIndividual
@@ -572,7 +573,7 @@ class MessDrawer extends StatelessWidget {
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(DashUI.rTile),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.18),
@@ -582,7 +583,7 @@ class MessDrawer extends StatelessWidget {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                   child: SvgPicture.asset(
                     'assets/images/mm_fav.svg',
                     width: 34,
@@ -607,7 +608,7 @@ class MessDrawer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      messCode != '—' && messCode.isNotEmpty
+                      messCode != 'â€”' && messCode.isNotEmpty
                           ? 'Code: $messCode'
                           : (isIndividual ? 'No mess yet' : 'Console'),
                       style: const TextStyle(
@@ -624,7 +625,7 @@ class MessDrawer extends StatelessWidget {
                   tooltip: 'Switch Mess (${headerMesses.length})',
                   color: AppColors.paperRaised,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(DashUI.rTile),
                     side: const BorderSide(color: AppColors.paperLine),
                   ),
                   icon: Container(
@@ -634,7 +635,7 @@ class MessDrawer extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.3),
                       ),
@@ -708,7 +709,7 @@ class MessDrawer extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  '${m.membersCount} members • ${m.code}',
+                                  '${m.membersCount} members â€¢ ${m.code}',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     color: AppColors.inkFaded,
@@ -736,7 +737,7 @@ class MessDrawer extends StatelessWidget {
                       color: isVerified
                           ? const Color(0xFF10B981).withValues(alpha: 0.22)
                           : Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
                       border: Border.all(
                         color: isVerified
                             ? const Color(0xFF34D399).withValues(alpha: 0.5)
@@ -779,7 +780,7 @@ class MessDrawer extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(DashUI.rBtn),
             ),
             child: Row(
               children: [
@@ -794,7 +795,7 @@ class MessDrawer extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'MessMax • $consoleSub',
+                    'MessMax â€¢ $consoleSub',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -857,11 +858,11 @@ class MessDrawer extends StatelessWidget {
       color: isSelected
           ? AppColors.brandDark.withValues(alpha: 0.08)
           : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(DashUI.rTile),
       child: InkWell(
         onTap: () {
           // For current mess drill-down: open detail with real mess id.
-          // Works from any route — falls back to Members/Mess cubit when DashboardCubit isn't above us.
+          // Works from any route â€” falls back to Members/Mess cubit when DashboardCubit isn't above us.
           if (id == 'current_mess') {
             int? messId;
             try {
@@ -962,7 +963,7 @@ class MessDrawer extends StatelessWidget {
             onSectionSelected!(id);
           }
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(DashUI.rTile),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
           child: Row(
@@ -973,7 +974,7 @@ class MessDrawer extends StatelessWidget {
                   color: isSelected
                       ? AppColors.brandDark
                       : AppColors.paperRaised,
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                   border: isSelected
                       ? null
                       : Border.all(color: AppColors.paperLine),
@@ -1104,12 +1105,12 @@ class MessDrawer extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () => _confirmLogout(context),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: AppColors.dangerSoft,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                     border: Border.all(
                       color: AppColors.danger.withValues(alpha: 0.18),
                     ),
