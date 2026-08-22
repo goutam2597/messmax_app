@@ -46,11 +46,7 @@ class DioClient {
         },
         validateStatus: (status) => status != null && status < 500,
       ),
-    )
-      ..interceptors.addAll([
-        _authInterceptor,
-        LoggingInterceptor(),
-      ]);
+    )..interceptors.addAll([_authInterceptor, LoggingInterceptor()]);
 
     // Allow Laragon local development self-signed certificates
     if (!kIsWeb) {
