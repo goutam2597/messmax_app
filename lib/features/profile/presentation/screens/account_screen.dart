@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import 'package:flutter/services.dart';
@@ -666,7 +666,7 @@ class _AccountScreenState extends State<AccountScreen> {
             controller: _currentPassController,
             obscureText: _obscureCurrent,
             decoration: InputDecoration(
-              hintText: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+              hintText: '••••••••',
               prefixIcon: const Icon(
                 Icons.lock_outline_rounded,
                 size: 20,
@@ -871,7 +871,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                           ),
                           Text(
-                            '${messes[i].membersCount} ${'ui.messes_members'.tr2} â€¢ ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
+                            '${messes[i].membersCount} ${'ui.messes_members'.tr2} • ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
                             style: const TextStyle(
                               fontSize: 11.5,
                               color: AppColors.inkFaded,
@@ -1106,7 +1106,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildLangOption(
-                      title: 'à¦¬à¦¾à¦‚à¦²à¦¾',
+                      title: 'বাংলা',
                       subtitle: 'Bengali',
                       selected: !isEn,
                       onTap: () => context.read<LocaleCubit>().setLocale('bn'),

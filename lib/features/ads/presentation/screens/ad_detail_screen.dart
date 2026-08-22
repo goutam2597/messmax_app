@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -642,7 +642,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                       color: Colors.white.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: Row(
+                  child: Row( 
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
@@ -760,7 +760,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     ValueListenableBuilder<int>(
                       valueListenable: AppTranslations.notifier,
                       builder: (context, _, _) => Text(
-                        'à§³${bnDigits(ad.rentPerSeat.toInt())}',
+                        '৳${bnDigits(ad.rentPerSeat.toInt())}',
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
@@ -1232,7 +1232,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
   Future<void> _shareAd(BuildContext context) async {
     final webUrl = 'http://${AppConfig.baseDomain}/ads/${ad.slug}';
     final text =
-        '${ad.title} â€” à§³${ad.rentPerSeat.toInt()} /mo â€¢ ${ad.areaLabel ?? ad.city ?? 'Dhaka'}\n$webUrl';
+        '${ad.title} — ৳${ad.rentPerSeat.toInt()} /mo • ${ad.areaLabel ?? ad.city ?? 'Dhaka'}\n$webUrl';
     try {
       await SharePlus.instance.share(
         ShareParams(text: text, subject: ad.title),

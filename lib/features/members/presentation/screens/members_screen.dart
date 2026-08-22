@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -105,7 +105,7 @@ class _MembersViewState extends State<_MembersView> {
                   ),
                   Text(
                     messName.isNotEmpty
-                        ? '$messName â€¢ ${'ui.members_member_list'.tr2}'
+                        ? '$messName • ${'ui.members_member_list'.tr2}'
                         : 'ui.members_list_defaults'.tr2,
                     style: const TextStyle(
                       fontSize: 11,
@@ -372,7 +372,7 @@ class _MembersViewState extends State<_MembersView> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${bnDigits(data.members.length)} ${'ui.members_enrolled'.tr2} â€¢ ${'ui.members_join_code'.tr2}: ${data.messCode}',
+                        '${bnDigits(data.members.length)} ${'ui.members_enrolled'.tr2} • ${'ui.members_join_code'.tr2}: ${data.messCode}',
                         style: const TextStyle(
                           fontSize: 11.5,
                           color: AppColors.inkFaded,

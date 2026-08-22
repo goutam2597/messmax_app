@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter/services.dart';
@@ -308,7 +308,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'à§³${bnDigits(ad.rentPerSeat.toInt())} ${'ui.myads_per_month'.tr2} â€¢ ${ad.areaLabel ?? ad.city ?? "Dhaka"}',
+                          '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.myads_per_month'.tr2} • ${ad.areaLabel ?? ad.city ?? "Dhaka"}',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,

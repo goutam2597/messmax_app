@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/locale/app_translations.dart';
@@ -147,11 +147,11 @@ class DashboardActivityItem {
     } else if (model.type == 'deposit') {
       type = DashboardActivityType.deposit;
       tag = 'Deposit';
-      highlightValue = data['amount'] != null ? 'à§³${data['amount']}' : 'Deposit';
+      highlightValue = data['amount'] != null ? '৳${data['amount']}' : 'Deposit';
       status = statusStr == 'approved'
           ? ActivityStatus.approved
           : ActivityStatus.pending;
-      if (data['amount'] != null) details['Amount'] = 'à§³${data['amount']}';
+      if (data['amount'] != null) details['Amount'] = '৳${data['amount']}';
       if (data['trx_id'] != null) details['TrxID'] = data['trx_id'].toString();
       if (data['gateway'] != null) details['Gateway'] = data['gateway'].toString();
     } else if (model.type == 'bazar' || model.type == 'bazar_duty' || model.type == 'bazar_expense') {
@@ -160,13 +160,13 @@ class DashboardActivityItem {
           model.type == 'bazar';
       tag = isExpense ? 'Bazar Expense' : 'Bazar Duty';
       highlightValue = data['amount'] != null
-          ? 'à§³${data['amount']}'
+          ? '৳${data['amount']}'
           : (data['days']?.toString() ?? (data['date']?.toString() ?? 'Bazar'));
       status = ActivityStatus.info;
       if (data['day'] != null) details['Day'] = 'Day ${data['day']}';
-      if (data['amount'] != null) details['Amount'] = 'à§³${data['amount']}';
+      if (data['amount'] != null) details['Amount'] = '৳${data['amount']}';
       if (data['budget'] != null && data['budget'].toString().isNotEmpty) {
-        details['Budget'] = 'à§³${data['budget']}';
+        details['Budget'] = '৳${data['budget']}';
       }
       if (data['notes'] != null && data['notes'].toString().isNotEmpty) {
         details['Notes'] = data['notes'].toString();
@@ -226,7 +226,7 @@ class _DashboardNotificationsScreenState
   @override
   void initState() {
     super.initState();
-    // Always trigger a fresh load when screen opens â€” shows spinner if not already loaded
+    // Always trigger a fresh load when screen opens — shows spinner if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationCubit>().loadNotifications(
             filter: _selectedCategory,
@@ -505,7 +505,7 @@ class _DashboardNotificationsScreenState
                                 ),
                                 Text(
                                   item.memberPhone.isNotEmpty
-                                      ? '${item.memberRoom} â€¢ ${item.memberPhone}'
+                                      ? '${item.memberRoom} • ${item.memberPhone}'
                                       : item.memberRoom,
                                   style: const TextStyle(
                                     fontSize: 11.5,

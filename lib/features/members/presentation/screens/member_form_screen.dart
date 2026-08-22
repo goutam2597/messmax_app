@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/locale/app_translations.dart';
@@ -153,7 +153,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
       data['role'] = _role;
     }
 
-    // Web-parity: hasBldDefault â€” if any B/L/D field is explicitly sent (even "0" = OFF),
+    // Web-parity: hasBldDefault — if any B/L/D field is explicitly sent (even "0" = OFF),
     // we enter B/L/D mode. Empty string means "no default" (null) so leaving a field blank clears it.
     // When entering B/L/D mode we must send all three keys so the backend doesn't keep stale values.
     final bRaw = _breakfastController.text.trim();
@@ -168,7 +168,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
     } else if (_legacyMealController.text.trim().isNotEmpty) {
       data['default_meal'] = _legacyMealController.text.trim();
     } else if (widget.member != null) {
-      // On edit, if user cleared all B/L/D and legacy, don't send anything â€” keeps existing.
+      // On edit, if user cleared all B/L/D and legacy, don't send anything — keeps existing.
       // To explicitly clear, backend expects empty string; we only send when user touched.
     }
 
@@ -453,7 +453,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // --- DEFAULT MEALS BREAKDOWN B/L/D â€” web parity (#memberEditModal) ---
+                // --- DEFAULT MEALS BREAKDOWN B/L/D — web parity (#memberEditModal) ---
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -731,7 +731,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
             color: isOff ? const Color(0xFFB91C1C) : AppColors.ink,
           ),
           decoration: InputDecoration(
-            hintText: 'â€”',
+            hintText: '—',
             filled: isOff,
             fillColor: isOff ? const Color(0xFFFEE2E2) : null,
             contentPadding: const EdgeInsets.symmetric(

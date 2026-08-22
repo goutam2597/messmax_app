@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -118,7 +118,7 @@ class _SheetViewState extends State<_SheetView>
 
   String _fmtNumber(double val, {bool isCurrency = false}) {
     final str = val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(2);
-    return isCurrency ? 'à§³$str' : str;
+    return isCurrency ? '?$str' : str;
   }
 
   Future<void> _confirmDeleteMonth(BuildContext ctx) async {
@@ -518,7 +518,7 @@ class _SheetViewState extends State<_SheetView>
                       ),
                       children: [
                         const TextSpan(
-                          text: ' à§³',
+                          text: ' ?',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -1186,7 +1186,7 @@ class _SheetViewState extends State<_SheetView>
                                     const SizedBox(width: 3),
                                     Text(
                                       AppTranslations.locale == 'bn'
-                                          ? 'à¦†à¦¬à§‡à¦¦à¦¨ à¦ªà§‡à¦¨à§à¦¡à¦¿à¦‚'
+                                          ? '????? ???????'
                                           : 'PENDING REQ',
                                       style: const TextStyle(
                                         fontSize: 8.5,
@@ -1223,7 +1223,7 @@ class _SheetViewState extends State<_SheetView>
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  'à§³${bnDigits(bazarTotal.toStringAsFixed(0))} ${'ui.sheet_bazar'.tr2}',
+                                  '?${bnDigits(bazarTotal.toStringAsFixed(0))} ${'ui.sheet_bazar'.tr2}',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w800,
@@ -1371,7 +1371,7 @@ class _SheetViewState extends State<_SheetView>
             ),
             if (bazarTotal > 0)
               Text(
-                'à§³${bazarTotal.toStringAsFixed(2)}',
+                '?${bazarTotal.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w900,
@@ -1416,7 +1416,7 @@ class _SheetViewState extends State<_SheetView>
                     ),
                   ),
                   Text(
-                    '${it['qty']} Ã— à§³${it['price']} = à§³${(_toD(it['qty']) * _toD(it['price'])).toStringAsFixed(0)}',
+                    '${it['qty']} � ?${it['price']} = ?${(_toD(it['qty']) * _toD(it['price'])).toStringAsFixed(0)}',
                     style: const TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
@@ -1503,7 +1503,7 @@ class _SheetViewState extends State<_SheetView>
                     builder: (context, _, _) => Text(
                       'ui.sheet_tab_logs'.tr2 == 'Daily Log'
                           ? 'MEAL ATTENDANCE'
-                          : 'à¦¦à§ˆà¦¨à¦¿à¦• à¦®à¦¿à¦²',
+                          : '????? ???',
                       style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w800,
@@ -1525,7 +1525,7 @@ class _SheetViewState extends State<_SheetView>
                       child: ValueListenableBuilder<int>(
                         valueListenable: AppTranslations.notifier,
                         builder: (context, _, _) => Text(
-                          AppTranslations.locale == 'bn' ? 'à¦¸' : 'B',
+                          AppTranslations.locale == 'bn' ? '?' : 'B',
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w900,
@@ -1542,7 +1542,7 @@ class _SheetViewState extends State<_SheetView>
                       child: ValueListenableBuilder<int>(
                         valueListenable: AppTranslations.notifier,
                         builder: (context, _, _) => Text(
-                          AppTranslations.locale == 'bn' ? 'à¦¦à§' : 'L',
+                          AppTranslations.locale == 'bn' ? '??' : 'L',
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w900,
@@ -1559,7 +1559,7 @@ class _SheetViewState extends State<_SheetView>
                       child: ValueListenableBuilder<int>(
                         valueListenable: AppTranslations.notifier,
                         builder: (context, _, _) => Text(
-                          AppTranslations.locale == 'bn' ? 'à¦°à¦¾' : 'D',
+                          AppTranslations.locale == 'bn' ? '??' : 'D',
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w900,
@@ -1701,7 +1701,7 @@ class _SheetViewState extends State<_SheetView>
                                 ),
                               ),
                               child: Text(
-                                'â³ ${memberPendingReq['label'] ?? (memberPendingReq['is_reenable'] == true ? 'ON Req' : 'OFF Req')}',
+                                '? ${memberPendingReq['label'] ?? (memberPendingReq['is_reenable'] == true ? 'ON Req' : 'OFF Req')}',
                                 style: const TextStyle(
                                   fontSize: 8.5,
                                   fontWeight: FontWeight.w800,
@@ -1904,7 +1904,7 @@ class _SheetViewState extends State<_SheetView>
                       children: [
                         Expanded(
                           child: Text(
-                            '${g['guest_name'] ?? 'Guest'} Ã—${g['guest_count'] ?? 1} (${(g['slots'] as List?)?.join(' + ') ?? ''})',
+                            '${g['guest_name'] ?? 'Guest'} �${g['guest_count'] ?? 1} (${(g['slots'] as List?)?.join(' + ') ?? ''})',
                             style: const TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
@@ -2039,7 +2039,7 @@ class _SheetViewState extends State<_SheetView>
         : 0.0;
 
     String fmtBld(dynamic v) {
-      if (v == null) return 'â€”';
+      if (v == null) return '�';
       final d = _toD(v);
       if (d == 0) return 'OFF';
       return d % 1 == 0 ? d.toInt().toString() : d.toStringAsFixed(1);
@@ -2080,7 +2080,7 @@ class _SheetViewState extends State<_SheetView>
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Shared Extra Cost: à§³${extraCost.toStringAsFixed(0)} (à§³${extraPerMember.toStringAsFixed(1)}/member)',
+                          'Shared Extra Cost: ?${extraCost.toStringAsFixed(0)} (?${extraPerMember.toStringAsFixed(1)}/member)',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -2326,8 +2326,8 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         Text(
                                           AppTranslations.locale == 'bn'
-                                              ? '${fmtBld(memberRaw['default_breakfast']).toBnNum()}à¦¸ Â· ${fmtBld(memberRaw['default_lunch']).toBnNum()}à¦¦à§ Â· ${fmtBld(memberRaw['default_dinner']).toBnNum()}à¦°à¦¾'
-                                              : '${fmtBld(memberRaw['default_breakfast'])}B Â· ${fmtBld(memberRaw['default_lunch'])}L Â· ${fmtBld(memberRaw['default_dinner'])}D',
+                                              ? '${fmtBld(memberRaw['default_breakfast']).toBnNum()}? � ${fmtBld(memberRaw['default_lunch']).toBnNum()}?? � ${fmtBld(memberRaw['default_dinner']).toBnNum()}??'
+                                              : '${fmtBld(memberRaw['default_breakfast'])}B � ${fmtBld(memberRaw['default_lunch'])}L � ${fmtBld(memberRaw['default_dinner'])}D',
                                           style: const TextStyle(
                                             fontSize: 10.5,
                                             fontWeight: FontWeight.w800,
@@ -2372,7 +2372,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'à§³${spend.toStringAsFixed(0).toBnNum()}',
+                                          '?${spend.toStringAsFixed(0).toBnNum()}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2412,7 +2412,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'à§³${given.toStringAsFixed(0).toBnNum()}',
+                                          '?${given.toStringAsFixed(0).toBnNum()}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2462,7 +2462,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${isPositive ? '+' : ''}à§³${balance.toStringAsFixed(0).toBnNum()}',
+                                          '${isPositive ? '+' : ''}?${balance.toStringAsFixed(0).toBnNum()}',
                                           style: TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w900,
@@ -2553,7 +2553,7 @@ class _SheetViewState extends State<_SheetView>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'à§³${totalDeposits.toInt().toBnNum()}',
+                            '?${totalDeposits.toInt().toBnNum()}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
@@ -2660,7 +2660,7 @@ class _SheetViewState extends State<_SheetView>
                             borderRadius: BorderRadius.circular(DashUI.rBtn),
                           ),
                           child: Text(
-                            'à§³${_toD(d['amount']).toInt().toBnNum()}',
+                            '?${_toD(d['amount']).toInt().toBnNum()}',
                             style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w900,
@@ -2838,7 +2838,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                             ),
                             Text(
-                              '${r['label'] ?? (r['is_reenable'] == true ? 'Meal ON' : 'Meal OFF')}${r['note'] != null && r['note'].toString().isNotEmpty ? ' Â· "${r['note']}"' : ''}',
+                              '${r['label'] ?? (r['is_reenable'] == true ? 'Meal ON' : 'Meal OFF')}${r['note'] != null && r['note'].toString().isNotEmpty ? ' � "${r['note']}"' : ''}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.inkSoft,
@@ -2937,7 +2937,7 @@ class _SheetViewState extends State<_SheetView>
                               const SizedBox(width: 3),
                               Text(
                                 AppTranslations.locale == 'bn'
-                                    ? 'à¦ªà§‡à¦¨à§à¦¡à¦¿à¦‚'
+                                    ? '???????'
                                     : 'Pending',
                                 style: const TextStyle(
                                   fontSize: 10.5,
@@ -3003,7 +3003,7 @@ class _SheetViewState extends State<_SheetView>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${gr['member_name'] ?? gr['member']?['name'] ?? 'Member'} Â· ${gr['guest_name'] ?? 'Guest'} Ã—${gr['guest_count'] ?? 1}',
+                              '${gr['member_name'] ?? gr['member']?['name'] ?? 'Member'} � ${gr['guest_name'] ?? 'Guest'} �${gr['guest_count'] ?? 1}',
                               style: const TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.w800,
@@ -3038,7 +3038,7 @@ class _SheetViewState extends State<_SheetView>
                                   const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
-                                    '${gr['is_cancellation'] == true ? 'Cancel: ' : ''}Guest Meal Request${gr['note'] != null && gr['note'].toString().isNotEmpty ? ' Â· "${gr['note']}"' : ''}',
+                                    '${gr['is_cancellation'] == true ? 'Cancel: ' : ''}Guest Meal Request${gr['note'] != null && gr['note'].toString().isNotEmpty ? ' � "${gr['note']}"' : ''}',
                                     style: const TextStyle(
                                       fontSize: 11.5,
                                       color: AppColors.inkSoft,
@@ -3375,7 +3375,7 @@ class _SheetViewState extends State<_SheetView>
                                         ),
                                       ),
                                       child: Text(
-                                        '+à§³$amt',
+                                        '+?$amt',
                                         style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
@@ -3631,7 +3631,7 @@ class _SheetViewState extends State<_SheetView>
       context,
       title: 'ui.confirm_delete_deposit_title'.tr2,
       itemName: memberName != null && amount != null && amount > 0
-          ? '$memberName Â· à§³${amount.toStringAsFixed(0)}'
+          ? '$memberName � ?${amount.toStringAsFixed(0)}'
           : memberName,
       message: 'ui.confirm_delete_deposit_message'.tr2,
       confirmLabel: 'ui.confirm_delete_deposit_label'.tr2,
@@ -4023,7 +4023,7 @@ class _SheetViewState extends State<_SheetView>
                                                 ),
                                               ),
                                               child: Text(
-                                                '+à§³${amt.toBnNum()}',
+                                                '+?${amt.toBnNum()}',
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.w700,
@@ -4210,15 +4210,18 @@ class _SheetViewState extends State<_SheetView>
   // MODALS: MEAL OFF REQUEST
   // ==========================================
   void _showMealOffModal(Map sheet) {
-    int selectedDay = _toI(sheet['todayDay'] ?? sheet['passedDays'] ?? 1);
+    // Web parity: members need 1-day notice � earliest selectable day is tomorrow
+    final int todayD = _toI(sheet['todayDay'] ?? sheet['passedDays'] ?? 0);
+    final monthRaw0 = _asMap(sheet['month']);
+    final days0 = _toI(monthRaw0['days']) > 0 ? _toI(monthRaw0['days']) : 31;
+    int selectedDay = (todayD + 1).clamp(1, days0);
     final myB = _asMap(sheet['myMealB']);
     final myL = _asMap(sheet['myMealL']);
     final myD = _asMap(sheet['myMealD']);
     bool bOn = true, lOn = true, dOn = true;
     int? lastLoadedDay;
     final noteCtrl = TextEditingController();
-    final monthRaw = _asMap(sheet['month']);
-    final days = _toI(monthRaw['days']) > 0 ? _toI(monthRaw['days']) : 31;
+    final days = days0;
 
     showDialog(
       context: context,
@@ -4264,8 +4267,8 @@ class _SheetViewState extends State<_SheetView>
           }) {
             final isBn = AppTranslations.locale == 'bn';
             final statusText = isOn
-                ? (isBn ? 'à¦šà¦¾à¦²à§' : 'ON')
-                : (isBn ? 'à¦¬à¦¨à§à¦§' : 'OFF');
+                ? (isBn ? '????' : 'ON')
+                : (isBn ? '????' : 'OFF');
 
             return InkWell(
               onTap: onTap,
@@ -4459,6 +4462,8 @@ class _SheetViewState extends State<_SheetView>
                             days: days,
                             selectedDay: selectedDay,
                             pendingMap: _asMap(sheet['myOffReqByDay']),
+                            todayDay: _toI(sheet['todayDay'] ?? 0),
+                            minDay: _toI(sheet['todayDay'] ?? 0) + 1,
                             onTap: (d) => setS(() {
                               selectedDay = d;
                               applyDayPrefill(d);
@@ -4500,7 +4505,7 @@ class _SheetViewState extends State<_SheetView>
                                       Expanded(
                                         child: Text(
                                           AppTranslations.locale == 'bn'
-                                              ? 'à¦¦à¦¿à¦¨ ${selectedDay.toString().toBnNum()}-à¦à¦° à¦†à¦¬à§‡à¦¦à¦¨ à¦ªà§‡à¦¨à§à¦¡à¦¿à¦‚: ${labelStr.isNotEmpty ? labelStr : 'à¦®à¦¿à¦² à¦†à¦¬à§‡à¦¦à¦¨'}'
+                                              ? '??? ${selectedDay.toString().toBnNum()}-?? ????? ???????: ${labelStr.isNotEmpty ? labelStr : '??? ?????'}'
                                               : 'Pending request for Day $selectedDay: ${labelStr.isNotEmpty ? labelStr : 'Meal request'}',
                                           style: const TextStyle(
                                             fontSize: 11.5,
@@ -4637,9 +4642,11 @@ class _SheetViewState extends State<_SheetView>
   // MODALS: GUEST MEAL REQUEST / ADD (Modern Dialogs)
   // ==========================================
   void _showGuestRequestModal(Map sheet) {
-    int selectedDay = _toI(sheet['todayDay'] ?? sheet['passedDays'] ?? 1);
+    // Web parity: guest requests need 1-day notice � earliest day is tomorrow
+    final int todayD = _toI(sheet['todayDay'] ?? sheet['passedDays'] ?? 0);
     final monthRaw = _asMap(sheet['month']);
     final days = _toI(monthRaw['days']) > 0 ? _toI(monthRaw['days']) : 31;
+    int selectedDay = (todayD + 1).clamp(1, days);
     final nameCtrl = TextEditingController();
     int guestCount = 1;
     bool b = false, l = false, dn = false;
@@ -4707,7 +4714,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toBnNum()} Â· ${'ui.sheet_select_meal_slots'.tr2}',
+                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toBnNum()} � ${'ui.sheet_select_meal_slots'.tr2}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
@@ -4763,6 +4770,8 @@ class _SheetViewState extends State<_SheetView>
                           _guestDateGrid(
                             days: days,
                             selectedDay: selectedDay,
+                            todayDay: _toI(sheet['todayDay'] ?? 0),
+                            minDay: _toI(sheet['todayDay'] ?? 0) + 1,
                             onTap: (d) => setS(() => selectedDay = d),
                           ),
                           const SizedBox(height: 14),
@@ -5192,7 +5201,7 @@ class _SheetViewState extends State<_SheetView>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toString().toBnNum()} Â· ${'ui.sheet_direct_entry'.tr2}',
+                                '${'ui.dash_day_prefix'.tr2} ${selectedDay.toString().toBnNum()} � ${'ui.sheet_direct_entry'.tr2}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.inkFaded,
@@ -5297,6 +5306,8 @@ class _SheetViewState extends State<_SheetView>
                           _guestDateGrid(
                             days: days,
                             selectedDay: selectedDay,
+                            todayDay: todayDay,
+                            minDay: 1,
                             onTap: (d) => setS(() => selectedDay = d),
                           ),
                           const SizedBox(height: 14),
@@ -5607,8 +5618,8 @@ class _SheetViewState extends State<_SheetView>
   }) {
     final isBn = AppTranslations.locale == 'bn';
     final badgeText = isSelected
-        ? (isBn ? 'âœ“ à¦¯à§‹à¦—' : 'âœ“ ADD')
-        : (isBn ? 'à¦¬à¦¾à¦¦' : 'OFF');
+        ? (isBn ? '? ???' : '? ADD')
+        : (isBn ? '???' : 'OFF');
 
     return InkWell(
       onTap: onTap,
@@ -5867,7 +5878,7 @@ class _SheetViewState extends State<_SheetView>
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    'Total: à§³${bazarTotal.toStringAsFixed(0)}',
+                                    'Total: ?${bazarTotal.toStringAsFixed(0)}',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,
@@ -5936,7 +5947,7 @@ class _SheetViewState extends State<_SheetView>
                                       keyboardType: TextInputType.number,
                                       onChanged: (_) => setS(() {}),
                                       decoration: InputDecoration(
-                                        hintText: 'Price à§³',
+                                        hintText: 'Price ?',
                                         isDense: true,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
@@ -6392,6 +6403,8 @@ class _SheetViewState extends State<_SheetView>
     required int selectedDay,
     required ValueChanged<int> onTap,
     Map? pendingMap,
+    int minDay = 1,
+    required int todayDay,
   }) {
     return Container(
       width: double.infinity,
@@ -6414,12 +6427,14 @@ class _SheetViewState extends State<_SheetView>
         itemBuilder: (ctx, index) {
           final d = index + 1;
           final isSelected = selectedDay == d;
+          final isLocked = d < minDay;
+          final isToday = d == todayDay;
           final hasPend =
               pendingMap != null &&
               (pendingMap[d.toString()] != null || pendingMap[d] != null);
 
           return InkWell(
-            onTap: () => onTap(d),
+            onTap: isLocked ? null : () => onTap(d),
             borderRadius: BorderRadius.circular(DashUI.rBtn),
             child: Stack(
               children: [
@@ -6427,6 +6442,8 @@ class _SheetViewState extends State<_SheetView>
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.brandDark
+                        : isLocked
+                        ? AppColors.paper
                         : AppColors.paperRaised,
                     borderRadius: BorderRadius.circular(DashUI.rBtn),
                     border: Border.all(
@@ -6441,11 +6458,26 @@ class _SheetViewState extends State<_SheetView>
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: isSelected ? Colors.white : AppColors.ink,
+                        color: isSelected
+                            ? Colors.white
+                            : isLocked
+                            ? AppColors.inkFaded
+                            : AppColors.ink,
                       ),
                     ),
                   ),
                 ),
+                if (isLocked && !isSelected)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
+                        ),
+                      ),
+                    ),
+                  ),
                 if (hasPend)
                   Positioned(
                     top: 3,
@@ -6457,6 +6489,19 @@ class _SheetViewState extends State<_SheetView>
                         color: isSelected
                             ? Colors.amberAccent
                             : const Color(0xFFF59E0B),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                if (isToday && !isSelected)
+                  Positioned(
+                    bottom: 3,
+                    right: 3,
+                    child: Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0F9F59),
                         shape: BoxShape.circle,
                       ),
                     ),

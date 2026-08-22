@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/config/app_config.dart';
@@ -416,7 +416,7 @@ class MessDrawer extends StatelessWidget {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        '${bnDigits(mess.membersCount)} ${'ui.dash_members'.tr2} â€¢ ${mess.code}',
+                        '${bnDigits(mess.membersCount)} ${'ui.dash_members'.tr2} • ${mess.code}',
                         style: const TextStyle(
                           fontSize: 10.5,
                           color: AppColors.inkFaded,
@@ -445,7 +445,7 @@ class MessDrawer extends StatelessWidget {
     required String userRoleLabel,
   }) {
     // This header is built inside Drawer.build's context, so it sees whatever cubits
-    // are above the Scaffold that owns the drawer â€” not necessarily DashboardCubit.
+    // are above the Scaffold that owns the drawer — not necessarily DashboardCubit.
     // On routes like Members/MessDetail the drawer is hosted above a different BlocProvider,
     // so we watch whatever is available and fall back to a static label instead of hiding.
     DashboardState? dashboardState;
@@ -533,9 +533,9 @@ class MessDrawer extends StatelessWidget {
         } catch (_) {}
       }
     }
-    // Final fallback â€” never hide the header completely
+    // Final fallback — never hide the header completely
     if (headerMessName.isEmpty) headerMessName = 'MessMax';
-    if (headerMessCode.isEmpty) headerMessCode = 'â€”';
+    if (headerMessCode.isEmpty) headerMessCode = '—';
     final messName = headerMessName;
     final messCode = headerMessCode;
     final consoleSub = isIndividual
@@ -608,7 +608,7 @@ class MessDrawer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      messCode != 'â€”' && messCode.isNotEmpty
+                      messCode != '—' && messCode.isNotEmpty
                           ? 'Code: $messCode'
                           : (isIndividual ? 'No mess yet' : 'Console'),
                       style: const TextStyle(
@@ -709,7 +709,7 @@ class MessDrawer extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  '${m.membersCount} members â€¢ ${m.code}',
+                                  '${m.membersCount} members • ${m.code}',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     color: AppColors.inkFaded,
@@ -795,7 +795,7 @@ class MessDrawer extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'MessMax â€¢ $consoleSub',
+                    'MessMax • $consoleSub',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -862,7 +862,7 @@ class MessDrawer extends StatelessWidget {
       child: InkWell(
         onTap: () {
           // For current mess drill-down: open detail with real mess id.
-          // Works from any route â€” falls back to Members/Mess cubit when DashboardCubit isn't above us.
+          // Works from any route — falls back to Members/Mess cubit when DashboardCubit isn't above us.
           if (id == 'current_mess') {
             int? messId;
             try {

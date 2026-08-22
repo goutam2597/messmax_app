@@ -1,4 +1,4 @@
-﻿import '../../../../core/locale/app_translations.dart';
+import '../../../../core/locale/app_translations.dart';
 import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -51,7 +51,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
         .whereType<RouteObserver<PageRoute<dynamic>>>()
         .firstOrNull;
     // Fallback: try to locate the observer via the app's navigator if exposed as a singleton.
-    // If not found, we still get coverage via the didPop re-entry below; observer is bonus for sheetâ†’detail back without pop.
+    // If not found, we still get coverage via the didPop re-entry below; observer is bonus for sheet→detail back without pop.
     _observer = obs;
     final route = ModalRoute.of(context);
     if (route is PageRoute<dynamic> && _observer != null) {
@@ -968,7 +968,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                       activeMonth.cycleLabel.isNotEmpty
                                           ? activeMonth.cycleLabel.replaceAll(
                                               r'\u2192',
-                                              'â†’',
+                                              '→',
                                             )
                                           : '${bnDigits(activeMonth.daysInMonth)} ${'ui.mess_days_cycle'.tr2}',
                                       style: const TextStyle(
@@ -1474,7 +1474,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${'ui.mess_settlement_header'.tr2} â€” ${monthLabel.toUpperCase()}',
+              '${'ui.mess_settlement_header'.tr2} — ${monthLabel.toUpperCase()}',
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -1514,7 +1514,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
     final mealsStr = s.meals % 1 == 0
         ? s.meals.toInt().toString()
         : s.meals.toStringAsFixed(1);
-    final balanceValStr = '${s.balance.abs().toStringAsFixed(0)} à§³';
+    final balanceValStr = '${s.balance.abs().toStringAsFixed(0)} ৳';
     final balancePrefix = isPositive ? '+' : '-';
     final avatarColor = _hexColor(s.color);
 
@@ -1719,7 +1719,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                             icon: Icons.shopping_bag_outlined,
                             iconColor: AppColors.inkSoft,
                             label: 'ui.mess_stat_spend'.tr2,
-                            value: 'à§³${bnDigits(s.spend.toStringAsFixed(0))}',
+                            value: '৳${bnDigits(s.spend.toStringAsFixed(0))}',
                           ),
                         ),
                         Container(
@@ -1732,7 +1732,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                             icon: Icons.payments_outlined,
                             iconColor: AppColors.emerald,
                             label: 'ui.mess_stat_given'.tr2,
-                            value: 'à§³${bnDigits(s.given.toStringAsFixed(0))}',
+                            value: '৳${bnDigits(s.given.toStringAsFixed(0))}',
                           ),
                         ),
                       ],
@@ -1932,16 +1932,16 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
 
   Widget _buildDefaultMealChip(MessMemberLite m) {
     final raw = m.defaultDisplay;
-    if (raw.isEmpty || raw == 'â€”') return const SizedBox.shrink();
+    if (raw.isEmpty || raw == '—') return const SizedBox.shrink();
 
-    final parts = raw.split('Â·').map((e) => e.trim()).toList();
+    final parts = raw.split('·').map((e) => e.trim()).toList();
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (int i = 0; i < parts.length; i++) ...[
           if (i > 0)
             const Text(
-              'Â·',
+              '·',
               style: TextStyle(
                 fontSize: 9,
                 color: AppColors.inkFaded,
@@ -2533,7 +2533,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '${endDate!.difference(startDate!).inDays + 1} days in custom billing period (${formatIsoDate(startDate!)} â†’ ${formatIsoDate(endDate!)})',
+                                    '${endDate!.difference(startDate!).inDays + 1} days in custom billing period (${formatIsoDate(startDate!)} → ${formatIsoDate(endDate!)})',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,

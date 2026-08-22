@@ -322,7 +322,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    '${'ui.dash_manager_console'.tr2} • ${activeMess?.code ?? "#MX-8921"}',
+                    '${'ui.dash_manager_console'.tr2} � ${activeMess?.code ?? "#MX-8921"}',
                     style: const TextStyle(
                       fontSize: 11,
                       color: AppColors.inkFaded,
@@ -1182,7 +1182,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       Expanded(
                         child: _heroGlassChip(
                           label: 'ui.dash_current_bazar'.tr2,
-                          val: '৳${bnDigits(summary.currentBazar.toInt())}',
+                          val: '?${bnDigits(summary.currentBazar.toInt())}',
                           sub: 'ui.dash_spent'.tr2,
                           onTap:
                               activeMess != null &&
@@ -1338,7 +1338,7 @@ class _DashboardViewState extends State<_DashboardView> {
           iconColor: const Color(0xFF0F9F59),
           bgColor: const Color(0xFFE6F4EA),
           title: 'ui.dash_total_bazar'.tr2,
-          value: '৳${bnDigits(totalBazar)}',
+          value: '?${bnDigits(totalBazar)}',
           subtitle: 'ui.dash_current_month_spend'.tr2,
           onTap: activeMess?.currentMonthId != null
               ? () => Navigator.of(context).push(
@@ -1358,7 +1358,7 @@ class _DashboardViewState extends State<_DashboardView> {
           iconColor: AppColors.accentDark,
           bgColor: AppColors.accentSoft,
           title: 'ui.dash_current_rate'.tr2,
-          value: '৳${bnDigits(mealRate.toStringAsFixed(0))}',
+          value: '?${bnDigits(mealRate.toStringAsFixed(0))}',
           subtitle: 'ui.dash_calculated_per_meal'.tr2,
           onTap: activeMess?.currentMonthId != null
               ? () => Navigator.of(context).push(
@@ -1378,8 +1378,8 @@ class _DashboardViewState extends State<_DashboardView> {
           iconColor: const Color(0xFF1A73E8),
           bgColor: const Color(0xFFE8F0FE),
           title: 'ui.dash_cash_deposit'.tr2,
-          value: '৳${bnDigits(totalDeposits)}',
-          subtitle: '${'ui.dash_rest_label'.tr2}: ৳${bnDigits(restMoney)}',
+          value: '?${bnDigits(totalDeposits)}',
+          subtitle: '${'ui.dash_rest_label'.tr2}: ?${bnDigits(restMoney)}',
           onTap: activeMess?.currentMonthId != null
               ? () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -1394,7 +1394,7 @@ class _DashboardViewState extends State<_DashboardView> {
         ),
       ];
 
-    // Tablet: 4-column row | Phone: 2×2 grid — same tile, no font change on phone
+    // Tablet: 4-column row | Phone: 2�2 grid � same tile, no font change on phone
     if (isTablet) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1810,7 +1810,7 @@ class _DashboardViewState extends State<_DashboardView> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${duties[i].messName} • ${'ui.dash_day_prefix'.tr2} ${bnDigits(duties[i].day)}',
+                              '${duties[i].messName} � ${'ui.dash_day_prefix'.tr2} ${bnDigits(duties[i].day)}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.inkFaded,
@@ -1929,7 +1929,7 @@ class _DashboardViewState extends State<_DashboardView> {
                               child: ValueListenableBuilder<int>(
                                 valueListenable: AppTranslations.notifier,
                                 builder: (context, _, _) => Text(
-                                  AppTranslations.locale == 'bn' ? 'স' : 'B',
+                                  AppTranslations.locale == 'bn' ? '?' : 'B',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w900,
@@ -1946,7 +1946,7 @@ class _DashboardViewState extends State<_DashboardView> {
                               child: ValueListenableBuilder<int>(
                                 valueListenable: AppTranslations.notifier,
                                 builder: (context, _, _) => Text(
-                                  AppTranslations.locale == 'bn' ? 'দু' : 'L',
+                                  AppTranslations.locale == 'bn' ? '??' : 'L',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w900,
@@ -1963,7 +1963,7 @@ class _DashboardViewState extends State<_DashboardView> {
                               child: ValueListenableBuilder<int>(
                                 valueListenable: AppTranslations.notifier,
                                 builder: (context, _, _) => Text(
-                                  AppTranslations.locale == 'bn' ? 'রা' : 'D',
+                                  AppTranslations.locale == 'bn' ? '??' : 'D',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w900,
@@ -2261,7 +2261,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                   ),
                                 ),
                                 Text(
-                                  '৳${bnDigits(messes[i].activeMonthBazar.toInt())} • ${bnDigits(messes[i].activeMonthMeals.toInt())} ${'ui.dash_meals'.tr2}',
+                                  '?${bnDigits(messes[i].activeMonthBazar.toInt())} � ${bnDigits(messes[i].activeMonthMeals.toInt())} ${'ui.dash_meals'.tr2}',
                                   style: const TextStyle(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w900,

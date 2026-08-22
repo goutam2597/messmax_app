@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/locale/app_translations.dart';
@@ -151,7 +151,7 @@ class SettingsScreen extends StatelessWidget {
                             const SizedBox(width: 10),
                             Expanded(
                               child: _LanguageOptionCard(
-                                title: 'à¦¬à¦¾à¦‚à¦²à¦¾',
+                                title: 'বাংলা',
                                 subtitle: 'Bengali',
                                 selected: !isEn,
                                 onTap: () => context

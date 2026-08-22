@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -145,7 +145,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 ),
                                 const SizedBox(height: 1),
                                 Text(
-                                  '${data.monthLabel} Â· ${'ui.bazar_single_day_range'.tr2}',
+                                  '${data.monthLabel} · ${'ui.bazar_single_day_range'.tr2}',
                                   style: const TextStyle(
                                     fontSize: 11.5,
                                     color: AppColors.inkFaded,
@@ -1290,7 +1290,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${'ui.bazar_rota_subtitle'.tr2} â€¢ ${data.mess.code}',
+                      '${'ui.bazar_rota_subtitle'.tr2} • ${data.mess.code}',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white70,
@@ -1850,7 +1850,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
     BazarScheduleResponseModel data,
   ) {
     final subjectController = TextEditingController(
-      text: 'Announcement â€” ${data.mess.name} Â· ${data.monthLabel} â€” MessMax',
+      text: 'Announcement — ${data.mess.name} · ${data.monthLabel} — MessMax',
     );
     final messageController = TextEditingController();
     bool isSendingBroadcast = false;
@@ -2088,7 +2088,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
   ) {
     if (_announcementSubjectController.text.isEmpty) {
       _announcementSubjectController.text =
-          'Announcement â€” ${data.mess.name} Â· ${data.monthLabel} â€” MessMax';
+          'Announcement — ${data.mess.name} · ${data.monthLabel} — MessMax';
     }
 
     return Container(
@@ -2132,12 +2132,12 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           ),
           const SizedBox(height: 6),
           Text(
-            '${'ui.bazar_announce_desc'.tr2} ${data.mess.name} â€” ${'ui.bazar_announce_desc2'.tr2}',
+            '${'ui.bazar_announce_desc'.tr2} ${data.mess.name} — ${'ui.bazar_announce_desc2'.tr2}',
             style: const TextStyle(fontSize: 11.5, color: Colors.white70),
           ),
           const SizedBox(height: 4),
           Text(
-            '${bnDigits(data.members.length)} ${'ui.members_total'.tr2} Â· ${bnDigits(data.members.where((m) => m.email != null && m.email!.isNotEmpty).length)} ${'ui.bazar_with_email'.tr2} Â· ${bnDigits(data.assignedCount)} ${'ui.bazar_days_scheduled'.tr2} ${data.monthLabel}',
+            '${bnDigits(data.members.length)} ${'ui.members_total'.tr2} · ${bnDigits(data.members.where((m) => m.email != null && m.email!.isNotEmpty).length)} ${'ui.bazar_with_email'.tr2} · ${bnDigits(data.assignedCount)} ${'ui.bazar_days_scheduled'.tr2} ${data.monthLabel}',
             style: const TextStyle(
               fontSize: 10.5,
               color: Colors.white54,
@@ -2198,7 +2198,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               filled: true,
               fillColor: Colors.white.withValues(alpha: 0.1),
               hintText:
-                  'e.g. Hi all â€” bazar rota for ${data.monthLabel} is set. Today\'s bazar: â€¦ Please bring: chicken, oil, onions. â€” Manager',
+                  'e.g. Hi all — bazar rota for ${data.monthLabel} is set. Today\'s bazar: … Please bring: chicken, oil, onions. — Manager',
               hintStyle: const TextStyle(color: Colors.white38),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(DashUI.rBtn),
