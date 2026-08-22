@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +12,7 @@ import '../../data/models/ad_model.dart';
 import '../../data/repositories/user_ad_repository.dart';
 import 'ad_detail_screen.dart';
 import 'ad_form_screen.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class MyAdsScreen extends StatefulWidget {
   const MyAdsScreen({super.key});
@@ -147,7 +148,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColors.paperRaised,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(DashUI.rCard),
                       border: Border.all(color: const Color(0xFFEAEBEF)),
                     ),
                     child: Row(
@@ -231,7 +232,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -252,7 +253,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
               child: Row(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(DashUI.rTile),
                     child: SizedBox(
                       width: 90,
                       height: 80,
@@ -307,7 +308,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '৳${bnDigits(ad.rentPerSeat.toInt())} ${'ui.myads_per_month'.tr2} • ${ad.areaLabel ?? ad.city ?? "Dhaka"}',
+                          'à§³${bnDigits(ad.rentPerSeat.toInt())} ${'ui.myads_per_month'.tr2} â€¢ ${ad.areaLabel ?? ad.city ?? "Dhaka"}',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,

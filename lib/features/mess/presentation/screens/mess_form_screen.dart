@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../data/models/mess_model.dart';
 import '../cubit/mess_cubit.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class MessFormScreen extends StatefulWidget {
   final MessModel? mess;
@@ -37,7 +38,7 @@ class MessFormScreen extends StatefulWidget {
           vertical: 24,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           side: const BorderSide(color: AppColors.paperLine),
         ),
         child: ConstrainedBox(
@@ -232,7 +233,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.paperRaised,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
               border: Border.all(color: AppColors.paperLine),
             ),
             child: Column(
@@ -299,7 +300,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.paperRaised,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
               border: Border.all(color: AppColors.paperLine),
             ),
             child: Column(
@@ -326,7 +327,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.brandSoft,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                           border: Border.all(
                             color: AppColors.brandDark.withValues(alpha: 0.2),
                           ),
@@ -363,7 +364,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                           const SizedBox(height: 6),
                           InkWell(
                             onTap: _pickStartDate,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(DashUI.rTile),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -371,7 +372,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.paper,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(DashUI.rTile),
                                 border: Border.all(
                                   color: _billingStartDate != null
                                       ? AppColors.brandDark
@@ -442,7 +443,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                           const SizedBox(height: 6),
                           InkWell(
                             onTap: _pickEndDate,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(DashUI.rTile),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -450,7 +451,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.paper,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(DashUI.rTile),
                                 border: Border.all(
                                   color: _billingEndDate != null
                                       ? AppColors.brandDark
@@ -622,7 +623,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(DashUI.rTile),
                 ),
               ),
             ),
@@ -645,7 +646,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(DashUI.rTile),
                   ),
                   child: Icon(
                     isEdit ? Icons.edit_note_rounded : Icons.domain_rounded,
@@ -689,7 +690,7 @@ class _MessFormScreenState extends State<MessFormScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => Navigator.pop(context),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: Container(
                       width: 32,
                       height: 32,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -15,6 +15,7 @@ import '../../../../core/widgets/dot_indicator_row.dart';
 import '../../../../core/widgets/network_image_cover.dart';
 import '../../data/models/ad_model.dart';
 import '../../data/repositories/ads_repository.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class AdDetailScreen extends StatefulWidget {
   final AdModel ad;
@@ -187,7 +188,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: AppColors.paperRaised,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                               border: Border.all(color: AppColors.paperLine),
                               boxShadow: [
                                 BoxShadow(
@@ -363,7 +364,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: AppColors.brandSoft,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(DashUI.rBtn),
           ),
           child: Icon(icon, size: 18, color: AppColors.brandDark),
         ),
@@ -428,7 +429,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   gradient: const LinearGradient(
                     colors: [Color(0xFFE2701C), Color(0xFFC75911)],
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                   boxShadow: [
                     BoxShadow(
                       color: Color(0xFFE2701C).withValues(alpha: 0.3),
@@ -557,7 +558,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(DashUI.rTile),
         border: borderColor != null ? Border.all(color: borderColor) : null,
       ),
       child: Row(
@@ -636,7 +637,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.65),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.3),
                     ),
@@ -724,7 +725,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           end: Alignment.bottomRight,
           colors: [AppColors.brandDark, AppColors.brandDeep],
         ),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
             color: AppColors.brandDark.withValues(alpha: 0.3),
@@ -759,7 +760,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     ValueListenableBuilder<int>(
                       valueListenable: AppTranslations.notifier,
                       builder: (context, _, _) => Text(
-                        '৳${bnDigits(ad.rentPerSeat.toInt())}',
+                        'à§³${bnDigits(ad.rentPerSeat.toInt())}',
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
@@ -815,7 +816,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   color: ad.seatsAvailable > 0
                       ? AppColors.emerald
                       : AppColors.accent,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.2),
@@ -873,7 +874,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -934,7 +935,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: AppColors.emeraldSoft,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
             ),
             child: ValueListenableBuilder<int>(
               valueListenable: AppTranslations.notifier,
@@ -970,7 +971,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -989,7 +990,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                 padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
                   color: AppColors.accentSoft,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(DashUI.rTile),
                 ),
                 child: const Icon(
                   Icons.location_on_rounded,
@@ -1040,7 +1041,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: AppColors.brandSoft,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(DashUI.rTile),
               ),
               child: ValueListenableBuilder<int>(
                 valueListenable: AppTranslations.notifier,
@@ -1116,7 +1117,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.paperRaised,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(DashUI.rCard),
                 border: Border.all(color: AppColors.paperLine),
               ),
               child: Row(
@@ -1125,7 +1126,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
                     ),
                     child: Icon(icon, size: 18, color: AppColors.brandDark),
                   ),
@@ -1203,7 +1204,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
           decoration: BoxDecoration(
             color: AppColors.emeraldSoft,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(DashUI.rCard),
             border: Border.all(
               color: AppColors.emerald.withValues(alpha: 0.25),
             ),
@@ -1231,7 +1232,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
   Future<void> _shareAd(BuildContext context) async {
     final webUrl = 'http://${AppConfig.baseDomain}/ads/${ad.slug}';
     final text =
-        '${ad.title} — ৳${ad.rentPerSeat.toInt()} /mo • ${ad.areaLabel ?? ad.city ?? 'Dhaka'}\n$webUrl';
+        '${ad.title} â€” à§³${ad.rentPerSeat.toInt()} /mo â€¢ ${ad.areaLabel ?? ad.city ?? 'Dhaka'}\n$webUrl';
     try {
       await SharePlus.instance.share(
         ShareParams(text: text, subject: ad.title),
@@ -1358,7 +1359,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   fixedSize: const Size.fromHeight(48),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                   ),
                   elevation: 0,
                 ),
@@ -1398,7 +1399,7 @@ class _AdDetailScreenState extends State<AdDetailScreen> {
                   fixedSize: const Size.fromHeight(48),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                   ),
                   elevation: 0,
                   shadowColor: const Color(0xFF25D366).withValues(alpha: 0.35),
@@ -1524,7 +1525,7 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(DashUI.rCard),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
               ),
               child: ValueListenableBuilder<int>(
@@ -1554,7 +1555,7 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                 ),
                 child: ValueListenableBuilder<int>(
                   valueListenable: AppTranslations.notifier,
@@ -1693,7 +1694,7 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
                           ),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.45),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(DashUI.rCard),
                           ),
                           child: ValueListenableBuilder<int>(
                             valueListenable: AppTranslations.notifier,
@@ -1736,7 +1737,7 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: AppColors.paperRaised,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(DashUI.rCard),
                           border: Border.all(color: AppColors.paperLine),
                         ),
                         child: Row(
@@ -1786,7 +1787,7 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.paperRaised,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(DashUI.rCard),
                           border: Border.all(color: AppColors.paperLine),
                         ),
                         child: Row(
@@ -1831,7 +1832,7 @@ class _SeatDetailSkeletonState extends State<_SeatDetailSkeleton>
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: AppColors.paperRaised,
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                               border: Border.all(color: AppColors.paperLine),
                             ),
                             child: Column(

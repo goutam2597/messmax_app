@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +8,7 @@ import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../data/models/ad_model.dart';
 import '../../data/repositories/user_ad_repository.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class AdFormScreen extends StatefulWidget {
   final AdModel? ad;
@@ -314,7 +315,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                       setState(() => _roomType = info['type']!);
                       Navigator.pop(ctx);
                     },
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.all(16),
@@ -322,7 +323,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                         color: isSelected
                             ? const Color(0xFFFFF8F2)
                             : AppColors.paper,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.brandDark
@@ -508,7 +509,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               }
                             });
                           },
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(DashUI.rCard),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
@@ -518,7 +519,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                               color: isChecked
                                   ? const Color(0xFFFFF8F2)
                                   : AppColors.paper,
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                               border: Border.all(
                                 color: isChecked
                                     ? AppColors.brandDark
@@ -537,7 +538,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                                         : AppColors.paperLine.withValues(
                                             alpha: 0.4,
                                           ),
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                                   ),
                                   child: Icon(
                                     icon,
@@ -586,7 +587,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                           backgroundColor: AppColors.brandDark,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(DashUI.rCard),
                           ),
                         ),
                         child: ValueListenableBuilder<int>(
@@ -858,7 +859,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                         Container(
                           decoration: BoxDecoration(
                             color: AppColors.paper,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(DashUI.rTile),
                             border: Border.all(color: AppColors.paperLine),
                           ),
                           child: SwitchListTile(
@@ -985,7 +986,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.brandDark,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                       ),
                     ),
                     child: _isSubmitting
@@ -1021,7 +1022,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
       ),
       padding: const EdgeInsets.all(16),
@@ -1056,7 +1057,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                 ),
                 child: Text(
                   '${bnDigits(_totalImageCount)} / ${bnDigits(6)} ${'ui.ad_form_photos_suffix'.tr2}',
@@ -1074,7 +1075,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
           if (!hasImages)
             InkWell(
               onTap: _pickImages,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -1083,7 +1084,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.paper,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                   border: Border.all(
                     color: AppColors.brandDark.withValues(alpha: 0.4),
                     style: BorderStyle.solid,
@@ -1129,7 +1130,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
           else ...[
             // Main Cover Image Preview
             ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
               child: Stack(
                 children: [
                   AspectRatio(
@@ -1161,7 +1162,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.brandDark,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                       ),
                       child: Row(
                         children: [
@@ -1226,13 +1227,13 @@ class _AdFormScreenState extends State<AdFormScreen> {
                       padding: const EdgeInsets.only(right: 8),
                       child: InkWell(
                         onTap: _pickImages,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                         child: Container(
                           width: 70,
                           height: 70,
                           decoration: BoxDecoration(
                             color: AppColors.paper,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             border: Border.all(
                               color: AppColors.brandDark,
                               style: BorderStyle.solid,
@@ -1299,7 +1300,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(DashUI.rBtn),
             child: SizedBox.expand(child: imageWidget),
           ),
           if (isCover)
@@ -1354,12 +1355,12 @@ class _AdFormScreenState extends State<AdFormScreen> {
 
     return InkWell(
       onTap: () => _showRoomTypeBottomSheet(context),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(DashUI.rCard),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.paper,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           border: Border.all(color: AppColors.paperLine),
         ),
         child: Row(
@@ -1369,7 +1370,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
               height: 38,
               decoration: BoxDecoration(
                 color: AppColors.brandSoft,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
               ),
               child: Icon(
                 _getRoomTypeIcon(currentInfo['type']!),
@@ -1406,7 +1407,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.brandSoft.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
               ),
               child: Row(
                 children: [
@@ -1437,12 +1438,12 @@ class _AdFormScreenState extends State<AdFormScreen> {
   Widget _buildAmenitiesSelector() {
     return InkWell(
       onTap: () => _showAmenitiesBottomSheet(context),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(DashUI.rCard),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.paper,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           border: Border.all(color: AppColors.paperLine),
         ),
         child: Column(
@@ -1472,7 +1473,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.brandSoft.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                   ),
                   child: Row(
                     children: [
@@ -1508,7 +1509,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
                       border: Border.all(
                         color: AppColors.brandDark.withValues(alpha: 0.2),
                       ),
@@ -1552,7 +1553,7 @@ class _AdFormScreenState extends State<AdFormScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/app_config.dart';
@@ -13,6 +13,7 @@ import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import 'account_screen.dart';
 import 'package:messmax_app/features/main/presentation/screens/main_shell_screen.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -63,7 +64,7 @@ class ProfileScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(28),
                       decoration: BoxDecoration(
                         color: AppColors.paperRaised,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                         border: Border.all(color: AppColors.paperLine),
                         boxShadow: [
                           BoxShadow(
@@ -139,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
                                   vertical: 14,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(DashUI.rCard),
                                 ),
                               ),
                             ),
@@ -294,7 +295,7 @@ class ProfileScreen extends StatelessWidget {
                                 width: 1.2,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(DashUI.rCard),
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
@@ -357,7 +358,7 @@ class ProfileScreen extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
             color: AppColors.brandDark.withValues(alpha: 0.25),
@@ -374,7 +375,7 @@ class ProfileScreen extends StatelessWidget {
               context,
             ).push(MaterialPageRoute(builder: (_) => const DashboardScreen()));
           },
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -439,7 +440,7 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.brandDark,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
       ),
       child: const Center(
         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
@@ -460,7 +461,7 @@ class ProfileScreen extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [AppColors.brandDark, AppColors.brandDeep],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
             color: AppColors.brandDark.withValues(alpha: 0.25),
@@ -526,7 +527,7 @@ class ProfileScreen extends StatelessWidget {
                     color: user.isIndividual
                         ? const Color(0xFFE85D04)
                         : const Color(0xFF0F9F59),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(DashUI.rTile),
                   ),
                   child: Text(
                     user.roleLabel,
@@ -613,7 +614,7 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isAccent ? AppColors.brandDark : AppColors.paperRaised,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           border: Border.all(
             color: isAccent ? AppColors.brandDark : AppColors.paperLine,
           ),
@@ -689,7 +690,7 @@ class ProfileScreen extends StatelessWidget {
   ) => Material(
     color: AppColors.paperRaised,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(DashUI.rCard),
       side: const BorderSide(color: AppColors.paperLine),
     ),
     clipBehavior: Clip.antiAlias,
@@ -732,7 +733,7 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: AppColors.brandSoft,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(DashUI.rBtn),
       ),
       child: Icon(item.icon, color: AppColors.brandDark, size: 20),
     ),

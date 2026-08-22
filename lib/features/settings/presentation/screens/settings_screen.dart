@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/locale/locale_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -37,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
                 decoration: BoxDecoration(
                   color: AppColors.paperRaised,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                   border: Border.all(color: AppColors.paperLine),
                   boxShadow: [
                     BoxShadow(
@@ -57,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
                           height: 36,
                           decoration: BoxDecoration(
                             color: AppColors.brandSoft,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                           ),
                           child: const Icon(
                             Icons.translate_rounded,
@@ -150,7 +151,7 @@ class SettingsScreen extends StatelessWidget {
                             const SizedBox(width: 10),
                             Expanded(
                               child: _LanguageOptionCard(
-                                title: 'বাংলা',
+                                title: 'à¦¬à¦¾à¦‚à¦²à¦¾',
                                 subtitle: 'Bengali',
                                 selected: !isEn,
                                 onTap: () => context
@@ -190,12 +191,12 @@ class _LanguageOptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(DashUI.rCard),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: selected ? AppColors.brandDark : AppColors.paper,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           border: Border.all(
             color: selected ? AppColors.brandDark : AppColors.paperLine,
             width: selected ? 1.5 : 1,

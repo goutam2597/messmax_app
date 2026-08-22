@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -10,6 +10,7 @@ import '../cubit/mess_state.dart';
 import '../../data/models/mess_model.dart';
 import 'mess_form_screen.dart';
 import 'mess_detail_screen.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class MessesScreen extends StatelessWidget {
   const MessesScreen({super.key});
@@ -85,7 +86,7 @@ class _MessesViewState extends State<_MessesView> {
                   onTap: () => context
                       .read<MessCubit>()
                       .loadMesses(forceRefresh: true),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                   child: Container(
                     width: 36,
                     height: 36,
@@ -218,7 +219,7 @@ class _MessesViewState extends State<_MessesView> {
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(DashUI.rTile),
                                   ),
                                 ),
                               ),
@@ -250,7 +251,7 @@ class _MessesViewState extends State<_MessesView> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(DashUI.rCard),
                         ),
                         child: Row(
                           children: [
@@ -369,12 +370,12 @@ class _MessCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(DashUI.rCard),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.paperRaised,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           border: Border.all(
             color: mess.canManage
                 ? AppColors.brandDark.withValues(alpha: 0.35)
@@ -398,7 +399,7 @@ class _MessCard extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                   ),
                   child: const Icon(
                     Icons.apartment_rounded,
@@ -426,7 +427,7 @@ class _MessCard extends StatelessWidget {
                     color: mess.canManage
                         ? AppColors.brandDark
                         : AppColors.paperLine,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                   ),
                   child: Text(
                     mess.displayRole.toUpperCase(),
@@ -490,7 +491,7 @@ class _MessCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.paper,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
       ),
       child: Row(

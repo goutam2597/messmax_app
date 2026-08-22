@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +10,7 @@ import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../data/models/bazar_schedule_model.dart';
 import '../cubit/bazar_schedule_cubit.dart';
 import '../cubit/bazar_schedule_state.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class BazarScheduleScreen extends StatelessWidget {
   final int? messId;
@@ -98,7 +99,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                 vertical: 24,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(DashUI.rCard),
                 side: const BorderSide(color: AppColors.paperLine),
               ),
               child: ConstrainedBox(
@@ -119,7 +120,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: AppColors.brandSoft,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(DashUI.rTile),
                             ),
                             child: const Icon(
                               Icons.calendar_month_rounded,
@@ -144,7 +145,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 ),
                                 const SizedBox(height: 1),
                                 Text(
-                                  '${data.monthLabel} · ${'ui.bazar_single_day_range'.tr2}',
+                                  '${data.monthLabel} Â· ${'ui.bazar_single_day_range'.tr2}',
                                   style: const TextStyle(
                                     fontSize: 11.5,
                                     color: AppColors.inkFaded,
@@ -157,7 +158,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () => Navigator.pop(ctx),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                               child: Container(
                                 width: 32,
                                 height: 32,
@@ -227,7 +228,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                             });
                                           }
                                         },
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(DashUI.rTile),
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 12,
@@ -316,7 +317,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                             );
                                           }
                                         },
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(DashUI.rTile),
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 12,
@@ -694,7 +695,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                     vertical: 14,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(DashUI.rCard),
                                   ),
                                 ),
                               ),
@@ -758,7 +759,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                 vertical: 24,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(DashUI.rCard),
                 side: const BorderSide(color: AppColors.paperLine),
               ),
               child: ConstrainedBox(
@@ -779,7 +780,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: AppColors.brandSoft,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(DashUI.rTile),
                             ),
                             child: const Icon(
                               Icons.mark_email_read_rounded,
@@ -815,7 +816,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () => Navigator.pop(ctx),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                               child: Container(
                                 width: 32,
                                 height: 32,
@@ -862,7 +863,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: AppColors.paper,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(DashUI.rTile),
                                   border: Border.all(
                                     color: AppColors.paperLine,
                                   ),
@@ -981,7 +982,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                     vertical: 14,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(DashUI.rCard),
                                   ),
                                 ),
                               ),
@@ -1061,7 +1062,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     onTap: () => context
                         .read<BazarScheduleCubit>()
                         .loadSchedule(forceRefresh: true),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: Container(
                       width: 36,
                       height: 36,
@@ -1226,7 +1227,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: AppColors.brandSoft,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(DashUI.rBtn),
           ),
           child: Icon(icon, size: 15, color: AppColors.brandDark),
         ),
@@ -1259,7 +1260,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           end: Alignment.bottomRight,
           colors: [AppColors.brandDark, AppColors.brandDeep],
         ),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
             color: AppColors.brandDark.withValues(alpha: 0.25),
@@ -1289,7 +1290,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${'ui.bazar_rota_subtitle'.tr2} • ${data.mess.code}',
+                      '${'ui.bazar_rota_subtitle'.tr2} â€¢ ${data.mess.code}',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white70,
@@ -1304,7 +1305,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.25),
                   ),
@@ -1349,7 +1350,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1423,7 +1424,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(DashUI.rTile),
               ),
             ),
           ),
@@ -1448,7 +1449,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(DashUI.rTile),
               ),
             ),
           ),
@@ -1462,7 +1463,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(DashUI.rTile),
               ),
             ),
           ),
@@ -1507,7 +1508,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -1524,7 +1525,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             height: 54,
             decoration: BoxDecoration(
               color: AppColors.brandSoft,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
             ),
             child: const Icon(
               Icons.calendar_month_outlined,
@@ -1560,7 +1561,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(DashUI.rTile),
                 ),
               ),
             ),
@@ -1589,7 +1590,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(
           color: item.isToday ? const Color(0xFF0F9F59) : AppColors.paperLine,
           width: item.isToday ? 2 : 1,
@@ -1617,7 +1618,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                   color: item.isToday
                       ? const Color(0xFF0F9F59)
                       : AppColors.brandDark,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                 ),
                 child: Text(
                   item.dateLabel,
@@ -1796,7 +1797,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.paper,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DashUI.rTile),
               border: Border.all(color: AppColors.paperLine),
             ),
             child: Column(
@@ -1849,7 +1850,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
     BazarScheduleResponseModel data,
   ) {
     final subjectController = TextEditingController(
-      text: 'Announcement — ${data.mess.name} · ${data.monthLabel} — MessMax',
+      text: 'Announcement â€” ${data.mess.name} Â· ${data.monthLabel} â€” MessMax',
     );
     final messageController = TextEditingController();
     bool isSendingBroadcast = false;
@@ -1867,7 +1868,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                 vertical: 24,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(DashUI.rCard),
                 side: const BorderSide(color: AppColors.paperLine),
               ),
               child: ConstrainedBox(
@@ -1888,7 +1889,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: AppColors.brandSoft,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(DashUI.rTile),
                             ),
                             child: const Icon(
                               Icons.campaign_rounded,
@@ -1924,7 +1925,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () => Navigator.pop(ctx),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                               child: Container(
                                 width: 32,
                                 height: 32,
@@ -2061,7 +2062,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                                     vertical: 14,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(DashUI.rCard),
                                   ),
                                 ),
                               ),
@@ -2087,7 +2088,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
   ) {
     if (_announcementSubjectController.text.isEmpty) {
       _announcementSubjectController.text =
-          'Announcement — ${data.mess.name} · ${data.monthLabel} — MessMax';
+          'Announcement â€” ${data.mess.name} Â· ${data.monthLabel} â€” MessMax';
     }
 
     return Container(
@@ -2098,7 +2099,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           end: Alignment.bottomRight,
           colors: [AppColors.brandDark, AppColors.brandDeep],
         ),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
             color: AppColors.brandDark.withValues(alpha: 0.2),
@@ -2131,12 +2132,12 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           ),
           const SizedBox(height: 6),
           Text(
-            '${'ui.bazar_announce_desc'.tr2} ${data.mess.name} — ${'ui.bazar_announce_desc2'.tr2}',
+            '${'ui.bazar_announce_desc'.tr2} ${data.mess.name} â€” ${'ui.bazar_announce_desc2'.tr2}',
             style: const TextStyle(fontSize: 11.5, color: Colors.white70),
           ),
           const SizedBox(height: 4),
           Text(
-            '${bnDigits(data.members.length)} ${'ui.members_total'.tr2} · ${bnDigits(data.members.where((m) => m.email != null && m.email!.isNotEmpty).length)} ${'ui.bazar_with_email'.tr2} · ${bnDigits(data.assignedCount)} ${'ui.bazar_days_scheduled'.tr2} ${data.monthLabel}',
+            '${bnDigits(data.members.length)} ${'ui.members_total'.tr2} Â· ${bnDigits(data.members.where((m) => m.email != null && m.email!.isNotEmpty).length)} ${'ui.bazar_with_email'.tr2} Â· ${bnDigits(data.assignedCount)} ${'ui.bazar_days_scheduled'.tr2} ${data.monthLabel}',
             style: const TextStyle(
               fontSize: 10.5,
               color: Colors.white54,
@@ -2164,13 +2165,13 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               hintText: '${'ui.bazar_subject_hint'.tr2} ${data.monthLabel}',
               hintStyle: const TextStyle(color: Colors.white38),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
                 borderSide: BorderSide(
                   color: Colors.white.withValues(alpha: 0.2),
                 ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
                 borderSide: BorderSide(
                   color: Colors.white.withValues(alpha: 0.2),
                 ),
@@ -2197,16 +2198,16 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               filled: true,
               fillColor: Colors.white.withValues(alpha: 0.1),
               hintText:
-                  'e.g. Hi all — bazar rota for ${data.monthLabel} is set. Today\'s bazar: … Please bring: chicken, oil, onions. — Manager',
+                  'e.g. Hi all â€” bazar rota for ${data.monthLabel} is set. Today\'s bazar: â€¦ Please bring: chicken, oil, onions. â€” Manager',
               hintStyle: const TextStyle(color: Colors.white38),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
                 borderSide: BorderSide(
                   color: Colors.white.withValues(alpha: 0.2),
                 ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
                 borderSide: BorderSide(
                   color: Colors.white.withValues(alpha: 0.2),
                 ),
@@ -2251,7 +2252,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                 ),
               ),
               child: _isSendingAnnouncement

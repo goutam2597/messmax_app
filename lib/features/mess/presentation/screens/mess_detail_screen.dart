@@ -1,4 +1,4 @@
-import '../../../../core/locale/app_translations.dart';
+﻿import '../../../../core/locale/app_translations.dart';
 import '../../../../core/utils/bn_digits.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +15,7 @@ import '../cubit/mess_cubit.dart';
 import '../cubit/mess_state.dart';
 import 'mess_form_screen.dart';
 import 'mess_sheet_screen.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class MessDetailScreen extends StatelessWidget {
   final int messId;
@@ -50,7 +51,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
         .whereType<RouteObserver<PageRoute<dynamic>>>()
         .firstOrNull;
     // Fallback: try to locate the observer via the app's navigator if exposed as a singleton.
-    // If not found, we still get coverage via the didPop re-entry below; observer is bonus for sheet→detail back without pop.
+    // If not found, we still get coverage via the didPop re-entry below; observer is bonus for sheetâ†’detail back without pop.
     _observer = obs;
     final route = ModalRoute.of(context);
     if (route is PageRoute<dynamic> && _observer != null) {
@@ -131,7 +132,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                       messId,
                       forceRefresh: true,
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: Container(
                       width: 36,
                       height: 36,
@@ -276,7 +277,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -307,7 +308,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                           end: Alignment.bottomRight,
                           colors: [AppColors.brandDark, AppColors.brand],
                         ),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.brandDark.withValues(alpha: 0.2),
@@ -380,7 +381,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                         color: canManage
                             ? AppColors.brandDark
                             : AppColors.paper,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                         border: Border.all(
                           color: canManage
                               ? AppColors.brandDark
@@ -410,7 +411,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.paper,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     border: Border.all(color: AppColors.paperLine),
                   ),
                   child: Row(
@@ -490,7 +491,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                 color: AppColors.paperLine,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(DashUI.rBtn),
                               ),
                             ),
                           ),
@@ -518,7 +519,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                               minimumSize: const Size(0, 36),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(DashUI.rBtn),
                               ),
                             ),
                           ),
@@ -528,7 +529,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                         const SizedBox(width: 8),
                         InkWell(
                           onTap: () => _confirmDeleteMess(context, mess),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                           child: Container(
                             width: 36,
                             height: 36,
@@ -536,7 +537,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                               color: AppColors.dangerSoft.withValues(
                                 alpha: 0.4,
                               ),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(DashUI.rBtn),
                               border: Border.all(color: AppColors.dangerSoft),
                             ),
                             child: const Center(
@@ -624,7 +625,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
               ),
               InkWell(
                 onTap: () => _showCreateMonthModal(context, messId),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -632,7 +633,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                     border: Border.all(color: AppColors.paperLine),
                   ),
                   child: Row(
@@ -663,7 +664,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: AppColors.paperRaised,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
               border: Border.all(color: AppColors.paperLine),
             ),
             child: Column(
@@ -673,7 +674,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                   height: 56,
                   decoration: BoxDecoration(
                     color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                   ),
                   child: const Icon(
                     Icons.calendar_today_rounded,
@@ -716,7 +717,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                         vertical: 10,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(DashUI.rTile),
                       ),
                     ),
                   ),
@@ -753,7 +754,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
             if (canManage)
               InkWell(
                 onTap: () => _showCreateMonthModal(context, messId),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -761,7 +762,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                     border: Border.all(color: AppColors.paperLine),
                   ),
                   child: Row(
@@ -793,7 +794,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
         Container(
           decoration: BoxDecoration(
             color: AppColors.paperRaised,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(DashUI.rCard),
             border: Border.all(color: AppColors.brandSoft, width: 1.5),
             boxShadow: [
               BoxShadow(
@@ -814,7 +815,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                 ),
                 decoration: const BoxDecoration(
                   color: AppColors.paper,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(DashUI.rCard)),
                   border: Border(
                     bottom: BorderSide(color: AppColors.paperLine),
                   ),
@@ -859,7 +860,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                       InkWell(
                         onTap: () =>
                             _showMonthPickerSheet(context, months, activeMonth),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -867,7 +868,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.paperRaised,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             border: Border.all(color: AppColors.paperLine),
                           ),
                           child: Row(
@@ -896,12 +897,12 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                       InkWell(
                         onTap: () =>
                             _confirmDeleteMonth(context, messId, activeMonth),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                         child: Container(
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
                             color: AppColors.dangerSoft.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             border: Border.all(color: AppColors.dangerSoft),
                           ),
                           child: const Icon(
@@ -930,7 +931,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                           height: 46,
                           decoration: BoxDecoration(
                             color: AppColors.brandSoft,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(DashUI.rCard),
                             border: Border.all(color: AppColors.paperLine),
                           ),
                           child: const Icon(
@@ -967,7 +968,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                       activeMonth.cycleLabel.isNotEmpty
                                           ? activeMonth.cycleLabel.replaceAll(
                                               r'\u2192',
-                                              '→',
+                                              'â†’',
                                             )
                                           : '${bnDigits(activeMonth.daysInMonth)} ${'ui.mess_days_cycle'.tr2}',
                                       style: const TextStyle(
@@ -1017,7 +1018,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(DashUI.rTile),
                           ),
                           elevation: 0,
                         ),
@@ -1035,9 +1036,9 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
           const SizedBox(height: 14),
           Material(
             color: AppColors.paperRaised,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(DashUI.rCard),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(DashUI.rCard),
               side: const BorderSide(color: AppColors.paperLine),
             ),
             elevation: 0,
@@ -1056,7 +1057,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                   height: 34,
                   decoration: BoxDecoration(
                     color: AppColors.paper,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                     border: Border.all(color: AppColors.paperLine),
                   ),
                   child: const Icon(
@@ -1090,13 +1091,13 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                       final m = pastMonths[i];
                       return Material(
                         color: AppColors.paper,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(DashUI.rCard),
                           side: const BorderSide(color: AppColors.paperLine),
                         ),
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(DashUI.rCard),
                           onTap: () =>
                               Navigator.push(
                                 context,
@@ -1125,7 +1126,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                   height: 38,
                                   decoration: BoxDecoration(
                                     color: AppColors.paperRaised,
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                                     border: Border.all(
                                       color: AppColors.paperLine,
                                     ),
@@ -1188,7 +1189,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                         );
                                       }
                                     },
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 8,
@@ -1196,7 +1197,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                       ),
                                       decoration: BoxDecoration(
                                         color: AppColors.brandSoft,
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                                         border: Border.all(
                                           color: AppColors.paperLine,
                                         ),
@@ -1215,14 +1216,14 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                   InkWell(
                                     onTap: () =>
                                         _confirmDeleteMonth(context, messId, m),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                                     child: Container(
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
                                         color: AppColors.dangerSoft.withValues(
                                           alpha: 0.4,
                                         ),
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                                         border: Border.all(
                                           color: AppColors.dangerSoft,
                                         ),
@@ -1317,7 +1318,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                   ),
                   InkWell(
                     onTap: () => Navigator.pop(ctx),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
@@ -1363,7 +1364,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                         );
                       }
                     },
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -1373,7 +1374,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                         color: isCurrentlyActive
                             ? AppColors.brandSoft
                             : AppColors.paper,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                         border: Border.all(
                           color: isCurrentlyActive
                               ? AppColors.brandDark
@@ -1473,7 +1474,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${'ui.mess_settlement_header'.tr2} — ${monthLabel.toUpperCase()}',
+              '${'ui.mess_settlement_header'.tr2} â€” ${monthLabel.toUpperCase()}',
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -1513,14 +1514,14 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
     final mealsStr = s.meals % 1 == 0
         ? s.meals.toInt().toString()
         : s.meals.toStringAsFixed(1);
-    final balanceValStr = '${s.balance.abs().toStringAsFixed(0)} ৳';
+    final balanceValStr = '${s.balance.abs().toStringAsFixed(0)} à§³';
     final balancePrefix = isPositive ? '+' : '-';
     final avatarColor = _hexColor(s.color);
 
     return Container(
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -1531,7 +1532,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         child: Column(
           children: [
             Container(height: 3, color: avatarColor),
@@ -1645,7 +1646,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                           color: isPositive
                               ? AppColors.emeraldSoft
                               : AppColors.dangerSoft,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
                           border: Border.all(
                             color: isPositive
                                 ? AppColors.emerald.withValues(alpha: 0.25)
@@ -1695,7 +1696,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.paper,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
                       border: Border.all(color: AppColors.paperLine),
                     ),
                     child: Row(
@@ -1718,7 +1719,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                             icon: Icons.shopping_bag_outlined,
                             iconColor: AppColors.inkSoft,
                             label: 'ui.mess_stat_spend'.tr2,
-                            value: '৳${bnDigits(s.spend.toStringAsFixed(0))}',
+                            value: 'à§³${bnDigits(s.spend.toStringAsFixed(0))}',
                           ),
                         ),
                         Container(
@@ -1731,7 +1732,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                             icon: Icons.payments_outlined,
                             iconColor: AppColors.emerald,
                             label: 'ui.mess_stat_given'.tr2,
-                            value: '৳${bnDigits(s.given.toStringAsFixed(0))}',
+                            value: 'à§³${bnDigits(s.given.toStringAsFixed(0))}',
                           ),
                         ),
                       ],
@@ -1818,7 +1819,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
         Container(
           decoration: BoxDecoration(
             color: AppColors.paperRaised,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(DashUI.rCard),
             border: Border.all(color: AppColors.paperLine),
           ),
           child: ListView.separated(
@@ -1931,16 +1932,16 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
 
   Widget _buildDefaultMealChip(MessMemberLite m) {
     final raw = m.defaultDisplay;
-    if (raw.isEmpty || raw == '—') return const SizedBox.shrink();
+    if (raw.isEmpty || raw == 'â€”') return const SizedBox.shrink();
 
-    final parts = raw.split('·').map((e) => e.trim()).toList();
+    final parts = raw.split('Â·').map((e) => e.trim()).toList();
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (int i = 0; i < parts.length; i++) ...[
           if (i > 0)
             const Text(
-              '·',
+              'Â·',
               style: TextStyle(
                 fontSize: 9,
                 color: AppColors.inkFaded,
@@ -2022,7 +2023,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                 vertical: 24,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(DashUI.rCard),
                 side: const BorderSide(color: AppColors.paperLine),
               ),
               child: ConstrainedBox(
@@ -2041,7 +2042,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: AppColors.brandSoft,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(DashUI.rTile),
                               ),
                               child: const Icon(
                                 Icons.calendar_month_rounded,
@@ -2077,7 +2078,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () => Navigator.pop(ctx2),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(DashUI.rCard),
                                 child: Container(
                                   width: 32,
                                   height: 32,
@@ -2137,7 +2138,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                         : AppColors.paperLine,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                                   ),
                                   onPressed: () {
                                     setS(() {
@@ -2177,7 +2178,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                         : AppColors.paperLine,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(DashUI.rBtn),
                                   ),
                                   onPressed: () {
                                     setS(() {
@@ -2207,13 +2208,13 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                             vertical: 12,
                                           ),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(DashUI.rTile),
                                         borderSide: const BorderSide(
                                           color: AppColors.paperLine,
                                         ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(DashUI.rTile),
                                         borderSide: const BorderSide(
                                           color: AppColors.paperLine,
                                         ),
@@ -2254,13 +2255,13 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                             vertical: 12,
                                           ),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(DashUI.rTile),
                                         borderSide: const BorderSide(
                                           color: AppColors.paperLine,
                                         ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(DashUI.rTile),
                                         borderSide: const BorderSide(
                                           color: AppColors.paperLine,
                                         ),
@@ -2355,7 +2356,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                         });
                                       }
                                     },
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(DashUI.rTile),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 12,
@@ -2363,7 +2364,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                       ),
                                       decoration: BoxDecoration(
                                         color: AppColors.paper,
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(DashUI.rTile),
                                         border: Border.all(
                                           color: startDate != null
                                               ? AppColors.brandDark
@@ -2460,7 +2461,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                         });
                                       }
                                     },
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(DashUI.rTile),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 12,
@@ -2468,7 +2469,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                       ),
                                       decoration: BoxDecoration(
                                         color: AppColors.paper,
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(DashUI.rTile),
                                         border: Border.all(
                                           color: endDate != null
                                               ? AppColors.brandDark
@@ -2532,7 +2533,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '${endDate!.difference(startDate!).inDays + 1} days in custom billing period (${formatIsoDate(startDate!)} → ${formatIsoDate(endDate!)})',
+                                    '${endDate!.difference(startDate!).inDays + 1} days in custom billing period (${formatIsoDate(startDate!)} â†’ ${formatIsoDate(endDate!)})',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -2633,7 +2634,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                     vertical: 14,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(DashUI.rTile),
                                   ),
                                 ),
                               ),
@@ -2677,7 +2678,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                 vertical: 24,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(DashUI.rCard),
                 side: const BorderSide(color: AppColors.paperLine),
               ),
               child: ConstrainedBox(
@@ -2696,7 +2697,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                             height: 40,
                             decoration: BoxDecoration(
                               color: AppColors.brandSoft,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(DashUI.rTile),
                             ),
                             child: const Icon(
                               Icons.person_add_rounded,
@@ -2732,7 +2733,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () => Navigator.pop(ctx),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                               child: Container(
                                 width: 32,
                                 height: 32,
@@ -2794,19 +2795,19 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                             vertical: 10,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             borderSide: const BorderSide(
                               color: AppColors.paperLine,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             borderSide: const BorderSide(
                               color: AppColors.paperLine,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             borderSide: const BorderSide(
                               color: AppColors.brandDark,
                               width: 1.5,
@@ -2852,19 +2853,19 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                             vertical: 10,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             borderSide: const BorderSide(
                               color: AppColors.paperLine,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             borderSide: const BorderSide(
                               color: AppColors.paperLine,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             borderSide: const BorderSide(
                               color: AppColors.brandDark,
                               width: 1.5,
@@ -2929,7 +2930,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                 ),
                                 minimumSize: const Size(0, 38),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                                 ),
                               ),
                               child: Text(
@@ -3034,7 +3035,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
                                 ),
                                 minimumSize: const Size(0, 38),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                                 ),
                               ),
                             ),
@@ -3061,13 +3062,13 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(DashUI.rTile),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.brandSoft : AppColors.paper,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(DashUI.rTile),
           border: Border.all(
             color: isSelected ? AppColors.brandDark : AppColors.paperLine,
             width: isSelected ? 1.6 : 1.0,

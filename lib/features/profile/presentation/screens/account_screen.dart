@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +17,7 @@ import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
 import '../../../../features/dashboard/data/models/dashboard_model.dart';
 import '../../../main/presentation/screens/main_shell_screen.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -237,7 +238,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const SettingsScreen()),
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: Container(
                       width: 36,
                       height: 36,
@@ -316,7 +317,7 @@ class _AccountScreenState extends State<AccountScreen> {
           end: Alignment.bottomRight,
           colors: [AppColors.brandDark, AppColors.brandDeep],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
             color: AppColors.brandDark.withValues(alpha: 0.25),
@@ -426,7 +427,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     color: user?.isIndividual == true
                         ? const Color(0xFFE85D04)
                         : const Color(0xFF0F9F59),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(DashUI.rTile),
                   ),
                   child: Text(
                     roleLabel,
@@ -451,7 +452,7 @@ class _AccountScreenState extends State<AccountScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -534,12 +535,12 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(height: 6),
           InkWell(
             onTap: _pickAvatarImage,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(DashUI.rTile),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.paper,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(DashUI.rTile),
                 border: Border.all(
                   color: _selectedAvatarPath != null
                       ? AppColors.brandDark
@@ -554,7 +555,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     height: 32,
                     decoration: BoxDecoration(
                       color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
                     ),
                     child: const Icon(
                       Icons.add_a_photo_outlined,
@@ -620,7 +621,7 @@ class _AccountScreenState extends State<AccountScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -665,7 +666,7 @@ class _AccountScreenState extends State<AccountScreen> {
             controller: _currentPassController,
             obscureText: _obscureCurrent,
             decoration: InputDecoration(
-              hintText: '••••••••',
+              hintText: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
               prefixIcon: const Icon(
                 Icons.lock_outline_rounded,
                 size: 20,
@@ -779,7 +780,7 @@ class _AccountScreenState extends State<AccountScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -817,7 +818,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                 ),
                 child: Text(
                   '${messes.length} ${'ui.account_total'.tr2}',
@@ -839,7 +840,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   MaterialPageRoute(builder: (_) => const DashboardScreen()),
                 );
               },
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DashUI.rTile),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
                 child: Row(
@@ -848,7 +849,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: AppColors.brandSoft,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                       ),
                       child: const Icon(
                         Icons.home_work_rounded,
@@ -870,7 +871,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                           ),
                           Text(
-                            '${messes[i].membersCount} ${'ui.messes_members'.tr2} • ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
+                            '${messes[i].membersCount} ${'ui.messes_members'.tr2} â€¢ ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
                             style: const TextStyle(
                               fontSize: 11.5,
                               color: AppColors.inkFaded,
@@ -899,7 +900,7 @@ class _AccountScreenState extends State<AccountScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: const Color(0xFFFDF2F2),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: const Color(0xFFF8D7D7)),
       ),
       child: Column(
@@ -944,7 +945,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 fixedSize: const Size.fromHeight(48),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                 ),
               ),
               icon: const Icon(Icons.delete_forever_rounded, size: 18),
@@ -1010,7 +1011,7 @@ class _AccountScreenState extends State<AccountScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -1030,7 +1031,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 height: 32,
                 decoration: BoxDecoration(
                   color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                 ),
                 child: const Icon(
                   Icons.translate_rounded,
@@ -1105,7 +1106,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildLangOption(
-                      title: 'বাংলা',
+                      title: 'à¦¬à¦¾à¦‚à¦²à¦¾',
                       subtitle: 'Bengali',
                       selected: !isEn,
                       onTap: () => context.read<LocaleCubit>().setLocale('bn'),
@@ -1128,12 +1129,12 @@ class _AccountScreenState extends State<AccountScreen> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(DashUI.rTile),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? AppColors.brandDark : AppColors.paper,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(DashUI.rTile),
           border: Border.all(
             color: selected ? AppColors.brandDark : AppColors.paperLine,
           ),

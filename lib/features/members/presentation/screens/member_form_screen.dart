@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/locale/app_translations.dart';
@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../data/models/member_model.dart';
 import '../cubit/member_cubit.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class MemberFormScreen extends StatefulWidget {
   final MemberModel? member;
@@ -152,7 +153,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
       data['role'] = _role;
     }
 
-    // Web-parity: hasBldDefault — if any B/L/D field is explicitly sent (even "0" = OFF),
+    // Web-parity: hasBldDefault â€” if any B/L/D field is explicitly sent (even "0" = OFF),
     // we enter B/L/D mode. Empty string means "no default" (null) so leaving a field blank clears it.
     // When entering B/L/D mode we must send all three keys so the backend doesn't keep stale values.
     final bRaw = _breakfastController.text.trim();
@@ -167,7 +168,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
     } else if (_legacyMealController.text.trim().isNotEmpty) {
       data['default_meal'] = _legacyMealController.text.trim();
     } else if (widget.member != null) {
-      // On edit, if user cleared all B/L/D and legacy, don't send anything — keeps existing.
+      // On edit, if user cleared all B/L/D and legacy, don't send anything â€” keeps existing.
       // To explicitly clear, backend expects empty string; we only send when user touched.
     }
 
@@ -354,7 +355,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(DashUI.rTile),
                     ),
                     child: Row(
                       children: [
@@ -378,7 +379,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColors.paperLine,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(DashUI.rTile),
                     ),
                     child: Row(
                       children: [
@@ -452,12 +453,12 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // --- DEFAULT MEALS BREAKDOWN B/L/D — web parity (#memberEditModal) ---
+                // --- DEFAULT MEALS BREAKDOWN B/L/D â€” web parity (#memberEditModal) ---
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.paperRaised,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     border: Border.all(color: AppColors.paperLine),
                   ),
                   child: Column(
@@ -518,7 +519,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                       InkWell(
                         onTap: () =>
                             setState(() => _showLegacyMeal = !_showLegacyMeal),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -526,7 +527,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.paper,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(DashUI.rBtn),
                             border: Border.all(color: AppColors.paperLine),
                           ),
                           child: Row(
@@ -597,7 +598,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                       backgroundColor: AppColors.brandDark,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                       ),
                     ),
                     child: _isSaving
@@ -656,12 +657,12 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
     final selected = _role == value;
     return InkWell(
       onTap: () => setState(() => _role = value),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(DashUI.rCard),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: selected ? AppColors.brandSoft : AppColors.paperRaised,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(DashUI.rCard),
           border: Border.all(
             color: selected ? AppColors.brandDark : AppColors.paperLine,
             width: selected ? 2 : 1,
@@ -730,7 +731,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
             color: isOff ? const Color(0xFFB91C1C) : AppColors.ink,
           ),
           decoration: InputDecoration(
-            hintText: '—',
+            hintText: 'â€”',
             filled: isOff,
             fillColor: isOff ? const Color(0xFFFEE2E2) : null,
             contentPadding: const EdgeInsets.symmetric(
@@ -738,13 +739,13 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
               horizontal: 8,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(DashUI.rBtn),
               borderSide: BorderSide(
                 color: isOff ? const Color(0xFFFCA5A5) : AppColors.paperLine,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(DashUI.rBtn),
               borderSide: BorderSide(
                 color: isOff ? const Color(0xFFDC2626) : AppColors.brandDark,
                 width: 1.4,

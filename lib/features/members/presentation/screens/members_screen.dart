@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/locale/app_translations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -11,6 +11,7 @@ import '../cubit/member_cubit.dart';
 import '../cubit/member_state.dart';
 import 'member_form_screen.dart';
 import '../../../mess/presentation/screens/mess_detail_screen.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class MembersScreen extends StatelessWidget {
   const MembersScreen({super.key});
@@ -104,7 +105,7 @@ class _MembersViewState extends State<_MembersView> {
                   ),
                   Text(
                     messName.isNotEmpty
-                        ? '$messName • ${'ui.members_member_list'.tr2}'
+                        ? '$messName â€¢ ${'ui.members_member_list'.tr2}'
                         : 'ui.members_list_defaults'.tr2,
                     style: const TextStyle(
                       fontSize: 11,
@@ -127,7 +128,7 @@ class _MembersViewState extends State<_MembersView> {
                     onTap: () => context.read<MemberCubit>().loadMembers(
                       forceRefresh: true,
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: Container(
                       width: 36,
                       height: 36,
@@ -233,7 +234,7 @@ class _MembersViewState extends State<_MembersView> {
                             padding: const EdgeInsets.all(32),
                             decoration: BoxDecoration(
                               color: AppColors.paperRaised,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
                               border: Border.all(color: AppColors.paperLine),
                             ),
                             child: Column(
@@ -311,7 +312,7 @@ class _MembersViewState extends State<_MembersView> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -330,14 +331,14 @@ class _MembersViewState extends State<_MembersView> {
                 builder: (_) => MessDetailScreen(messId: data.messId),
               ),
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(DashUI.rTile),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
                   ),
                   child: const Icon(
                     Icons.groups_rounded,
@@ -371,7 +372,7 @@ class _MembersViewState extends State<_MembersView> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${bnDigits(data.members.length)} ${'ui.members_enrolled'.tr2} • ${'ui.members_join_code'.tr2}: ${data.messCode}',
+                        '${bnDigits(data.members.length)} ${'ui.members_enrolled'.tr2} â€¢ ${'ui.members_join_code'.tr2}: ${data.messCode}',
                         style: const TextStyle(
                           fontSize: 11.5,
                           color: AppColors.inkFaded,
@@ -449,7 +450,7 @@ class _MembersViewState extends State<_MembersView> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         border: Border.all(color: AppColors.paperLine),
         boxShadow: [
           BoxShadow(
@@ -632,7 +633,7 @@ class _MembersViewState extends State<_MembersView> {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
                     ),
                     child: Text(
                       member.defaultDisplay.toBnNum(),

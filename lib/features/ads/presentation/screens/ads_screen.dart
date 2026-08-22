@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../../core/locale/app_translations.dart';
@@ -12,6 +12,7 @@ import '../../../home/presentation/widgets/home_filter_dialog.dart';
 import '../cubit/ads_cubit.dart';
 import '../cubit/ads_state.dart';
 import '../widgets/ads_shimmer.dart';
+import '../../../dashboard/presentation/widgets/dash_ui.dart';
 
 class AdsScreen extends StatefulWidget {
   const AdsScreen({super.key});
@@ -394,7 +395,7 @@ class _AdsScreenState extends State<AdsScreen> {
                         color: isSelected
                             ? AppColors.brandDark
                             : AppColors.paperRaised,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(DashUI.rCard),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.brandDark
@@ -490,7 +491,7 @@ class _AdsScreenState extends State<AdsScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.accentSoft,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(DashUI.rCard),
                 ),
                 child: ValueListenableBuilder<int>(
                   valueListenable: AppTranslations.notifier,
@@ -520,7 +521,7 @@ class _AdsScreenState extends State<AdsScreen> {
       padding: const EdgeInsets.fromLTRB(10, 5, 6, 5),
       decoration: BoxDecoration(
         color: AppColors.brandDark,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
             color: AppColors.brandDark.withValues(alpha: 0.15),
