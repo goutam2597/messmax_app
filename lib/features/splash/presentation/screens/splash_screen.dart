@@ -145,8 +145,8 @@ class _SplashScreenState extends State<SplashScreen>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFFFAFAF7),
-                Color(0xFFF2F2EC),
+                Color(0xFFFFFFFF),
+                Color(0xFFFFF4F3),
               ],
             ),
           ),
@@ -353,7 +353,7 @@ class _SplashScreenState extends State<SplashScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFE4E4DF)),
+          border: Border.all(color: AppColors.paperLine),
           boxShadow: const [
             BoxShadow(
               color: Color(0x10000000),
@@ -471,7 +471,7 @@ class _ProgressRingPainter extends CustomPainter {
     final radius = size.width / 2;
 
     final track = Paint()
-      ..color = const Color(0xFFE4E4DF)
+      ..color = AppColors.paperLine
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
@@ -511,7 +511,7 @@ class _WavePainter extends CustomPainter {
       phase: t * 2 * math.pi,
       amplitude: 12,
       baseHeight: size.height * 0.93,
-      color: const Color(0x0C000000),
+      color: AppColors.brand.withValues(alpha: 0.05),
     );
     _drawWave(
       canvas,
@@ -519,7 +519,7 @@ class _WavePainter extends CustomPainter {
       phase: t * 2 * math.pi + math.pi / 2,
       amplitude: 8,
       baseHeight: size.height * 0.96,
-      color: const Color(0x08000000),
+      color: AppColors.brand.withValues(alpha: 0.03),
     );
   }
 

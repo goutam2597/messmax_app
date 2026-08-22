@@ -549,6 +549,7 @@ class MessDrawer extends StatelessWidget {
     final isVerified = user?.isVerified ?? false;
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       padding: EdgeInsets.fromLTRB(
         16,
         MediaQuery.of(context).padding.top + 14,
@@ -562,9 +563,51 @@ class MessDrawer extends StatelessWidget {
           colors: [AppColors.brandDark, AppColors.brandDeep],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
+          // Decorative shapes — quiet depth on the dark surface.
+          Positioned(
+            top: -38,
+            right: -34,
+            child: Container(
+              width: 130,
+              height: 130,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 26,
+            right: 18,
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.10),
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -44,
+            left: -26,
+            child: Container(
+              width: 104,
+              height: 104,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.accent.withValues(alpha: 0.07),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           Row(
             children: [
               Container(
@@ -735,12 +778,12 @@ class MessDrawer extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isVerified
-                          ? const Color(0xFF10B981).withValues(alpha: 0.22)
+                          ? AppColors.emerald.withValues(alpha: 0.22)
                           : Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(DashUI.rBtn),
                       border: Border.all(
                         color: isVerified
-                            ? const Color(0xFF34D399).withValues(alpha: 0.5)
+                            ? AppColors.emerald.withValues(alpha: 0.5)
                             : Colors.white.withValues(alpha: 0.25),
                         width: 1,
                       ),
@@ -753,7 +796,7 @@ class MessDrawer extends StatelessWidget {
                               ? Icons.verified_rounded
                               : Icons.shield_outlined,
                           color: isVerified
-                              ? const Color(0xFF34D399)
+                              ? AppColors.emerald
                               : Colors.white70,
                           size: 14,
                         ),
@@ -762,7 +805,7 @@ class MessDrawer extends StatelessWidget {
                           isVerified ? 'Verified' : 'Unverified',
                           style: TextStyle(
                             color: isVerified
-                                ? const Color(0xFF34D399)
+                                ? AppColors.emerald
                                 : Colors.white70,
                             fontSize: 10.5,
                             fontWeight: FontWeight.w700,
@@ -789,7 +832,7 @@ class MessDrawer extends StatelessWidget {
                   height: 7,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFF0F9F59),
+                    color: AppColors.emerald,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -821,17 +864,31 @@ class MessDrawer extends StatelessWidget {
                       letterSpacing: 0.5,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                 ),
+               ],
+             ),
+           ),
+           ],
+         ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionLabel(String label) {
-    return Padding(
+  /// Soft accent tint per drawer section — quiet color coding.
+  static const Map<String, Color> _sectionAccents = {
+    'dashboard': AppColors.brand,
+    'current_mess': AppColors.teal,
+    'messes': AppColors.violet,
+    'members': AppColors.blue,
+    'bazar_schedule': AppColors.emerald,
+    'my_ads': AppColors.amber,
+    'find_mess': AppColors.brand,
+    'account': AppColors.blue,
+    'settings': AppColors.inkSoft,
+  };
+
+  Widget _buildSectionLabel(String label) {    return Padding(
       padding: const EdgeInsets.only(left: 8, bottom: 6),
       child: Text(
         label,
@@ -854,9 +911,12 @@ class MessDrawer extends StatelessWidget {
   }) {
     final isSelected = activeSection == id;
 
+    // Per-section accent so the drawer body isn't a wall of grey chips.
+    final accent = _sectionAccents[id] ?? AppColors.brand;
+
     return Material(
       color: isSelected
-          ? AppColors.brandDark.withValues(alpha: 0.08)
+          ? AppColors.brandSoft
           : Colors.transparent,
       borderRadius: BorderRadius.circular(DashUI.rTile),
       child: InkWell(
@@ -973,16 +1033,18 @@ class MessDrawer extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.brandDark
-                      : AppColors.paperRaised,
-                  borderRadius: BorderRadius.circular(DashUI.rBtn),
+                      : accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(DashUI.rTile),
                   border: isSelected
                       ? null
-                      : Border.all(color: AppColors.paperLine),
+                      : Border.all(
+                          color: accent.withValues(alpha: 0.22),
+                        ),
                 ),
                 child: Icon(
                   icon,
                   size: 18,
-                  color: isSelected ? Colors.white : AppColors.inkFaded,
+                  color: isSelected ? Colors.white : accent,
                 ),
               ),
               const SizedBox(width: 12),

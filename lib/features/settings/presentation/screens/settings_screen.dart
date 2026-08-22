@@ -34,136 +34,136 @@ class SettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-                decoration: BoxDecoration(
-                  color: AppColors.paperRaised,
-                  borderRadius: BorderRadius.circular(DashUI.rCard),
-                  border: Border.all(color: AppColors.paperLine),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: AppColors.brandSoft,
-                            borderRadius: BorderRadius.circular(DashUI.rBtn),
+              DashUI.accentedCard(
+                accent: AppColors.brand,
+                shape: DashShape.blob,
+                rich: true,
+                shadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.brandSoft,
+                              borderRadius: BorderRadius.circular(DashUI.rBtn),
+                            ),
+                            child: const Icon(
+                              Icons.translate_rounded,
+                              color: AppColors.brandDark,
+                              size: 18,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.translate_rounded,
-                            color: AppColors.brandDark,
-                            size: 18,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ui.app_settings'.tr2,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'ui.settings_subtitle'.tr2,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: AppColors.inkFaded,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'ui.app_settings'.tr2,
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(height: 1, color: AppColors.paperLine),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'ui.change_language'.tr2,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          BlocBuilder<LocaleCubit, Locale>(
+                            builder: (context, locale) {
+                              return Text(
+                                locale.languageCode == 'bn'
+                                    ? 'ui.bengali'.tr2
+                                    : 'ui.english'.tr2,
                                 style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.ink,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.inkFaded,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'ui.language_desc'.tr2,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.inkFaded,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      BlocBuilder<LocaleCubit, Locale>(
+                        builder: (context, locale) {
+                          final isEn = locale.languageCode == 'en';
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: _LanguageOptionCard(
+                                  title: 'English',
+                                  subtitle: 'English',
+                                  selected: isEn,
+                                  onTap: () => context
+                                      .read<LocaleCubit>()
+                                      .setLocale('en'),
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'ui.settings_subtitle'.tr2,
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  color: AppColors.inkFaded,
-                                  fontWeight: FontWeight.w500,
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _LanguageOptionCard(
+                                  title: 'বাংলা',
+                                  subtitle: 'Bengali',
+                                  selected: !isEn,
+                                  onTap: () => context
+                                      .read<LocaleCubit>()
+                                      .setLocale('bn'),
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(height: 1, color: AppColors.paperLine),
-                    const SizedBox(height: 14),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'ui.change_language'.tr2,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.ink,
-                          ),
-                        ),
-                        BlocBuilder<LocaleCubit, Locale>(
-                          builder: (context, locale) {
-                            return Text(
-                              locale.languageCode == 'bn'
-                                  ? 'ui.bengali'.tr2
-                                  : 'ui.english'.tr2,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.inkFaded,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'ui.language_desc'.tr2,
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        color: AppColors.inkFaded,
-                        height: 1.4,
+                          );
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    BlocBuilder<LocaleCubit, Locale>(
-                      builder: (context, locale) {
-                        final isEn = locale.languageCode == 'en';
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: _LanguageOptionCard(
-                                title: 'English',
-                                subtitle: 'English',
-                                selected: isEn,
-                                onTap: () => context
-                                    .read<LocaleCubit>()
-                                    .setLocale('en'),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _LanguageOptionCard(
-                                title: 'বাংলা',
-                                subtitle: 'Bengali',
-                                selected: !isEn,
-                                onTap: () => context
-                                    .read<LocaleCubit>()
-                                    .setLocale('bn'),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -218,7 +218,11 @@ class _LanguageOptionCard extends StatelessWidget {
                 ),
               ),
               child: selected
-                  ? const Icon(Icons.check_rounded, size: 13, color: Colors.white)
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 13,
+                      color: Colors.white,
+                    )
                   : null,
             ),
             const SizedBox(width: 10),

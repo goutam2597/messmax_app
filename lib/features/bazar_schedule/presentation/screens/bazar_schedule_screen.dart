@@ -1223,6 +1223,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
     BazarScheduleResponseModel data,
   ) {
     return Container(
+      clipBehavior: Clip.antiAlias,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -1239,7 +1240,48 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           ),
         ],
       ),
-      child: Column(
+      child: Stack(
+        children: [
+          Positioned(
+            top: -44,
+            right: -36,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 20,
+            right: -24,
+            child: Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -40,
+            left: -28,
+            child: Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+          Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -1366,15 +1408,17 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+                 ],
+               ),
+           ),
+         ],
+       ),
         ],
       ),
     );
-  }
+   }
 
-  // --- 2. MANAGER TOOLBAR ACTIONS ---
+   // --- 2. MANAGER TOOLBAR ACTIONS ---
   Widget _buildManagerToolbar(
     BuildContext context,
     BazarScheduleResponseModel data,
@@ -1556,24 +1600,21 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
 
     final mail = member?.email ?? '';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(
-          color: item.isToday ? const Color(0xFF0F9F59) : AppColors.paperLine,
-          width: item.isToday ? 2 : 1,
+    return DashUI.accentedCard(
+      accent: item.isToday ? AppColors.emerald : AppColors.paperLine,
+      shape: item.isToday ? DashShape.arc : DashShape.band,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
+      ],
+      borderColor:
+          item.isToday ? AppColors.emerald : AppColors.paperLine,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -1811,6 +1852,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -2061,130 +2103,102 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           'Announcement — ${data.mess.name} · ${data.monthLabel} — MessMax';
     }
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.brandDark, AppColors.brandDeep],
+    return DashUI.accentedCard(
+      accent: AppColors.amber,
+      shape: DashShape.wedge,
+      rich: true,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
         ),
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.brandDark.withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.amberSoft,
+                borderRadius: BorderRadius.circular(DashUI.rTile),
+              ),
+              child: const Icon(
                 Icons.campaign_outlined,
-                color: Color(0xFFFFD1A3),
-                size: 22,
+                color: AppColors.amber,
+                size: 20,
               ),
-              const SizedBox(width: 8),
-              Text(
-                'ui.bazar_announce_all'.tr2,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFFFFD1A3),
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${'ui.bazar_announce_desc'.tr2} ${data.mess.name} — ${'ui.bazar_announce_desc2'.tr2}',
-            style: const TextStyle(fontSize: 11.5, color: Colors.white70),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${bnDigits(data.members.length)} ${'ui.members_total'.tr2} · ${bnDigits(data.members.where((m) => m.email != null && m.email!.isNotEmpty).length)} ${'ui.bazar_with_email'.tr2} · ${bnDigits(data.assignedCount)} ${'ui.bazar_days_scheduled'.tr2} ${data.monthLabel}',
-            style: const TextStyle(
-              fontSize: 10.5,
-              color: Colors.white54,
-              fontFamily: 'monospace',
             ),
+            const SizedBox(width: 10),
+            Text(
+              'ui.bazar_announce_all'.tr2,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: AppColors.inkSoft,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${'ui.bazar_announce_desc'.tr2} ${data.mess.name} — ${'ui.bazar_announce_desc2'.tr2}',
+          style: const TextStyle(fontSize: 11.5, color: AppColors.inkFaded),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${bnDigits(data.members.length)} ${'ui.members_total'.tr2} · ${bnDigits(data.members.where((m) => m.email != null && m.email!.isNotEmpty).length)} ${'ui.bazar_with_email'.tr2} · ${bnDigits(data.assignedCount)} ${'ui.bazar_days_scheduled'.tr2} ${data.monthLabel}',
+          style: const TextStyle(
+            fontSize: 10.5,
+            color: AppColors.inkFaded,
           ),
-          const SizedBox(height: 14),
+        ),
+        const SizedBox(height: 14),
 
-          // SUBJECT
-          Text(
-            'ui.bazar_email_subject'.tr2,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-            ),
+        // SUBJECT
+        Text(
+          'ui.bazar_email_subject'.tr2,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: AppColors.inkSoft,
           ),
-          const SizedBox(height: 4),
-          TextField(
-            controller: _announcementSubjectController,
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.1),
-              hintText: '${'ui.bazar_subject_hint'.tr2} ${data.monthLabel}',
-              hintStyle: const TextStyle(color: Colors.white38),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(DashUI.rBtn),
-                borderSide: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(DashUI.rBtn),
-                borderSide: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
-              ),
-            ),
+        ),
+        const SizedBox(height: 4),
+        TextField(
+          controller: _announcementSubjectController,
+          style: const TextStyle(color: AppColors.ink, fontSize: 13),
+          decoration: InputDecoration(
+            hintText: '${'ui.bazar_subject_hint'.tr2} ${data.monthLabel}',
           ),
-          const SizedBox(height: 12),
+        ),
+        const SizedBox(height: 12),
 
-          // MESSAGE
-          Text(
-            'ui.bazar_announcement_msg'.tr2,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-            ),
+        // MESSAGE
+        Text(
+          'ui.bazar_announcement_msg'.tr2,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: AppColors.inkSoft,
           ),
-          const SizedBox(height: 4),
-          TextField(
-            controller: _announcementMessageController,
-            maxLines: 3,
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.1),
-              hintText:
-                  'e.g. Hi all — bazar rota for ${data.monthLabel} is set. Today\'s bazar: … Please bring: chicken, oil, onions. — Manager',
-              hintStyle: const TextStyle(color: Colors.white38),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(DashUI.rBtn),
-                borderSide: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(DashUI.rBtn),
-                borderSide: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
-              ),
-            ),
+        ),
+        const SizedBox(height: 4),
+        TextField(
+          controller: _announcementMessageController,
+          maxLines: 3,
+          style: const TextStyle(color: AppColors.ink, fontSize: 13),
+          decoration: InputDecoration(
+            hintText:
+                'e.g. Hi all — bazar rota for ${data.monthLabel} is set. Today\'s bazar: … Please bring: chicken, oil, onions. — Manager',
           ),
-          const SizedBox(height: 16),
+        ),
+        const SizedBox(height: 16),
 
           SizedBox(
             width: double.infinity,
@@ -2236,20 +2250,21 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
                         ),
                       ),
                     )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.send_rounded, size: 16),
-                        const SizedBox(width: 8),
-                        Text('ui.bazar_send_broadcast'.tr2),
-                      ],
-                    ),
-            ),
-          ),
+                   : Row(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         const Icon(Icons.send_rounded, size: 16),
+                         const SizedBox(width: 8),
+                         Text('ui.bazar_send_broadcast'.tr2),
+                       ],
+                     ),
+             ),
+           ),
         ],
+        ),
       ),
     );
-  }
+   }
 
   Widget _memberCircleAvatarFallback(
     BazarDayItemModel item,

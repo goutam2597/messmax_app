@@ -246,19 +246,17 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
     MessModel mess,
     bool canManage,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return DashUI.accentedCard(
+      accent: AppColors.brand,
+      shape: DashShape.blob,
+      rich: true,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

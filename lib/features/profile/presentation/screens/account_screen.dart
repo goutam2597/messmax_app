@@ -310,6 +310,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final initials = user?.initials ?? 'M';
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -326,7 +327,48 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
+        children: [
+          Positioned(
+            top: -40,
+            right: -34,
+            child: Container(
+              width: 128,
+              height: 128,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 22,
+            right: -20,
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -38,
+            left: -26,
+            child: Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+          Row(
         children: [
           GestureDetector(
             onTap: _pickAvatarImage,
@@ -425,8 +467,8 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: user?.isIndividual == true
-                        ? const Color(0xFFE85D04)
-                        : const Color(0xFF0F9F59),
+                        ? AppColors.amber
+                        : AppColors.emerald,
                     borderRadius: BorderRadius.circular(DashUI.rTile),
                   ),
                   child: Text(
@@ -444,41 +486,42 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ],
       ),
+        ],
+      ),
     );
   }
 
   Widget _buildProfileEditCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.badge_outlined, color: AppColors.brandDark, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'ui.account_personal_title'.tr2,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
+    return DashUI.accentedCard(
+      accent: AppColors.brand,
+      shape: DashShape.blob,
+      rich: true,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.badge_outlined, color: AppColors.brandDark, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'ui.account_personal_title'.tr2,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           const SizedBox(height: 16),
           Text(
             'ui.account_full_name'.tr2,
@@ -612,26 +655,26 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
 
   Widget _buildPasswordEditCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
+    return DashUI.accentedCard(
+      accent: AppColors.blue,
+      shape: DashShape.arc,
+      rich: true,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -771,26 +814,26 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
 
   Widget _buildMyMessesCard(List<MyMessModel> messes) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
+    return DashUI.accentedCard(
+      accent: AppColors.teal,
+      shape: DashShape.dots,
+      rich: true,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -892,25 +935,26 @@ class _AccountScreenState extends State<AccountScreen> {
           ],
         ],
       ),
+      ),
     );
   }
 
   Widget _buildDeleteAccountCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFDF2F2),
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: const Color(0xFFF8D7D7)),
-      ),
-      child: Column(
+    return DashUI.accentedCard(
+      accent: AppColors.danger,
+      shape: DashShape.band,
+      color: AppColors.dangerSoft.withValues(alpha: 0.35),
+      borderColor: AppColors.danger.withValues(alpha: 0.25),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               const Icon(
                 Icons.warning_amber_rounded,
-                color: Color(0xFFA02626),
+                color: AppColors.danger,
                 size: 20,
               ),
               SizedBox(width: 8),
@@ -919,7 +963,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFFA02626),
+                  color: AppColors.danger,
                 ),
               ),
             ],
@@ -929,7 +973,7 @@ class _AccountScreenState extends State<AccountScreen> {
             'ui.account_danger_desc'.tr2,
             style: TextStyle(
               fontSize: 12.5,
-              color: Color(0xFF852222),
+              color: AppColors.inkSoft,
               height: 1.4,
             ),
           ),
@@ -939,8 +983,8 @@ class _AccountScreenState extends State<AccountScreen> {
             child: OutlinedButton.icon(
               onPressed: _handleDeleteAccount,
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFA02626),
-                side: const BorderSide(color: Color(0xFFA02626), width: 1.2),
+                foregroundColor: AppColors.danger,
+                side: const BorderSide(color: AppColors.danger, width: 1.2),
                 minimumSize: const Size(0, 48),
                 fixedSize: const Size.fromHeight(48),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -956,6 +1000,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -1007,21 +1052,19 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _buildLanguageCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
+    return DashUI.accentedCard(
+      accent: AppColors.violet,
+      shape: DashShape.dots,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -1117,6 +1160,7 @@ class _AccountScreenState extends State<AccountScreen> {
             },
           ),
         ],
+      ),
       ),
     );
   }

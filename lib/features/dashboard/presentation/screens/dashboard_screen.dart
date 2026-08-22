@@ -398,7 +398,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                 child: Container(
                                   padding: const EdgeInsets.all(3.5),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFA02626),
+                                    color: AppColors.danger,
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: AppColors.paperRaised,
@@ -607,10 +607,14 @@ class _DashboardViewState extends State<_DashboardView> {
                                     margin: const EdgeInsets.only(bottom: 24),
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFEFF6FF),
-                                      borderRadius: BorderRadius.circular(16),
+                                      color: AppColors.blueSoft,
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rCard,
+                                      ),
                                       border: Border.all(
-                                        color: const Color(0xFFBFDBFE),
+                                        color: AppColors.blue.withValues(
+                                          alpha: 0.3,
+                                        ),
                                       ),
                                     ),
                                     child: Row(
@@ -618,14 +622,15 @@ class _DashboardViewState extends State<_DashboardView> {
                                         Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFDBEAFE),
-                                            borderRadius: BorderRadius.circular(
-                                              10,
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                              DashUI.rTile,
                                             ),
                                           ),
                                           child: const Icon(
                                             Icons.hourglass_top_rounded,
-                                            color: Color(0xFF1D4ED8),
+                                            color: AppColors.blue,
                                             size: 20,
                                           ),
                                         ),
@@ -638,10 +643,10 @@ class _DashboardViewState extends State<_DashboardView> {
                                               Text(
                                                 'ui.dash_join_pending_title'
                                                     .tr2,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.w800,
-                                                  color: Color(0xFF1E3A8A),
+                                                  color: AppColors.ink,
                                                 ),
                                               ),
                                               const SizedBox(height: 2),
@@ -649,7 +654,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                                 '${'ui.dash_requested_to_join'.tr2} ${dashboard.myPendingJoinRequest!.messName} (${dashboard.myPendingJoinRequest!.messCode}). ${'ui.dash_awaiting_approval'.tr2}',
                                                 style: const TextStyle(
                                                   fontSize: 11.5,
-                                                  color: Color(0xFF3B82F6),
+                                                  color: AppColors.inkFaded,
                                                 ),
                                               ),
                                             ],
@@ -826,7 +831,7 @@ class _DashboardViewState extends State<_DashboardView> {
                               _buildSectionHeader(
                                 Icons.shopping_basket_outlined,
                                 'ui.dash_bazar_schedule_title'.tr2,
-                                iconColor: const Color(0xFF0F9F59),
+                                iconColor: AppColors.emerald,
                                 actionLabel: activeMess != null
                                     ? 'ui.dash_full_schedule'.tr2
                                     : null,
@@ -930,22 +935,80 @@ class _DashboardViewState extends State<_DashboardView> {
     ActiveMessModel? activeMess,
   ) {
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1B303B), Color(0xFF0F222D)],
+          colors: [AppColors.brand, AppColors.brandDeep],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          stops: [0.0, 1.0],
         ),
         borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1B303B).withValues(alpha: 0.25),
+            color: AppColors.brand.withValues(alpha: 0.25),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Material(
+      child: Stack(
+        children: [
+          // Decorative corner shapes — quiet depth on the dark surface.
+          Positioned(
+            top: -46,
+            right: -38,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 18,
+            right: -30,
+            child: Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.10),
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -52,
+            left: -30,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.brandDeep.withValues(alpha: 0.18),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 24,
+            left: 44,
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
+              ),
+            ),
+          ),
+          Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: activeMess != null
@@ -989,7 +1052,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE85D04),
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(
                                     DashUI.rBtn,
                                   ),
@@ -999,7 +1062,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                   style: const TextStyle(
                                     fontSize: 9.5,
                                     fontWeight: FontWeight.w900,
-                                    color: Colors.white,
+                                    color: AppColors.brandDeep,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -1187,13 +1250,15 @@ class _DashboardViewState extends State<_DashboardView> {
                               : null,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+                     ],
+                   ),
+                 ),
+               ],
+             ),
+           ),
+         ),
+       ),
+        ],
       ),
     );
   }
@@ -1298,8 +1363,9 @@ class _DashboardViewState extends State<_DashboardView> {
       _statTile(
         context,
         icon: Icons.shopping_bag_rounded,
-        iconColor: const Color(0xFF0F9F59),
-        bgColor: const Color(0xFFE6F4EA),
+        iconColor: AppColors.emerald,
+        bgColor: AppColors.emeraldSoft,
+        shape: DashShape.wedge,
         title: 'ui.dash_total_bazar'.tr2,
         value: '৳${bnDigits(totalBazar)}',
         subtitle: 'ui.dash_current_month_spend'.tr2,
@@ -1318,8 +1384,9 @@ class _DashboardViewState extends State<_DashboardView> {
       _statTile(
         context,
         icon: Icons.analytics_rounded,
-        iconColor: AppColors.accentDark,
-        bgColor: AppColors.accentSoft,
+        iconColor: AppColors.violet,
+        bgColor: AppColors.violetSoft,
+        shape: DashShape.dots,
         title: 'ui.dash_current_rate'.tr2,
         value: '৳${bnDigits(mealRate.toStringAsFixed(0))}',
         subtitle: 'ui.dash_calculated_per_meal'.tr2,
@@ -1338,8 +1405,9 @@ class _DashboardViewState extends State<_DashboardView> {
       _statTile(
         context,
         icon: Icons.account_balance_wallet_rounded,
-        iconColor: const Color(0xFF1A73E8),
-        bgColor: const Color(0xFFE8F0FE),
+        iconColor: AppColors.blue,
+        bgColor: AppColors.blueSoft,
+        shape: DashShape.arc,
         title: 'ui.dash_cash_deposit'.tr2,
         value: '৳${bnDigits(totalDeposits)}',
         subtitle: '${'ui.dash_rest_label'.tr2}: ৳${bnDigits(restMoney)}',
@@ -1393,22 +1461,22 @@ class _DashboardViewState extends State<_DashboardView> {
     required String title,
     required String value,
     required String subtitle,
+    DashShape shape = DashShape.blob,
     VoidCallback? onTap,
   }) {
     final isTablet = _isTablet(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return DashUI.accentedCard(
+      accent: iconColor,
+      shape: shape,
+      color: bgColor,
+      borderColor: iconColor.withValues(alpha: 0.18),
+      shadow: [
+        BoxShadow(
+          color: iconColor.withValues(alpha: 0.10),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -1425,8 +1493,11 @@ class _DashboardViewState extends State<_DashboardView> {
                     Container(
                       padding: EdgeInsets.all(isTablet ? 10 : 8),
                       decoration: BoxDecoration(
-                        color: bgColor,
-                        borderRadius: BorderRadius.circular(DashUI.rBtn),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(DashUI.rTile),
+                        border: Border.all(
+                          color: iconColor.withValues(alpha: 0.22),
+                        ),
                       ),
                       child: Icon(
                         icon,
@@ -1502,12 +1573,11 @@ class _DashboardViewState extends State<_DashboardView> {
     BuildContext context,
     PendingRequestsModel pending,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F2),
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
-      ),
+    return DashUI.accentedCard(
+      accent: AppColors.amber,
+      shape: DashShape.band,
+      color: AppColors.amberSoft.withValues(alpha: 0.45),
+      borderColor: AppColors.amber.withValues(alpha: 0.35),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -1526,12 +1596,15 @@ class _DashboardViewState extends State<_DashboardView> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(DashUI.rBtn),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(DashUI.rTile),
+                    border: Border.all(
+                      color: AppColors.amber.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: const Icon(
                     Icons.pending_actions_rounded,
-                    color: AppColors.accentDark,
+                    color: AppColors.amber,
                     size: 22,
                   ),
                 ),
@@ -1562,7 +1635,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 13,
-                  color: AppColors.accentDark,
+                  color: AppColors.amber,
                 ),
               ],
             ),
@@ -1572,8 +1645,7 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildPendingItemsCard(
-    BuildContext context,
+  Widget _buildPendingItemsCard(    BuildContext context,
     List<PendingItemModel> items,
   ) {
     return Container(
@@ -1614,11 +1686,11 @@ class _DashboardViewState extends State<_DashboardView> {
                         height: 38,
                         decoration: BoxDecoration(
                           color: items[i].type == 'join_request'
-                              ? const Color(0xFFEFF6FF)
+                              ? AppColors.blueSoft
                               : (items[i].type == 'guest_meal'
                                     ? AppColors.brandSoft
-                                    : const Color(0xFFFDF2F2)),
-                          borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                    : AppColors.dangerSoft),
+                          borderRadius: BorderRadius.circular(DashUI.rTile),
                         ),
                         child: Icon(
                           items[i].type == 'join_request'
@@ -1628,10 +1700,10 @@ class _DashboardViewState extends State<_DashboardView> {
                                     : Icons.event_busy_outlined),
                           size: 20,
                           color: items[i].type == 'join_request'
-                              ? const Color(0xFF1D4ED8)
+                              ? AppColors.blue
                               : (items[i].type == 'guest_meal'
                                     ? AppColors.brandDark
-                                    : const Color(0xFFA02626)),
+                                    : AppColors.danger),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1666,7 +1738,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         decoration: BoxDecoration(
                           color: items[i].type == 'guest_meal'
                               ? AppColors.brandDark
-                              : const Color(0xFFA02626),
+                              : AppColors.danger,
                           borderRadius: BorderRadius.circular(DashUI.rBtn),
                         ),
                         child: Text(
@@ -1701,12 +1773,11 @@ class _DashboardViewState extends State<_DashboardView> {
     List<BazarDutyItemModel> duties,
     ActiveMessModel? activeMess,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-      ),
+    return DashUI.accentedCard(
+      accent: AppColors.emerald,
+      shape: DashShape.band,
+      color: AppColors.paperRaised,
+      borderColor: AppColors.paperLine,
       child: Column(
         children: [
           for (int i = 0; i < duties.length; i++) ...[
@@ -1740,18 +1811,22 @@ class _DashboardViewState extends State<_DashboardView> {
                         height: 38,
                         decoration: BoxDecoration(
                           color: duties[i].isToday
-                              ? const Color(0xFFE6F4EA)
+                              ? AppColors.emeraldSoft
                               : AppColors.paper,
-                          borderRadius: BorderRadius.circular(DashUI.rBtn),
+                          borderRadius: BorderRadius.circular(DashUI.rTile),
                           border: duties[i].isToday
-                              ? null
+                              ? Border.all(
+                                  color: AppColors.emerald.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                )
                               : Border.all(color: AppColors.paperLine),
                         ),
                         child: Icon(
                           Icons.shopping_basket_outlined,
                           size: 20,
                           color: duties[i].isToday
-                              ? const Color(0xFF0F9F59)
+                              ? AppColors.emerald
                               : AppColors.inkSoft,
                         ),
                       ),
@@ -1776,7 +1851,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                     width: 6,
                                     height: 6,
                                     decoration: const BoxDecoration(
-                                      color: Color(0xFF0F9F59),
+                                      color: AppColors.emerald,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -1801,7 +1876,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         ),
                         decoration: BoxDecoration(
                           color: duties[i].isToday
-                              ? const Color(0xFF0F9F59)
+                              ? AppColors.emerald
                               : AppColors.paperLine,
                           borderRadius: BorderRadius.circular(DashUI.rBtn),
                         ),
@@ -1839,19 +1914,18 @@ class _DashboardViewState extends State<_DashboardView> {
     List<DailyMemberMealModel> teaser,
     ActiveMessModel? activeMess,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return DashUI.accentedCard(
+      accent: AppColors.teal,
+      shape: DashShape.blob,
+      color: AppColors.paperRaised,
+      borderColor: AppColors.paperLine,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -2077,19 +2151,20 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
               ),
               borderRadius: BorderRadius.circular(DashUI.rCard),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.paperRaised,
-                  borderRadius: BorderRadius.circular(DashUI.rCard),
-                  border: Border.all(
-                    color: messes[i].id == activeMess?.id
-                        ? AppColors.brandDark
-                        : AppColors.paperLine,
-                    width: messes[i].id == activeMess?.id ? 2 : 1,
-                  ),
-                ),
-                child: Column(
+              child: DashUI.accentedCard(
+                accent: messes[i].id == activeMess?.id
+                    ? AppColors.brandDark
+                    : AppColors.brand,
+                shape: DashShape.dots,
+                color: messes[i].id == activeMess?.id
+                    ? AppColors.brandSoft.withValues(alpha: 0.55)
+                    : AppColors.paperRaised,
+                borderColor: messes[i].id == activeMess?.id
+                    ? AppColors.brandDark
+                    : AppColors.paperLine,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -2248,18 +2323,19 @@ class _DashboardViewState extends State<_DashboardView> {
                           ],
                         ),
                       ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
+                     ],
+                   ],
+                 ),
+               ),
+               ),
+             ),
+           ),
+         ],
+       ],
+     );
+   }
 
-  String strPad(int val) {
+   String strPad(int val) {
     return val < 10 ? '0$val' : '$val';
   }
 }

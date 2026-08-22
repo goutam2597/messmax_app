@@ -53,242 +53,326 @@ class _MessesViewState extends State<_MessesView> {
           backgroundColor: AppColors.paperRaised,
           elevation: 0,
           scrolledUnderElevation: 0.5,
-          leading: AppBackButton(
-            onPressed: _backToDashboard,
+          leading: AppBackButton(onPressed: _backToDashboard),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ui.messes_overview'.tr2,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.ink,
+                ),
+              ),
+              Text(
+                'ui.messes_subtitle'.tr2,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.inkFaded,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'ui.messes_overview'.tr2,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
-                color: AppColors.ink,
-              ),
-            ),
-            Text(
-              'ui.messes_subtitle'.tr2,
-              style: TextStyle(
-                fontSize: 11,
-                color: AppColors.inkFaded,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => context
-                      .read<MessCubit>()
-                      .loadMesses(forceRefresh: true),
-                  borderRadius: BorderRadius.circular(DashUI.rCard),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.paper,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.paperLine),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.read<MessCubit>().loadMesses(
+                      forceRefresh: true,
                     ),
-                    child: const Center(
-                      child: Icon(Icons.refresh_rounded, color: AppColors.ink, size: 18),
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.paper,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.paperLine),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.refresh_rounded,
+                          color: AppColors.ink,
+                          size: 18,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: BlocConsumer<MessCubit, MessState>(
-          listener: (context, state) {
-            if (state is MessListLoaded && state.message != null) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.message!)));
-            }
-          },
-          builder: (context, state) {
-            if (state is MessLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.brandDark),
-              );
-            }
-            if (state is MessError) {
-              return AppErrorView(
-                code: state.code,
-                title: 'ui.messes_load_error'.tr2,
-                retryLabel: 'ui.try_again'.tr2,
-                onRetry: () => context.read<MessCubit>().loadMesses(),
-              );
-            }
-            if (state is MessListLoaded) {
-              final messes = state.messes;
-              if (messes.isEmpty) {
-                return RefreshIndicator(
-                  color: AppColors.brandDark,
-                  onRefresh: () => context
-                      .read<MessCubit>()
-                      .loadMesses(forceRefresh: true),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: AppColors.brandSoft,
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: const Icon(
-                              Icons.apartment_rounded,
-                              color: AppColors.brandDark,
-                              size: 48,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'ui.messes_empty_title'.tr2,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.ink,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'ui.messes_empty_sub'.tr2,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.inkFaded,
-                              height: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FilledButton.icon(
-                                onPressed: () {
-                                  final cubit = context.read<MessCubit>();
-                                  MessFormScreen.showAsDialog(
-                                    context,
-                                    cubit: cubit,
-                                    isIndividual: state.isIndividual,
-                                  );
-                                },
-                                icon: const Icon(Icons.add_rounded, size: 18),
-                                label: Text(
-                                  state.isIndividual ? 'ui.messes_setup_new'.tr2 : 'ui.messes_create'.tr2,
-                                  style: const TextStyle(fontWeight: FontWeight.w800),
-                                ),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppColors.brandDark,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(DashUI.rTile),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+          ],
+        ),
+        body: SafeArea(
+          child: BlocConsumer<MessCubit, MessState>(
+            listener: (context, state) {
+              if (state is MessListLoaded && state.message != null) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message!)));
+              }
+            },
+            builder: (context, state) {
+              if (state is MessLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.brandDark),
                 );
               }
-              return RefreshIndicator(
-                color: AppColors.brandDark,
-                onRefresh: () => context
-                    .read<MessCubit>()
-                    .loadMesses(forceRefresh: true),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // hero summary strip
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppColors.brandDark, AppColors.brandDeep],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(DashUI.rCard),
-                        ),
-                        child: Row(
+              if (state is MessError) {
+                return AppErrorView(
+                  code: state.code,
+                  title: 'ui.messes_load_error'.tr2,
+                  retryLabel: 'ui.try_again'.tr2,
+                  onRetry: () => context.read<MessCubit>().loadMesses(),
+                );
+              }
+              if (state is MessListLoaded) {
+                final messes = state.messes;
+                if (messes.isEmpty) {
+                  return RefreshIndicator(
+                    color: AppColors.brandDark,
+                    onRefresh: () => context.read<MessCubit>().loadMesses(
+                      forceRefresh: true,
+                    ),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
+                      child: Center(
+                        child: Column(
                           children: [
-                            const Icon(
-                              Icons.dashboard_rounded,
-                              color: Colors.white70,
-                              size: 20,
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: AppColors.brandSoft,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: const Icon(
+                                Icons.apartment_rounded,
+                                color: AppColors.brandDark,
+                                size: 48,
+                              ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(height: 20),
                             Text(
-                              '${bnDigits(messes.length)} ${messes.length == 1 ? 'ui.messes_mess'.tr2 : 'ui.messes_messes'.tr2}',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              'ui.messes_empty_title'.tr2,
+                              style: TextStyle(
+                                fontSize: 20,
                                 fontWeight: FontWeight.w900,
-                                fontSize: 15,
+                                color: AppColors.ink,
                               ),
                             ),
-                            const Spacer(),
+                            const SizedBox(height: 8),
                             Text(
-                              '${bnDigits(messes.where((m) => m.canManage).length)} ${'ui.messes_manageable'.tr2}',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                              'ui.messes_empty_sub'.tr2,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.inkFaded,
+                                height: 1.4,
                               ),
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                FilledButton.icon(
+                                  onPressed: () {
+                                    final cubit = context.read<MessCubit>();
+                                    MessFormScreen.showAsDialog(
+                                      context,
+                                      cubit: cubit,
+                                      isIndividual: state.isIndividual,
+                                    );
+                                  },
+                                  icon: const Icon(Icons.add_rounded, size: 18),
+                                  label: Text(
+                                    state.isIndividual
+                                        ? 'ui.messes_setup_new'.tr2
+                                        : 'ui.messes_create'.tr2,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.brandDark,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rTile,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'ui.messes_your_messes'.tr2,
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.inkFaded,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: messes.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, i) => _MessCard(
-                          mess: messes[i],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    MessDetailScreen(messId: messes[i].id),
+                    ),
+                  );
+                }
+                return RefreshIndicator(
+                  color: AppColors.brandDark,
+                  onRefresh: () =>
+                      context.read<MessCubit>().loadMesses(forceRefresh: true),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // hero summary strip
+                        Container(
+                          clipBehavior: Clip.antiAlias,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                AppColors.brandDark,
+                                AppColors.brandDeep,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(DashUI.rCard),
+                          ),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                top: -30,
+                                right: -26,
+                                child: Container(
+                                  width: 96,
+                                  height: 96,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withValues(alpha: 0.06),
+                                  ),
+                                ),
                               ),
-                            );
-                          },
+                              Positioned(
+                                bottom: -34,
+                                right: 40,
+                                child: Container(
+                                  width: 64,
+                                  height: 64,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.dashboard_rounded,
+                                    color: Colors.white70,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${bnDigits(messes.length)} ${messes.length == 1 ? 'ui.messes_mess'.tr2 : 'ui.messes_messes'.tr2}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '${bnDigits(messes.where((m) => m.canManage).length)} ${'ui.messes_manageable'.tr2}',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'ui.messes_your_messes'.tr2,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.inkFaded,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: messes.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (context, i) => _MessCard(
+                            mess: messes[i],
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      MessDetailScreen(messId: messes[i].id),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+        floatingActionButton: BlocBuilder<MessCubit, MessState>(
+          builder: (context, state) {
+            if (state is MessListLoaded) {
+              // gate: individuals can only create if 0 messes (mirrors web canCreateMess)
+              final canCreate = state.canCreate || state.messes.isEmpty;
+              // also show if hostel owner always can; for now allow if list empty or canCreate
+              if (!canCreate && state.isIndividual) {
+                return const SizedBox.shrink();
+              }
+              return FloatingActionButton.extended(
+                backgroundColor: AppColors.brandDark,
+                onPressed: () async {
+                  final ok = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          MessFormScreen(cubit: context.read<MessCubit>()),
+                    ),
+                  );
+                  if (ok == true && context.mounted) {
+                    context.read<MessCubit>().loadMesses();
+                  }
+                },
+                icon: const Icon(Icons.add_rounded, color: Colors.white),
+                label: Text(
+                  'ui.messes_new_mess'.tr2,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               );
@@ -297,43 +381,6 @@ class _MessesViewState extends State<_MessesView> {
           },
         ),
       ),
-      floatingActionButton: BlocBuilder<MessCubit, MessState>(
-        builder: (context, state) {
-          if (state is MessListLoaded) {
-            // gate: individuals can only create if 0 messes (mirrors web canCreateMess)
-            final canCreate = state.canCreate || state.messes.isEmpty;
-            // also show if hostel owner always can; for now allow if list empty or canCreate
-            if (!canCreate && state.isIndividual) {
-              return const SizedBox.shrink();
-            }
-            return FloatingActionButton.extended(
-              backgroundColor: AppColors.brandDark,
-              onPressed: () async {
-                final ok = await Navigator.push<bool>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        MessFormScreen(cubit: context.read<MessCubit>()),
-                  ),
-                );
-                if (ok == true && context.mounted) {
-                  context.read<MessCubit>().loadMesses();
-                }
-              },
-              icon: const Icon(Icons.add_rounded, color: Colors.white),
-              label: Text(
-                'ui.messes_new_mess'.tr2,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
-    ),
     );
   }
 }
@@ -344,121 +391,119 @@ class _MessCard extends StatelessWidget {
   const _MessCard({required this.mess, required this.onTap});
 
   @override
-  @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(DashUI.rCard),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.paperRaised,
-          borderRadius: BorderRadius.circular(DashUI.rCard),
-          border: Border.all(
-            color: mess.canManage
-                ? AppColors.brandDark.withValues(alpha: 0.35)
-                : AppColors.paperLine,
-            width: mess.canManage ? 1.5 : 1,
+      child: DashUI.accentedCard(
+        accent: mess.canManage ? AppColors.brandDark : AppColors.teal,
+        shape: mess.canManage ? DashShape.wedge : DashShape.blob,
+        shadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandSoft,
-                    borderRadius: BorderRadius.circular(DashUI.rBtn),
-                  ),
-                  child: const Icon(
-                    Icons.apartment_rounded,
-                    color: AppColors.brandDark,
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    mess.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.ink,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: mess.canManage
-                        ? AppColors.brandDark
-                        : AppColors.paperLine,
-                    borderRadius: BorderRadius.circular(DashUI.rBtn),
-                  ),
-                  child: Text(
-                    mess.displayRole.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w900,
-                      color: mess.canManage ? Colors.white : AppColors.inkSoft,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (mess.location.isNotEmpty) ...[
-              const SizedBox(height: 6),
+        ],
+        borderColor: mess.canManage
+            ? AppColors.brandDark.withValues(alpha: 0.35)
+            : AppColors.paperLine,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.location_on_outlined,
-                    size: 14,
-                    color: AppColors.inkFaded,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandSoft,
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                    ),
+                    child: const Icon(
+                      Icons.apartment_rounded,
+                      color: AppColors.brandDark,
+                      size: 18,
+                    ),
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    mess.location,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.inkFaded,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      mess.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: mess.canManage
+                          ? AppColors.brandDark
+                          : AppColors.paperLine,
+                      borderRadius: BorderRadius.circular(DashUI.rBtn),
+                    ),
+                    child: Text(
+                      mess.displayRole.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                        color: mess.canManage
+                            ? Colors.white
+                            : AppColors.inkSoft,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ],
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _chip(
-                  Icons.people_outline_rounded,
-                  '${bnDigits(mess.membersCount)} ${'ui.messes_members'.tr2}',
-                ),
-                const SizedBox(width: 8),
-                _chip(
-                  Icons.calendar_month_rounded,
-                  '${bnDigits(mess.monthsCount)} ${'ui.messes_months'.tr2}',
-                ),
-                const Spacer(),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  size: 18,
-                  color: AppColors.inkFaded,
+              if (mess.location.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 14,
+                      color: AppColors.inkFaded,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      mess.location,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.inkFaded,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _chip(
+                    Icons.people_outline_rounded,
+                    '${bnDigits(mess.membersCount)} ${'ui.messes_members'.tr2}',
+                  ),
+                  const SizedBox(width: 8),
+                  _chip(
+                    Icons.calendar_month_rounded,
+                    '${bnDigits(mess.monthsCount)} ${'ui.messes_months'.tr2}',
+                  ),
+                  const Spacer(),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: AppColors.inkFaded,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -289,21 +289,14 @@ class _MembersViewState extends State<_MembersView> {
   }
 
   Widget _buildHeaderCard(BuildContext context, MemberResponseModel data) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
+    return DashUI.accentedCard(
+      accent: AppColors.brand,
+      shape: DashShape.blob,
+      rich: true,
+      shadow: DashUI.cardShadow,
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
@@ -415,6 +408,7 @@ class _MembersViewState extends State<_MembersView> {
           ],
         ],
       ),
+      ),
     );
   }
 
@@ -427,21 +421,19 @@ class _MembersViewState extends State<_MembersView> {
     final isOwner = member.isOwner;
     final isManager = member.isManager;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
+    return DashUI.accentedCard(
+      accent: AppColors.blue,
+      shape: DashShape.dots,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.02),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -638,6 +630,7 @@ class _MembersViewState extends State<_MembersView> {
             ],
           ),
         ],
+      ),
       ),
     );
   }

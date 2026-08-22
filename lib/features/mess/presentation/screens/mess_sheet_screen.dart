@@ -425,221 +425,222 @@ class _SheetViewState extends State<_SheetView>
     required double totalMeals,
   }) {
     final isPositiveBalance = restMoney >= 0;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.brandDark,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.brandDark.withValues(alpha: 0.15),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          'ui.sheet_meal_rate'.tr2,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'ui.sheet_formula'.tr2,
-                        style: const TextStyle(
-                          color: Colors.white60,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  RichText(
-                    text: TextSpan(
-                      text: bnDigits(mealRate.toStringAsFixed(2)),
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
-                      children: [
-                        const TextSpan(
-                          text: ' ৳',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' ${'ui.sheet_per_meal'.tr2}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white60,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: isPositiveBalance
-                      ? AppColors.emerald.withValues(alpha: 0.25)
-                      : AppColors.danger.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(DashUI.rBtn),
-                  border: Border.all(
-                    color: isPositiveBalance
-                        ? AppColors.emerald.withValues(alpha: 0.5)
-                        : AppColors.danger.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+    return DashUI.accentedCard(
+      accent: AppColors.brand,
+      shape: DashShape.blob,
+      rich: true,
+      shadow: [
+        BoxShadow(
+          color: AppColors.brand.withValues(alpha: 0.10),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      'ui.sheet_rest_money'.tr2,
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        color: isPositiveBalance
-                            ? const Color(0xFF75F8A9)
-                            : const Color(0xFFFF9494),
-                        letterSpacing: 0.5,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.brand,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'ui.sheet_meal_rate'.tr2,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(width: 8),
                     Text(
-                      '${isPositiveBalance ? '+' : ''}${_fmtNumber(restMoney, isCurrency: true)}',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                        color: isPositiveBalance
-                            ? const Color(0xFF75F8A9)
-                            : const Color(0xFFFF9494),
+                      'ui.sheet_formula'.tr2,
+                      style: const TextStyle(
+                        color: AppColors.inkFaded,
+                        fontSize: 10,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(DashUI.rTile),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
+                const SizedBox(height: 6),
+                RichText(
+                  text: TextSpan(
+                    text: bnDigits(mealRate.toStringAsFixed(2)),
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.ink,
+                      letterSpacing: -0.5,
+                    ),
                     children: [
-                      const Icon(
-                        Icons.account_balance_wallet_outlined,
-                        color: Colors.white70,
-                        size: 16,
+                      const TextSpan(
+                        text: ' ৳',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.inkFaded,
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ui.sheet_total_given'.tr2,
-                            style: const TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white60,
-                            ),
-                          ),
-                          Text(
-                            _fmtNumber(totalGiven, isCurrency: true),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(width: 1, height: 26, color: Colors.white12),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.restaurant_menu_rounded,
-                        color: Colors.white70,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ui.sheet_total_meals'.tr2,
-                            style: const TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white60,
-                            ),
-                          ),
-                          Text(
-                            totalMeals % 1 == 0
-                                ? '${bnDigits(totalMeals.toInt())} ${'ui.sheet_meals_unit'.tr2}'
-                                : '${bnDigits(totalMeals.toStringAsFixed(1))} ${'ui.sheet_meals_unit'.tr2}',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
+                      TextSpan(
+                        text: ' ${'ui.sheet_per_meal'.tr2}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.inkFaded,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: isPositiveBalance
+                    ? AppColors.emeraldSoft
+                    : AppColors.dangerSoft,
+                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                border: Border.all(
+                  color: isPositiveBalance
+                      ? AppColors.emerald.withValues(alpha: 0.4)
+                      : AppColors.danger.withValues(alpha: 0.4),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'ui.sheet_rest_money'.tr2,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      color: isPositiveBalance
+                          ? AppColors.emerald
+                          : AppColors.danger,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${isPositiveBalance ? '+' : ''}${_fmtNumber(restMoney, isCurrency: true)}',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: isPositiveBalance
+                          ? AppColors.emerald
+                          : AppColors.danger,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.paper,
+            borderRadius: BorderRadius.circular(DashUI.rTile),
           ),
-        ],
+          child: Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: AppColors.brandDark,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'ui.sheet_total_given'.tr2,
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                        Text(
+                          _fmtNumber(totalGiven, isCurrency: true),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(width: 1, height: 26, color: AppColors.paperLine),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.restaurant_menu_rounded,
+                      color: AppColors.brandDark,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'ui.sheet_total_meals'.tr2,
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.inkFaded,
+                          ),
+                        ),
+                        Text(
+                          totalMeals % 1 == 0
+                              ? '${bnDigits(totalMeals.toInt())} ${'ui.sheet_meals_unit'.tr2}'
+                              : '${bnDigits(totalMeals.toStringAsFixed(1))} ${'ui.sheet_meals_unit'.tr2}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      ),
       ),
     );
   }

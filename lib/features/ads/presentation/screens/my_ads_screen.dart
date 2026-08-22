@@ -229,19 +229,17 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
   }
 
   Widget _myAdCard(AdModel ad) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.paperRaised,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        border: Border.all(color: AppColors.paperLine),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return DashUI.accentedCard(
+      accent: AppColors.amber,
+      shape: DashShape.wedge,
+      rich: ad.seatsAvailable > 0,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
       child: Column(
         children: [
           GestureDetector(
