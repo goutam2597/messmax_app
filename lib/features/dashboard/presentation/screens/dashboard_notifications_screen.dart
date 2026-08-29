@@ -5,6 +5,7 @@ import '../../../../core/locale/app_translations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/app_circular_progress.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../widgets/dash_ui.dart';
 import '../cubit/notification_cubit.dart';
@@ -20,12 +21,7 @@ enum DashboardActivityType {
   system,
 }
 
-enum ActivityStatus {
-  pending,
-  approved,
-  declined,
-  info,
-}
+enum ActivityStatus { pending, approved, declined, info }
 
 class DashboardActivityItem {
   final String id;
@@ -64,36 +60,61 @@ class DashboardActivityItem {
 
   String get displayTag {
     switch (tag) {
-      case 'Meal ON': return 'ui.dash_notif_tag_meal_on'.tr2;
-      case 'Meal OFF': return 'ui.dash_notif_tag_meal_off'.tr2;
-      case 'Guest Meal': return 'ui.dash_notif_tag_guest_meal'.tr2;
-      case 'Deposit': return 'ui.dash_notif_tag_deposit'.tr2;
-      case 'Bazar Expense': return 'ui.dash_notif_tag_bazar_expense'.tr2;
-      case 'Bazar Duty': return 'ui.dash_notif_tag_bazar_duty'.tr2;
-      case 'Join Request': return 'ui.dash_notif_tag_join_req'.tr2;
-      case 'New Member': return 'ui.dash_notif_tag_new_member'.tr2;
-      case 'Join Result': return 'ui.dash_notif_tag_join_res'.tr2;
-      case 'Manager': return 'ui.dash_notif_tag_manager'.tr2;
-      case 'Announcement': return 'ui.dash_notif_tag_announcement'.tr2;
-      case 'Notice': return 'ui.dash_notif_tag_notice'.tr2;
-      default: return tag;
+      case 'Meal ON':
+        return 'ui.dash_notif_tag_meal_on'.tr2;
+      case 'Meal OFF':
+        return 'ui.dash_notif_tag_meal_off'.tr2;
+      case 'Guest Meal':
+        return 'ui.dash_notif_tag_guest_meal'.tr2;
+      case 'Deposit':
+        return 'ui.dash_notif_tag_deposit'.tr2;
+      case 'Bazar Expense':
+        return 'ui.dash_notif_tag_bazar_expense'.tr2;
+      case 'Bazar Duty':
+        return 'ui.dash_notif_tag_bazar_duty'.tr2;
+      case 'Join Request':
+        return 'ui.dash_notif_tag_join_req'.tr2;
+      case 'New Member':
+        return 'ui.dash_notif_tag_new_member'.tr2;
+      case 'Join Result':
+        return 'ui.dash_notif_tag_join_res'.tr2;
+      case 'Manager':
+        return 'ui.dash_notif_tag_manager'.tr2;
+      case 'Announcement':
+        return 'ui.dash_notif_tag_announcement'.tr2;
+      case 'Notice':
+        return 'ui.dash_notif_tag_notice'.tr2;
+      default:
+        return tag;
     }
   }
 
   static String getLocalizedDetailKey(String key) {
     switch (key) {
-      case 'Day': return 'ui.dash_notif_lbl_day'.tr2;
-      case 'Meal Slot': return 'ui.dash_notif_lbl_meal_slot'.tr2;
-      case 'Requester': return 'ui.dash_notif_lbl_requester'.tr2;
-      case 'Guest': return 'ui.dash_notif_lbl_guest'.tr2;
-      case 'Amount': return 'ui.dash_notif_lbl_amount'.tr2;
-      case 'TrxID': return 'ui.dash_notif_lbl_trxid'.tr2;
-      case 'Gateway': return 'ui.dash_notif_lbl_gateway'.tr2;
-      case 'Budget': return 'ui.dash_notif_lbl_budget'.tr2;
-      case 'Notes': return 'ui.dash_notif_lbl_notes'.tr2;
-      case 'Applicant': return 'ui.dash_notif_lbl_applicant'.tr2;
-      case 'Action': return 'ui.dash_notif_lbl_action'.tr2;
-      default: return key;
+      case 'Day':
+        return 'ui.dash_notif_lbl_day'.tr2;
+      case 'Meal Slot':
+        return 'ui.dash_notif_lbl_meal_slot'.tr2;
+      case 'Requester':
+        return 'ui.dash_notif_lbl_requester'.tr2;
+      case 'Guest':
+        return 'ui.dash_notif_lbl_guest'.tr2;
+      case 'Amount':
+        return 'ui.dash_notif_lbl_amount'.tr2;
+      case 'TrxID':
+        return 'ui.dash_notif_lbl_trxid'.tr2;
+      case 'Gateway':
+        return 'ui.dash_notif_lbl_gateway'.tr2;
+      case 'Budget':
+        return 'ui.dash_notif_lbl_budget'.tr2;
+      case 'Notes':
+        return 'ui.dash_notif_lbl_notes'.tr2;
+      case 'Applicant':
+        return 'ui.dash_notif_lbl_applicant'.tr2;
+      case 'Action':
+        return 'ui.dash_notif_lbl_action'.tr2;
+      default:
+        return key;
     }
   }
 
@@ -118,21 +139,27 @@ class DashboardActivityItem {
 
     if (model.type == 'meal_off') {
       type = DashboardActivityType.mealOff;
-      final isReenable = data['is_reenable'] == '1' ||
+      final isReenable =
+          data['is_reenable'] == '1' ||
           data['is_reenable'] == 1 ||
           data['is_reenable'] == true ||
           model.title.toLowerCase().contains('re-enable') ||
           model.title.toLowerCase().contains('meal on');
       tag = isReenable ? 'Meal ON' : 'Meal OFF';
-      highlightValue = data['slots']?.toString() ?? (isReenable ? 'Turn ON' : 'Turn OFF');
+      highlightValue =
+          data['slots']?.toString() ?? (isReenable ? 'Turn ON' : 'Turn OFF');
       status = statusStr == 'approved'
           ? ActivityStatus.approved
           : statusStr == 'denied'
-              ? ActivityStatus.declined
-              : ActivityStatus.pending;
+          ? ActivityStatus.declined
+          : ActivityStatus.pending;
       if (data['day'] != null) details['Day'] = 'Day ${data['day']}';
-      if (data['slots'] != null) details['Meal Slot'] = data['slots'].toString();
-      if (data['member_name'] != null) details['Requester'] = data['member_name'].toString();
+      if (data['slots'] != null) {
+        details['Meal Slot'] = data['slots'].toString();
+      }
+      if (data['member_name'] != null) {
+        details['Requester'] = data['member_name'].toString();
+      }
     } else if (model.type == 'guest_meal') {
       type = DashboardActivityType.mealOff;
       tag = 'Guest Meal';
@@ -140,24 +167,35 @@ class DashboardActivityItem {
       status = statusStr == 'approved'
           ? ActivityStatus.approved
           : statusStr == 'denied'
-              ? ActivityStatus.declined
-              : ActivityStatus.pending;
+          ? ActivityStatus.declined
+          : ActivityStatus.pending;
       if (data['day'] != null) details['Day'] = 'Day ${data['day']}';
-      if (data['guest_name'] != null) details['Guest'] = data['guest_name'].toString();
-      if (data['member_name'] != null) details['Requester'] = data['member_name'].toString();
+      if (data['guest_name'] != null) {
+        details['Guest'] = data['guest_name'].toString();
+      }
+      if (data['member_name'] != null) {
+        details['Requester'] = data['member_name'].toString();
+      }
     } else if (model.type == 'deposit') {
       type = DashboardActivityType.deposit;
       tag = 'Deposit';
-      highlightValue = data['amount'] != null ? '৳${data['amount']}' : 'Deposit';
+      highlightValue = data['amount'] != null
+          ? '৳${data['amount']}'
+          : 'Deposit';
       status = statusStr == 'approved'
           ? ActivityStatus.approved
           : ActivityStatus.pending;
       if (data['amount'] != null) details['Amount'] = '৳${data['amount']}';
       if (data['trx_id'] != null) details['TrxID'] = data['trx_id'].toString();
-      if (data['gateway'] != null) details['Gateway'] = data['gateway'].toString();
-    } else if (model.type == 'bazar' || model.type == 'bazar_duty' || model.type == 'bazar_expense') {
+      if (data['gateway'] != null) {
+        details['Gateway'] = data['gateway'].toString();
+      }
+    } else if (model.type == 'bazar' ||
+        model.type == 'bazar_duty' ||
+        model.type == 'bazar_expense') {
       type = DashboardActivityType.bazarDuty;
-      final isExpense = model.title.toLowerCase().contains('expense') ||
+      final isExpense =
+          model.title.toLowerCase().contains('expense') ||
           model.type == 'bazar';
       tag = isExpense ? 'Bazar Expense' : 'Bazar Duty';
       highlightValue = data['amount'] != null
@@ -175,9 +213,19 @@ class DashboardActivityItem {
     } else if (model.type == 'member_join' || model.type == 'join_request') {
       type = DashboardActivityType.memberJoin;
       tag = model.type == 'join_request' ? 'Join Request' : 'New Member';
-      highlightValue = data['user_name']?.toString() ?? (data['role'] != null ? data['role'].toString().toUpperCase() : 'Applicant');
-      status = statusStr == 'approved' ? ActivityStatus.approved : (statusStr == 'rejected' || statusStr == 'denied' ? ActivityStatus.declined : ActivityStatus.pending);
-      if (data['user_name'] != null) details['Applicant'] = data['user_name'].toString();
+      highlightValue =
+          data['user_name']?.toString() ??
+          (data['role'] != null
+              ? data['role'].toString().toUpperCase()
+              : 'Applicant');
+      status = statusStr == 'approved'
+          ? ActivityStatus.approved
+          : (statusStr == 'rejected' || statusStr == 'denied'
+                ? ActivityStatus.declined
+                : ActivityStatus.pending);
+      if (data['user_name'] != null) {
+        details['Applicant'] = data['user_name'].toString();
+      }
       if (data['action'] != null) details['Action'] = data['action'].toString();
     } else if (model.type == 'join_decision') {
       type = DashboardActivityType.memberJoin;
@@ -185,11 +233,14 @@ class DashboardActivityItem {
       status = ActivityStatus.info;
     } else if (model.type == 'announcement') {
       type = DashboardActivityType.monthClose;
-      tag = model.title.toLowerCase().contains('manager') ? 'Manager' : 'Announcement';
+      tag = model.title.toLowerCase().contains('manager')
+          ? 'Manager'
+          : 'Announcement';
       status = ActivityStatus.info;
     }
 
-    final memberName = data['member_name']?.toString() ??
+    final memberName =
+        data['member_name']?.toString() ??
         (model.messName != null ? model.messName! : 'MessMax');
 
     return DashboardActivityItem(
@@ -230,10 +281,9 @@ class _DashboardNotificationsScreenState
     // Always trigger a fresh load when screen opens — shows spinner if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationCubit>().loadNotifications(
-            filter: _selectedCategory,
-            silent: context.read<NotificationCubit>().state
-                is NotificationLoaded,
-          );
+        filter: _selectedCategory,
+        silent: context.read<NotificationCubit>().state is NotificationLoaded,
+      );
     });
   }
 
@@ -243,34 +293,48 @@ class _DashboardNotificationsScreenState
   }
 
   Future<void> _handleAction(DashboardActivityItem item, bool approve) async {
-    final actionText = approve ? 'ui.dash_status_approved'.tr2 : 'ui.dash_status_declined'.tr2;
+    final actionText = approve
+        ? 'ui.dash_status_approved'.tr2
+        : 'ui.dash_status_declined'.tr2;
 
     if (item.notificationId != null) {
       final success = await context.read<NotificationCubit>().handleAction(
-            item.notificationId!,
-            approve ? 'approve' : 'deny',
-          );
+        item.notificationId!,
+        approve ? 'approve' : 'deny',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success
-              ? 'ui.dash_notif_action_success'.tr2.replaceAll(':title', item.title).replaceAll(':action', actionText)
-              : 'ui.dash_notif_action_failed'.tr2),
-          backgroundColor:
-              approve ? const Color(0xFF1B5E20) : const Color(0xFFC62828),
+          content: Text(
+            success
+                ? 'ui.dash_notif_action_success'.tr2
+                      .replaceAll(':title', item.title)
+                      .replaceAll(':action', actionText)
+                : 'ui.dash_notif_action_failed'.tr2,
+          ),
+          backgroundColor: approve
+              ? const Color(0xFF1B5E20)
+              : const Color(0xFFC62828),
           duration: const Duration(seconds: 2),
         ),
       );
     } else {
       setState(() {
-        item.status = approve ? ActivityStatus.approved : ActivityStatus.declined;
+        item.status = approve
+            ? ActivityStatus.approved
+            : ActivityStatus.declined;
         item.resolvedAt = 'Just now';
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('ui.dash_notif_action_success'.tr2.replaceAll(':title', item.title).replaceAll(':action', actionText)),
-          backgroundColor:
-              approve ? const Color(0xFF1B5E20) : const Color(0xFFC62828),
+          content: Text(
+            'ui.dash_notif_action_success'.tr2
+                .replaceAll(':title', item.title)
+                .replaceAll(':action', actionText),
+          ),
+          backgroundColor: approve
+              ? const Color(0xFF1B5E20)
+              : const Color(0xFFC62828),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -348,8 +412,10 @@ class _DashboardNotificationsScreenState
         builder: (context, setModalState) {
           return Dialog(
             backgroundColor: AppColors.paperRaised,
-            insetPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 24,
+            ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DashUI.rCard),
               side: const BorderSide(color: AppColors.paperLine),
@@ -381,7 +447,9 @@ class _DashboardNotificationsScreenState
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: badgeBg,
                                   borderRadius: BorderRadius.circular(6),
@@ -474,8 +542,7 @@ class _DashboardNotificationsScreenState
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color:
-                                  AppColors.brandDark.withValues(alpha: 0.1),
+                              color: AppColors.brandDark.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Center(
@@ -538,8 +605,9 @@ class _DashboardNotificationsScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: item.details!.entries.map((e) {
                               return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 3,
+                                ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -591,7 +659,9 @@ class _DashboardNotificationsScreenState
                                     width: 1.2,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(DashUI.rCard),
+                                    borderRadius: BorderRadius.circular(
+                                      DashUI.rCard,
+                                    ),
                                   ),
                                   foregroundColor: const Color(0xFFC62828),
                                 ),
@@ -630,7 +700,9 @@ class _DashboardNotificationsScreenState
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(DashUI.rCard),
+                                    borderRadius: BorderRadius.circular(
+                                      DashUI.rCard,
+                                    ),
                                   ),
                                 ),
                                 child: Row(
@@ -732,7 +804,9 @@ class _DashboardNotificationsScreenState
                       const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 2),
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFA02626),
                           borderRadius: BorderRadius.circular(DashUI.rBtn),
@@ -770,15 +844,21 @@ class _DashboardNotificationsScreenState
         actions: [
           BlocBuilder<NotificationCubit, NotificationState>(
             builder: (context, state) {
-              final unread = state is NotificationLoaded ? state.unreadCount : 0;
+              final unread = state is NotificationLoaded
+                  ? state.unreadCount
+                  : 0;
               return PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert_rounded, color: AppColors.ink),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DashUI.rTile)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(DashUI.rTile),
+                ),
                 onSelected: (value) {
                   if (value == 'read_all') {
                     context.read<NotificationCubit>().markAllAsRead();
                   } else if (value == 'clear_read') {
-                    context.read<NotificationCubit>().bulkDelete(readOnly: true);
+                    context.read<NotificationCubit>().bulkDelete(
+                      readOnly: true,
+                    );
                   } else if (value == 'clear_all') {
                     context.read<NotificationCubit>().clearAll();
                   }
@@ -789,9 +869,22 @@ class _DashboardNotificationsScreenState
                       value: 'read_all',
                       child: Row(
                         children: [
-                          const Icon(Icons.done_all_rounded, size: 18, color: AppColors.brandDark),
+                          const Icon(
+                            Icons.done_all_rounded,
+                            size: 18,
+                            color: AppColors.brandDark,
+                          ),
                           const SizedBox(width: 10),
-                          ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_mark_all'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+                          ValueListenableBuilder<int>(
+                            valueListenable: AppTranslations.notifier,
+                            builder: (context, _, _) => Text(
+                              'ui.dash_notif_mark_all'.tr2,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -799,9 +892,22 @@ class _DashboardNotificationsScreenState
                     value: 'clear_read',
                     child: Row(
                       children: [
-                        const Icon(Icons.cleaning_services_rounded, size: 18, color: AppColors.inkFaded),
+                        const Icon(
+                          Icons.cleaning_services_rounded,
+                          size: 18,
+                          color: AppColors.inkFaded,
+                        ),
                         const SizedBox(width: 10),
-                        ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_clear_read'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            'ui.dash_notif_clear_read'.tr2,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -809,9 +915,23 @@ class _DashboardNotificationsScreenState
                     value: 'clear_all',
                     child: Row(
                       children: [
-                        const Icon(Icons.delete_sweep_rounded, size: 18, color: Color(0xFFEF4444)),
+                        const Icon(
+                          Icons.delete_sweep_rounded,
+                          size: 18,
+                          color: Color(0xFFEF4444),
+                        ),
                         const SizedBox(width: 10),
-                        ValueListenableBuilder<int>(valueListenable: AppTranslations.notifier, builder: (context, _, _) => Text('ui.dash_notif_clear_all'.tr2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFEF4444)))),
+                        ValueListenableBuilder<int>(
+                          valueListenable: AppTranslations.notifier,
+                          builder: (context, _, _) => Text(
+                            'ui.dash_notif_clear_all'.tr2,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFEF4444),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -830,17 +950,25 @@ class _DashboardNotificationsScreenState
             int pendingDeposits = 0;
 
             if (state is NotificationLoaded) {
-              items = state.notifications.map((m) => DashboardActivityItem.fromModel(m)).toList();
-              pendingCount = items.where((i) => i.status == ActivityStatus.pending).length;
+              items = state.notifications
+                  .map((m) => DashboardActivityItem.fromModel(m))
+                  .toList();
+              pendingCount = items
+                  .where((i) => i.status == ActivityStatus.pending)
+                  .length;
               pendingMealOff = items
-                  .where((i) =>
-                      i.type == DashboardActivityType.mealOff &&
-                      i.status == ActivityStatus.pending)
+                  .where(
+                    (i) =>
+                        i.type == DashboardActivityType.mealOff &&
+                        i.status == ActivityStatus.pending,
+                  )
                   .length;
               pendingDeposits = items
-                  .where((i) =>
-                      i.type == DashboardActivityType.deposit &&
-                      i.status == ActivityStatus.pending)
+                  .where(
+                    (i) =>
+                        i.type == DashboardActivityType.deposit &&
+                        i.status == ActivityStatus.pending,
+                  )
                   .length;
             }
 
@@ -856,73 +984,81 @@ class _DashboardNotificationsScreenState
                 Expanded(
                   child: state is NotificationLoading
                       ? const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.brandDark,
-                            strokeWidth: 2.5,
-                          ),
+                          child: AppCircularProgress(strokeWidth: 3.5),
                         )
                       : state is NotificationError && items.isEmpty
-                          ? AppErrorView(
-                              code: state.code,
-                              title: 'ui.notif_load_failed'.tr2,
-                              retryLabel: 'ui.try_again'.tr2,
-                              onRetry: () => context
-                                  .read<NotificationCubit>()
-                                  .loadNotifications(filter: _selectedCategory),
-                            )
-                          : items.isEmpty
-                              ? _buildEmptyState()
-                          : RefreshIndicator(
-                              color: AppColors.brandDark,
-                              onRefresh: () => context
-                                  .read<NotificationCubit>()
-                                  .loadNotifications(filter: _selectedCategory),
-                              child: ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-                                itemCount: items.length,
-                                separatorBuilder: (_, index) =>
-                                    const SizedBox(height: 10),
-                                itemBuilder: (context, index) {
-                                  final item = items[index];
-                                  return Dismissible(
-                                    key: ValueKey('notif_${item.id}'),
-                                    direction: DismissDirection.endToStart,
-                                    background: Container(
-                                      alignment: Alignment.centerRight,
-                                      padding: const EdgeInsets.only(right: 20),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEF4444),
-                                        borderRadius: BorderRadius.circular(DashUI.rCard),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: [
-                                          const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
-                                          const SizedBox(width: 6),
-                                          ValueListenableBuilder<int>(
-                                            valueListenable: AppTranslations.notifier,
-                                            builder: (context, _, _) => Text(
-                                              'ui.dash_notif_delete'.tr2,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                      ? AppErrorView(
+                          code: state.code,
+                          title: 'ui.notif_load_failed'.tr2,
+                          retryLabel: 'ui.try_again'.tr2,
+                          onRetry: () => context
+                              .read<NotificationCubit>()
+                              .loadNotifications(filter: _selectedCategory),
+                        )
+                      : items.isEmpty
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          color: AppColors.brandDark,
+                          onRefresh: () => context
+                              .read<NotificationCubit>()
+                              .loadNotifications(filter: _selectedCategory),
+                          child: ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                            itemCount: items.length,
+                            separatorBuilder: (_, index) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              return Dismissible(
+                                key: ValueKey('notif_${item.id}'),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 20),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEF4444),
+                                    borderRadius: BorderRadius.circular(
+                                      DashUI.rCard,
                                     ),
-                                    onDismissed: (_) {
-                                      if (item.notificationId != null) {
-                                        context.read<NotificationCubit>().deleteNotification(item.notificationId!);
-                                      }
-                                    },
-                                    child: _buildActivityCard(item),
-                                  );
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      const Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      ValueListenableBuilder<int>(
+                                        valueListenable:
+                                            AppTranslations.notifier,
+                                        builder: (context, _, _) => Text(
+                                          'ui.dash_notif_delete'.tr2,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                onDismissed: (_) {
+                                  if (item.notificationId != null) {
+                                    context
+                                        .read<NotificationCubit>()
+                                        .deleteNotification(
+                                          item.notificationId!,
+                                        );
+                                  }
                                 },
-                              ),
-                            ),
+                                child: _buildActivityCard(item),
+                              );
+                            },
+                          ),
+                        ),
                 ),
               ],
             );
@@ -941,7 +1077,9 @@ class _DashboardNotificationsScreenState
         decoration: BoxDecoration(
           color: AppColors.brandDark.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(DashUI.rCard),
-          border: Border.all(color: AppColors.brandDark.withValues(alpha: 0.15)),
+          border: Border.all(
+            color: AppColors.brandDark.withValues(alpha: 0.15),
+          ),
         ),
         child: Row(
           children: [
@@ -951,7 +1089,11 @@ class _DashboardNotificationsScreenState
                 color: AppColors.brandDark,
                 borderRadius: BorderRadius.circular(DashUI.rBtn),
               ),
-              child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.bolt_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -970,8 +1112,11 @@ class _DashboardNotificationsScreenState
                   Text(
                     pendingMealOff > 0 || pendingDeposits > 0
                         ? 'ui.dash_notif_pending_summary'.tr2
-                            .replaceAll(':meal_off', bnDigits(pendingMealOff))
-                            .replaceAll(':deposits', bnDigits(pendingDeposits))
+                              .replaceAll(':meal_off', bnDigits(pendingMealOff))
+                              .replaceAll(
+                                ':deposits',
+                                bnDigits(pendingDeposits),
+                              )
                         : 'ui.dash_notif_all_updated'.tr2,
                     style: const TextStyle(
                       fontSize: 11.5,
@@ -994,7 +1139,13 @@ class _DashboardNotificationsScreenState
       builder: (context, _, _) {
         final categories = [
           {'id': 'all', 'label': 'ui.dash_notif_cat_all'.tr2},
-          {'id': 'pending', 'label': 'ui.dash_notif_cat_pending'.tr2.replaceAll(':count', bnDigits(pendingCount))},
+          {
+            'id': 'pending',
+            'label': 'ui.dash_notif_cat_pending'.tr2.replaceAll(
+              ':count',
+              bnDigits(pendingCount),
+            ),
+          },
           {'id': 'meal_off', 'label': 'ui.dash_notif_cat_meal_off'.tr2},
           {'id': 'deposits', 'label': 'ui.dash_notif_cat_deposits'.tr2},
           {'id': 'bazar', 'label': 'ui.dash_notif_cat_bazar'.tr2},
@@ -1023,10 +1174,14 @@ class _DashboardNotificationsScreenState
                     borderRadius: BorderRadius.circular(DashUI.rCard),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6.5,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.brandDark : AppColors.paper,
+                        color: isSelected
+                            ? AppColors.brandDark
+                            : AppColors.paper,
                         borderRadius: BorderRadius.circular(DashUI.rCard),
                         border: Border.all(
                           color: isSelected
@@ -1038,8 +1193,9 @@ class _DashboardNotificationsScreenState
                         c['label']!,
                         style: TextStyle(
                           fontSize: 12.5,
-                          fontWeight:
-                              isSelected ? FontWeight.w800 : FontWeight.w600,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
                           color: isSelected ? Colors.white : AppColors.ink,
                         ),
                       ),
@@ -1183,7 +1339,9 @@ class _DashboardNotificationsScreenState
                       const SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 1.5),
+                          horizontal: 6,
+                          vertical: 1.5,
+                        ),
                         decoration: BoxDecoration(
                           color: typeBg,
                           borderRadius: BorderRadius.circular(6),
@@ -1231,7 +1389,9 @@ class _DashboardNotificationsScreenState
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6.5, vertical: 2),
+                            horizontal: 6.5,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.brandDark.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(6),
@@ -1274,8 +1434,10 @@ class _DashboardNotificationsScreenState
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeBg,
                     borderRadius: BorderRadius.circular(6),

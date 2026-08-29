@@ -6,10 +6,7 @@ class AccountResponseModel extends Equatable {
   final UserModel user;
   final List<MyMessModel> messes;
 
-  const AccountResponseModel({
-    required this.user,
-    required this.messes,
-  });
+  const AccountResponseModel({required this.user, required this.messes});
 
   factory AccountResponseModel.fromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>? ?? json;
@@ -18,7 +15,9 @@ class AccountResponseModel extends Equatable {
 
     return AccountResponseModel(
       user: UserModel.fromJson(userJson),
-      messes: messesJson.map((e) => MyMessModel.fromJson(e as Map<String, dynamic>)).toList(),
+      messes: messesJson
+          .map((e) => MyMessModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 

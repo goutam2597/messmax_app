@@ -1229,19 +1229,37 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.brandDark, AppColors.brandDeep],
+          colors: [Color(0xFF2B313A), Color(0xFF171A1F)],
         ),
         borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
-            color: AppColors.brandDark.withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: const Color(0x33000000),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Stack(
         children: [
+          // Warm brand glow — quiet coral accent on the dark surface.
+          Positioned(
+            top: -60,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.brand.withValues(alpha: 0.20),
+                    AppColors.brand.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
           Positioned(
             top: -44,
             right: -36,
@@ -1250,7 +1268,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               height: 140,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.06),
+                color: Colors.white.withValues(alpha: 0.04),
               ),
             ),
           ),
@@ -1263,7 +1281,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: Colors.white.withValues(alpha: 0.08),
                   width: 1.5,
                 ),
               ),
@@ -1277,7 +1295,7 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
               height: 96,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppColors.brand.withValues(alpha: 0.07),
               ),
             ),
           ),
@@ -1361,8 +1379,11 @@ class _BazarScheduleViewState extends State<_BazarScheduleView> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: Colors.white.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(DashUI.rCard),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.10),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

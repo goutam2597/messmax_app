@@ -13,9 +13,9 @@ import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import '../cubit/splash_cubit.dart';
 import '../cubit/splash_state.dart';
 
-/// Animated brand splash in luminous light mode: drifting warm glow mesh,
-/// orbiting feature icons, progress ring around the official logo emblem,
-/// full logo wordmark fade-up, and gentle bottom waves.
+/// Professional brand splash: calm warm-glow ambience, the official logo
+/// emblem inside a filling progress ring, a wordmark fade-up, and a quiet
+/// footer carrying the tagline, loader dots, and app version.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -33,17 +33,8 @@ class _SplashScreenState extends State<SplashScreen>
   late final Animation<double> _ringFade;
   late final Animation<double> _progress;
 
-  // Slow, endless ambience — orbit rotation + mesh drift + wave motion.
+  // Slow, endless ambience — mesh drift + wave motion.
   late final AnimationController _ambientController;
-
-  static const _orbitIcons = [
-    Icons.rice_bowl_rounded,
-    Icons.shopping_basket_rounded,
-    Icons.savings_rounded,
-    Icons.campaign_rounded,
-    Icons.travel_explore_rounded,
-    Icons.insights_rounded,
-  ];
 
   @override
   void initState() {
@@ -131,8 +122,8 @@ class _SplashScreenState extends State<SplashScreen>
     final bottomInset = MediaQuery.of(context).padding.bottom;
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final bool isThreeButtonNav = isAndroid && bottomInset >= 36;
-    final double versionBottom = isThreeButtonNav ? (16.0 + bottomInset) : 34.0;
-    final double dotsBottom = isThreeButtonNav ? (76.0 + bottomInset) : 96.0;
+    final double footerBottom = isThreeButtonNav ? (14.0 + bottomInset) : 30.0;
+    final double dotsBottom = footerBottom + 66;
 
     return BlocListener<SplashCubit, SplashState>(
       listener: (context, state) {
@@ -144,10 +135,7 @@ class _SplashScreenState extends State<SplashScreen>
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFFFFFFFF),
-                Color(0xFFFFF4F3),
-              ],
+              colors: [AppColors.splashTop, AppColors.splashBottom],
             ),
           ),
           child: Stack(
@@ -176,33 +164,17 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
 
-              // logo + orbit icons + progress ring + wordmark
+              // logo emblem + progress ring + wordmark
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
-                      width: 216,
-                      height: 216,
+                      width: 200,
+                      height: 200,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // orbiting feature icons
-                          FadeTransition(
-                            opacity: _ringFade,
-                            child: AnimatedBuilder(
-                              animation: _ambientController,
-                              builder: (context, _) {
-                                return Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    for (var i = 0; i < _orbitIcons.length; i++)
-                                      _buildOrbitIcon(i),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
                           // filling progress ring around the logo
                           FadeTransition(
                             opacity: _ringFade,
@@ -210,7 +182,7 @@ class _SplashScreenState extends State<SplashScreen>
                               animation: _progress,
                               builder: (context, _) {
                                 return CustomPaint(
-                                  size: const Size(156, 156),
+                                  size: const Size(172, 172),
                                   painter: _ProgressRingPainter(
                                     _progress.value,
                                   ),
@@ -222,13 +194,13 @@ class _SplashScreenState extends State<SplashScreen>
                           FadeTransition(
                             opacity: _wordFade,
                             child: Container(
-                              width: 140,
-                              height: 140,
+                              width: 136,
+                              height: 136,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: RadialGradient(
                                   colors: [
-                                    AppColors.brand.withValues(alpha: 0.18),
+                                    AppColors.brand.withValues(alpha: 0.14),
                                     AppColors.brand.withValues(alpha: 0),
                                   ],
                                 ),
@@ -241,34 +213,35 @@ class _SplashScreenState extends State<SplashScreen>
                             child: ScaleTransition(
                               scale: _logoScale,
                               child: Container(
-                                width: 102,
-                                height: 102,
-                                padding: const EdgeInsets.all(12),
+                                width: 106,
+                                height: 106,
+                                padding: const EdgeInsets.all(13),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(26),
+                                  borderRadius: BorderRadius.circular(28),
                                   border: Border.all(
-                                    color: AppColors.brand.withValues(alpha: 0.2),
-                                    width: 1.5,
+                                    color: AppColors.brand.withValues(
+                                      alpha: 0.16,
+                                    ),
+                                    width: 1.2,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
                                       color: AppColors.brandDark.withValues(
-                                        alpha: 0.14,
+                                        alpha: 0.12,
                                       ),
-                                      blurRadius: 36,
-                                      spreadRadius: 2,
-                                      offset: const Offset(0, 10),
+                                      blurRadius: 32,
+                                      offset: const Offset(0, 12),
                                     ),
                                     const BoxShadow(
                                       color: Color(0x0A000000),
-                                      blurRadius: 10,
-                                      offset: Offset(0, 4),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 3),
                                     ),
                                   ],
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(15),
                                   child: SvgPicture.asset(
                                     'assets/images/mm_fav.svg',
                                     fit: BoxFit.contain,
@@ -280,21 +253,16 @@ class _SplashScreenState extends State<SplashScreen>
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 34),
+                    // wordmark fade-up
                     FadeTransition(
                       opacity: _wordFade,
                       child: SlideTransition(
                         position: _wordSlide,
-                        child: Column(
-                          children: [
-                            SvgPicture.asset(
-                              'assets/images/logo.svg',
-                              height: 34,
-                              fit: BoxFit.contain,
-                            ),
-                            const SizedBox(height: 12),
-                            const _TaglineBadge(),
-                          ],
+                        child: SvgPicture.asset(
+                          'assets/images/logo.svg',
+                          height: 38,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
@@ -313,93 +281,47 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
 
-              // version
+              // footer: small tagline + version pinned to the bottom edge
               Positioned(
-                bottom: versionBottom,
-                left: 0,
-                right: 0,
+                bottom: footerBottom,
+                left: 24,
+                right: 24,
                 child: FadeTransition(
                   opacity: _wordFade,
-                  child: const Text(
-                    'v1.0.0',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.inkFaded,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.5,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ValueListenableBuilder<int>(
+                        valueListenable: AppTranslations.notifier,
+                        builder: (context, _, _) => Text(
+                          AppStrings.tagline,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            height: 1.35,
+                            color: AppColors.inkFaded,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'v1.0.0',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.inkFaded,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.4,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrbitIcon(int index) {
-    final baseAngle = (index / _orbitIcons.length) * 2 * math.pi;
-    final angle = baseAngle + _ambientController.value * 2 * math.pi;
-    const radius = 98.0;
-    final dx = radius * math.cos(angle);
-    final dy = radius * math.sin(angle);
-    return Transform.translate(
-      offset: Offset(dx, dy),
-      child: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.paperLine),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x10000000),
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(_orbitIcons[index], color: AppColors.brandDark, size: 16),
-      ),
-    );
-  }
-}
-
-/// Small pill badge that frames the tagline for a bit more polish.
-class _TaglineBadge extends StatelessWidget {
-  const _TaglineBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.brand.withValues(alpha: 0.25),
-          width: 1,
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ValueListenableBuilder<int>(
-        valueListenable: AppTranslations.notifier,
-        builder: (context, _, _) => Text(
-          AppStrings.tagline,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.inkSoft,
-            letterSpacing: 1.8,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

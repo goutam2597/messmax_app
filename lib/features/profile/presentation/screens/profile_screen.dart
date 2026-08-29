@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/app_config.dart';
@@ -12,8 +12,17 @@ import '../../../ads/presentation/screens/my_ads_screen.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
 import 'account_screen.dart';
+import 'legal_screen.dart';
 import 'package:messmax_app/features/main/presentation/screens/main_shell_screen.dart';
 import '../../../dashboard/presentation/widgets/dash_ui.dart';
+
+/// Rounded design language matching [HomeScreen] cards (home uses 14�16px).
+abstract final class _ProfileRadii {
+  static const double card = 16;
+  static const double button = 14;
+  static const double chip = 12;
+  static const double badge = 10;
+}
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -60,92 +69,88 @@ class ProfileScreen extends StatelessWidget {
                           MessMaxAppBar(title: 'ui.profile_title'.tr2),
                     ),
                     const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(28),
-                      decoration: BoxDecoration(
-                        color: AppColors.paperRaised,
-                        borderRadius: BorderRadius.circular(DashUI.rCard),
-                        border: Border.all(color: AppColors.paperLine),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              color: AppColors.brandSoft,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.brandDark.withValues(
-                                  alpha: 0.12,
-                                ),
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.lock_rounded,
-                              color: AppColors.brandDark,
-                              size: 36,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ValueListenableBuilder<int>(
-                            valueListenable: AppTranslations.notifier,
-                            builder: (context, _, _) => Text(
-                              'ui.sign_in_required'.tr2,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.ink,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ValueListenableBuilder<int>(
-                            valueListenable: AppTranslations.notifier,
-                            builder: (context, _, _) => Text(
-                              'ui.sign_in_to_continue'.tr2,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.inkFaded,
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.icon(
-                              onPressed: () => _goLogin(context),
-                              icon: const Icon(Icons.login_rounded, size: 18),
-                              label: ValueListenableBuilder<int>(
-                                valueListenable: AppTranslations.notifier,
-                                builder: (context, _, _) => Text(
-                                  'ui.go_to_login'.tr2,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w800,
+                    DashUI.accentedCard(
+                      accent: AppColors.brand,
+                      shape: DashShape.blob,
+                      radius: _ProfileRadii.card,
+                      shadow: DashUI.cardShadow,
+                      child: Padding(
+                        padding: const EdgeInsets.all(28),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                color: AppColors.brandSoft,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.brandDark.withValues(
+                                    alpha: 0.12,
                                   ),
                                 ),
                               ),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.brandDark,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(DashUI.rCard),
+                              child: const Icon(
+                                Icons.lock_rounded,
+                                color: AppColors.brandDark,
+                                size: 36,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ValueListenableBuilder<int>(
+                              valueListenable: AppTranslations.notifier,
+                              builder: (context, _, _) => Text(
+                                'ui.sign_in_required'.tr2,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.ink,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            ValueListenableBuilder<int>(
+                              valueListenable: AppTranslations.notifier,
+                              builder: (context, _, _) => Text(
+                                'ui.sign_in_to_continue'.tr2,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.inkFaded,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed: () => _goLogin(context),
+                                icon: const Icon(Icons.login_rounded, size: 18),
+                                label: ValueListenableBuilder<int>(
+                                  valueListenable: AppTranslations.notifier,
+                                  builder: (context, _, _) => Text(
+                                    'ui.go_to_login'.tr2,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.brandDark,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      _ProfileRadii.button,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -219,7 +224,7 @@ class ProfileScreen extends StatelessWidget {
                               title: 'ui.notification_preferences'.tr2,
                               subtitle: 'ui.notification_sub'.tr2,
                             ),
-                          ]),
+                          ], shape: DashShape.band),
                         ),
                         const SizedBox(height: 20),
                         ValueListenableBuilder<int>(
@@ -240,7 +245,7 @@ class ProfileScreen extends StatelessWidget {
                               title: 'ui.bazar_roster'.tr2,
                               subtitle: 'ui.assign_shopping'.tr2,
                             ),
-                          ]),
+                          ], shape: DashShape.arc),
                         ),
                         const SizedBox(height: 20),
                         ValueListenableBuilder<int>(
@@ -261,7 +266,7 @@ class ProfileScreen extends StatelessWidget {
                               title: 'ui.privacy_terms'.tr2,
                               subtitle: 'ui.privacy_sub'.tr2,
                             ),
-                          ]),
+                          ], shape: DashShape.dots),
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
@@ -295,7 +300,9 @@ class ProfileScreen extends StatelessWidget {
                                 width: 1.2,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(DashUI.rCard),
+                                borderRadius: BorderRadius.circular(
+                                  _ProfileRadii.button,
+                                ),
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
@@ -350,23 +357,11 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildDashboardButton(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.brandDark, AppColors.brandDeep],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.brandDark.withValues(alpha: 0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return DashUI.accentedCard(
+      accent: AppColors.brand,
+      shape: DashShape.arc,
+      radius: _ProfileRadii.card,
+      shadow: DashUI.cardShadow,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -375,20 +370,20 @@ class ProfileScreen extends StatelessWidget {
               context,
             ).push(MaterialPageRoute(builder: (_) => const DashboardScreen()));
           },
-          borderRadius: BorderRadius.circular(DashUI.rCard),
+          borderRadius: BorderRadius.circular(_ProfileRadii.card),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                  decoration: const BoxDecoration(
+                    color: AppColors.brandSoft,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.dashboard_rounded,
-                    color: Colors.white,
+                    color: AppColors.brandDark,
                     size: 20,
                   ),
                 ),
@@ -404,7 +399,7 @@ class ProfileScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: AppColors.ink,
                           ),
                         ),
                       ),
@@ -415,7 +410,7 @@ class ProfileScreen extends StatelessWidget {
                           'ui.dashboard_subtitle'.tr2,
                           style: const TextStyle(
                             fontSize: 11.5,
-                            color: Colors.white70,
+                            color: AppColors.inkFaded,
                           ),
                         ),
                       ),
@@ -424,7 +419,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const Icon(
                   Icons.arrow_forward_rounded,
-                  color: Colors.white,
+                  color: AppColors.inkFaded,
                   size: 20,
                 ),
               ],
@@ -439,11 +434,15 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.brandDark,
-        borderRadius: BorderRadius.circular(DashUI.rCard),
+        color: AppColors.paperRaised,
+        borderRadius: BorderRadius.circular(_ProfileRadii.card),
+        border: Border.all(color: AppColors.paperLine),
       ),
       child: const Center(
-        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+        child: CircularProgressIndicator(
+          color: AppColors.brandDark,
+          strokeWidth: 2,
+        ),
       ),
     );
   }
@@ -453,98 +452,98 @@ class ProfileScreen extends StatelessWidget {
     final avatarUrl = AppConfig.sanitizeImageUrl(user.avatarUrl);
     final isPremiumUser = user.isHostelOwner;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.brandDark, AppColors.brandDeep],
+    return DashUI.accentedCard(
+      accent: AppColors.brand,
+      shape: DashShape.blob,
+      radius: _ProfileRadii.card,
+      rich: true,
+      shadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.05),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
         ),
-        borderRadius: BorderRadius.circular(DashUI.rCard),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.brandDark.withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.15),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 2,
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.brandSoft,
+                border: Border.all(
+                  color: AppColors.brandDark.withValues(alpha: 0.15),
+                  width: 2,
+                ),
+              ),
+              child: ClipOval(
+                child: avatarUrl != null
+                    ? Image.network(
+                        avatarUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (ctx, obj, stk) =>
+                            _initialAvatar(user.initials),
+                      )
+                    : _initialAvatar(user.initials),
               ),
             ),
-            child: ClipOval(
-              child: avatarUrl != null
-                  ? Image.network(
-                      avatarUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, obj, stk) =>
-                          _initialAvatar(user.initials),
-                    )
-                  : _initialAvatar(user.initials),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  user.email,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: Colors.white.withValues(alpha: 0.8),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: user.isIndividual
-                        ? const Color(0xFFE85D04)
-                        : const Color(0xFF0F9F59),
-                    borderRadius: BorderRadius.circular(DashUI.rTile),
-                  ),
-                  child: Text(
-                    user.roleLabel,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    user.name,
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 18,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
+                      color: AppColors.ink,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    user.email,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: AppColors.inkFaded,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: user.isIndividual
+                          ? AppColors.amberSoft
+                          : AppColors.emeraldSoft,
+                      borderRadius: BorderRadius.circular(_ProfileRadii.badge),
+                    ),
+                    child: Text(
+                      user.roleLabel,
+                      style: TextStyle(
+                        color: user.isIndividual
+                            ? AppColors.amber
+                            : AppColors.emerald,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          _AccountTierBadge(isPremium: isPremiumUser),
-        ],
+            const SizedBox(width: 10),
+            _AccountTierBadge(isPremium: isPremiumUser),
+          ],
+        ),
       ),
     );
   }
@@ -553,7 +552,7 @@ class ProfileScreen extends StatelessWidget {
     child: Text(
       ch,
       style: const TextStyle(
-        color: Colors.white,
+        color: AppColors.brandDark,
         fontSize: 24,
         fontWeight: FontWeight.w800,
       ),
@@ -572,7 +571,7 @@ class ProfileScreen extends StatelessWidget {
               icon: Icons.add_circle_outline_rounded,
               title: 'ui.quick_post_seat'.tr2,
               subtitle: 'ui.quick_post_seat_sub'.tr2,
-              isAccent: true,
+              shape: DashShape.blob,
               onTap: () {
                 Navigator.of(
                   context,
@@ -587,7 +586,7 @@ class ProfileScreen extends StatelessWidget {
               icon: Icons.restaurant_menu_rounded,
               title: 'ui.quick_meal_counter'.tr2,
               subtitle: 'ui.quick_meal_counter_sub'.tr2,
-              isAccent: false,
+              shape: DashShape.dots,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -605,67 +604,51 @@ class ProfileScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required String subtitle,
-    required bool isAccent,
+    required DashShape shape,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isAccent ? AppColors.brandDark : AppColors.paperRaised,
-          borderRadius: BorderRadius.circular(DashUI.rCard),
-          border: Border.all(
-            color: isAccent ? AppColors.brandDark : AppColors.paperLine,
+      child: DashUI.accentedCard(
+        accent: AppColors.brand,
+        shape: shape,
+        radius: _ProfileRadii.card,
+        shadow: DashUI.cardShadow,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.brandSoft,
+                ),
+                child: Icon(icon, color: AppColors.brandDark, size: 20),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.ink,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.inkFaded,
+                ),
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isAccent
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : AppColors.brandSoft,
-              ),
-              child: Icon(
-                icon,
-                color: isAccent ? Colors.white : AppColors.brandDark,
-                size: 20,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w900,
-                color: isAccent ? Colors.white : AppColors.ink,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11.5,
-                color: isAccent
-                    ? Colors.white.withValues(alpha: 0.7)
-                    : AppColors.inkFaded,
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -686,21 +669,23 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _menuGroup(
     BuildContext context,
-    List<({IconData icon, String title, String subtitle})> items,
-  ) => Material(
-    color: AppColors.paperRaised,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(DashUI.rCard),
-      side: const BorderSide(color: AppColors.paperLine),
-    ),
-    clipBehavior: Clip.antiAlias,
-    child: Column(
-      children: [
-        for (var i = 0; i < items.length; i++) ...[
-          if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
-          _menuRow(context, items[i]),
+    List<({IconData icon, String title, String subtitle})> items, {
+    DashShape shape = DashShape.band,
+  }) => DashUI.accentedCard(
+    accent: AppColors.brand,
+    shape: shape,
+    radius: _ProfileRadii.card,
+    shadow: DashUI.cardShadow,
+    child: Material(
+      color: Colors.transparent,
+      child: Column(
+        children: [
+          for (var i = 0; i < items.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
+            _menuRow(context, items[i]),
+          ],
         ],
-      ],
+      ),
     ),
   );
 
@@ -721,6 +706,10 @@ class ProfileScreen extends StatelessWidget {
         Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const DashboardScreen()));
+      } else if (item.icon == Icons.shield_outlined) {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const LegalScreen()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${item.title} \u2014 coming soon')),
@@ -728,12 +717,12 @@ class ProfileScreen extends StatelessWidget {
       }
     },
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-    tileColor: AppColors.paperRaised,
+    tileColor: Colors.transparent,
     leading: Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: AppColors.brandSoft,
-        borderRadius: BorderRadius.circular(DashUI.rBtn),
+        borderRadius: BorderRadius.circular(_ProfileRadii.chip),
       ),
       child: Icon(item.icon, color: AppColors.brandDark, size: 20),
     ),
@@ -792,15 +781,12 @@ class _AccountTierBadge extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.15),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.25),
-          width: 1,
-        ),
+        color: Colors.white,
+        border: Border.all(color: AppColors.paperLine, width: 1),
       ),
       child: const Icon(
         Icons.verified_user_outlined,
-        color: Colors.white70,
+        color: AppColors.inkFaded,
         size: 20,
       ),
     );

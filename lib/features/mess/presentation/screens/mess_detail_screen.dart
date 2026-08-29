@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/cache_manager.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/widgets/app_circular_progress.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../dashboard/presentation/screens/dashboard_screen.dart';
@@ -168,10 +169,7 @@ class _MessDetailViewState extends State<_MessDetailView> with RouteAware {
             builder: (context, state) {
               if (state is MessLoading) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: AppColors.brandDark,
-                  ),
+                  child: AppCircularProgress(strokeWidth: 3.5),
                 );
               }
               if (state is MessError) {

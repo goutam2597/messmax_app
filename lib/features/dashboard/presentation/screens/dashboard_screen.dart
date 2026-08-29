@@ -7,6 +7,7 @@ import '../../../../core/network/cache_manager.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/bn_digits.dart';
 import '../../../../core/widgets/app_exit_dialog.dart';
+import '../../../../core/widgets/app_circular_progress.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/app_menu_button.dart';
 import '../cubit/dashboard_cubit.dart';
@@ -226,9 +227,12 @@ class _DashboardViewState extends State<_DashboardView> {
                                 ? const SizedBox(
                                     width: 14,
                                     height: 14,
-                                    child: CircularProgressIndicator(
+                                    child: AppCircularProgress(
+                                      size: 14,
                                       strokeWidth: 2,
-                                      color: Colors.white,
+                                      glow: false,
+                                      trackColor: Colors.white24,
+                                      colors: [Colors.white, Color(0xFFFFD9D7)],
                                     ),
                                   )
                                 : const Icon(Icons.send_rounded, size: 18),
@@ -434,9 +438,7 @@ class _DashboardViewState extends State<_DashboardView> {
           builder: (context, authState) {
             if (authState is AuthLoading) {
               return const SafeArea(
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.brandDark),
-                ),
+                child: Center(child: AppCircularProgress()),
               );
             }
             if (authState is! AuthAuthenticated) {
@@ -562,11 +564,7 @@ class _DashboardViewState extends State<_DashboardView> {
               child: BlocBuilder<DashboardCubit, DashboardState>(
                 builder: (context, state) {
                   if (state is DashboardLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.brandDark,
-                      ),
-                    );
+                    return const Center(child: AppCircularProgress());
                   }
 
                   if (state is DashboardError) {
@@ -623,8 +621,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(
+                                            borderRadius: BorderRadius.circular(
                                               DashUI.rTile,
                                             ),
                                           ),
@@ -938,7 +935,7 @@ class _DashboardViewState extends State<_DashboardView> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.brand, AppColors.brandDeep],
+          colors: [Color(0xFF2B313A), Color(0xFF171A1F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           stops: [0.0, 1.0],
@@ -946,14 +943,32 @@ class _DashboardViewState extends State<_DashboardView> {
         borderRadius: BorderRadius.circular(DashUI.rCard),
         boxShadow: [
           BoxShadow(
-            color: AppColors.brand.withValues(alpha: 0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: const Color(0x33000000),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Stack(
         children: [
+          // Warm brand glow — a quiet accent on the dark surface.
+          Positioned(
+            top: -70,
+            right: -50,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.brand.withValues(alpha: 0.20),
+                    AppColors.brand.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
           // Decorative corner shapes — quiet depth on the dark surface.
           Positioned(
             top: -46,
@@ -963,7 +978,7 @@ class _DashboardViewState extends State<_DashboardView> {
               height: 150,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
+                color: Colors.white.withValues(alpha: 0.04),
               ),
             ),
           ),
@@ -976,7 +991,7 @@ class _DashboardViewState extends State<_DashboardView> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.10),
+                  color: Colors.white.withValues(alpha: 0.08),
                   width: 1.5,
                 ),
               ),
@@ -990,7 +1005,7 @@ class _DashboardViewState extends State<_DashboardView> {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.brandDeep.withValues(alpha: 0.18),
+                color: AppColors.brand.withValues(alpha: 0.07),
               ),
             ),
           ),
@@ -1002,262 +1017,262 @@ class _DashboardViewState extends State<_DashboardView> {
               height: 26,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
               ),
             ),
           ),
           Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: activeMess != null
-              ? () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => MessDetailScreen(messId: activeMess.id),
-                  ),
-                )
-              : null,
-          borderRadius: BorderRadius.circular(DashUI.rCard),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: activeMess != null
+                  ? () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => MessDetailScreen(messId: activeMess.id),
+                      ),
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(DashUI.rCard),
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Flexible(
-                                child: Text(
-                                  activeMess?.name ?? 'Mess Console',
-                                  style: const TextStyle(
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: -0.3,
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      activeMess?.name ?? 'Mess Console',
+                                      style: const TextStyle(
+                                        fontSize: 19,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: -0.3,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(
+                                        DashUI.rBtn,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      activeMess?.code ?? 'CODE',
+                                      style: const TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.brandDeep,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(
-                                    DashUI.rBtn,
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 13,
+                                    color: Colors.white70,
                                   ),
-                                ),
-                                child: Text(
-                                  activeMess?.code ?? 'CODE',
-                                  style: const TextStyle(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.brandDeep,
-                                    letterSpacing: 0.5,
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    activeMess?.location.isNotEmpty == true
+                                        ? activeMess!.location
+                                        : 'Dhaka',
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on_outlined,
-                                size: 13,
-                                color: Colors.white70,
+                        ),
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap:
+                              activeMess != null &&
+                                  activeMess.currentMonthId != null
+                              ? () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => MessSheetScreen(
+                                      messId: activeMess.id,
+                                      monthId: activeMess.currentMonthId!,
+                                      initialTab: 0,
+                                    ),
+                                  ),
+                                )
+                              : (activeMess != null
+                                    ? () => Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => MessDetailScreen(
+                                            messId: activeMess.id,
+                                          ),
+                                        ),
+                                      )
+                                    : null),
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(DashUI.rBtn),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.22),
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                activeMess?.location.isNotEmpty == true
-                                    ? activeMess!.location
-                                    : 'Dhaka',
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.w500,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'ui.dash_open_sheet'.tr2,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.3,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 4),
+                                Icon(
+                                  Icons.view_comfortable_outlined,
+                                  size: 13,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(DashUI.rTile),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.10),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _heroGlassChip(
+                              label: 'ui.dash_messes'.tr2,
+                              val: bnDigits(summary.totalMesses),
+                              sub: 'ui.dash_owned'.tr2,
+                              onTap: activeMess != null
+                                  ? () => Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => MessDetailScreen(
+                                          messId: activeMess.id,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                          Container(
+                            width: 1,
+                            height: 28,
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
+                          Expanded(
+                            child: _heroGlassChip(
+                              label: 'ui.dash_members'.tr2,
+                              val: bnDigits(summary.totalMembers),
+                              sub: 'ui.dash_active'.tr2,
+                              onTap: activeMess != null
+                                  ? () => Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => MessDetailScreen(
+                                          messId: activeMess.id,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                          Container(
+                            width: 1,
+                            height: 28,
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
+                          Expanded(
+                            child: _heroGlassChip(
+                              label: 'ui.dash_current_bazar'.tr2,
+                              val: '৳${bnDigits(summary.currentBazar.toInt())}',
+                              sub: 'ui.dash_spent'.tr2,
+                              onTap:
+                                  activeMess != null &&
+                                      activeMess.currentMonthId != null
+                                  ? () => Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => MessSheetScreen(
+                                          messId: activeMess.id,
+                                          monthId: activeMess.currentMonthId!,
+                                          initialTab: 0,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                          Container(
+                            width: 1,
+                            height: 28,
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
+                          Expanded(
+                            child: _heroGlassChip(
+                              label: 'ui.dash_meals'.tr2,
+                              val: bnDigits(summary.currentMeals.toInt()),
+                              sub: 'ui.dash_total'.tr2,
+                              onTap:
+                                  activeMess != null &&
+                                      activeMess.currentMonthId != null
+                                  ? () => Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => MessSheetScreen(
+                                          messId: activeMess.id,
+                                          monthId: activeMess.currentMonthId!,
+                                          initialTab: 0,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    InkWell(
-                      onTap:
-                          activeMess != null &&
-                              activeMess.currentMonthId != null
-                          ? () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => MessSheetScreen(
-                                  messId: activeMess.id,
-                                  monthId: activeMess.currentMonthId!,
-                                  initialTab: 0,
-                                ),
-                              ),
-                            )
-                          : (activeMess != null
-                                ? () => Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => MessDetailScreen(
-                                        messId: activeMess.id,
-                                      ),
-                                    ),
-                                  )
-                                : null),
-                      borderRadius: BorderRadius.circular(DashUI.rBtn),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(DashUI.rBtn),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'ui.dash_open_sheet'.tr2,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Icon(
-                              Icons.view_comfortable_outlined,
-                              size: 13,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-                const SizedBox(height: 18),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(DashUI.rTile),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.12),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _heroGlassChip(
-                          label: 'ui.dash_messes'.tr2,
-                          val: bnDigits(summary.totalMesses),
-                          sub: 'ui.dash_owned'.tr2,
-                          onTap: activeMess != null
-                              ? () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        MessDetailScreen(messId: activeMess.id),
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 28,
-                        color: Colors.white.withValues(alpha: 0.15),
-                      ),
-                      Expanded(
-                        child: _heroGlassChip(
-                          label: 'ui.dash_members'.tr2,
-                          val: bnDigits(summary.totalMembers),
-                          sub: 'ui.dash_active'.tr2,
-                          onTap: activeMess != null
-                              ? () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        MessDetailScreen(messId: activeMess.id),
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 28,
-                        color: Colors.white.withValues(alpha: 0.15),
-                      ),
-                      Expanded(
-                        child: _heroGlassChip(
-                          label: 'ui.dash_current_bazar'.tr2,
-                          val: '৳${bnDigits(summary.currentBazar.toInt())}',
-                          sub: 'ui.dash_spent'.tr2,
-                          onTap:
-                              activeMess != null &&
-                                  activeMess.currentMonthId != null
-                              ? () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => MessSheetScreen(
-                                      messId: activeMess.id,
-                                      monthId: activeMess.currentMonthId!,
-                                      initialTab: 0,
-                                    ),
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 28,
-                        color: Colors.white.withValues(alpha: 0.15),
-                      ),
-                      Expanded(
-                        child: _heroGlassChip(
-                          label: 'ui.dash_meals'.tr2,
-                          val: bnDigits(summary.currentMeals.toInt()),
-                          sub: 'ui.dash_total'.tr2,
-                          onTap:
-                              activeMess != null &&
-                                  activeMess.currentMonthId != null
-                              ? () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => MessSheetScreen(
-                                      messId: activeMess.id,
-                                      monthId: activeMess.currentMonthId!,
-                                      initialTab: 0,
-                                    ),
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                     ],
-                   ),
-                 ),
-               ],
-             ),
-           ),
-         ),
-       ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1645,7 +1660,8 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildPendingItemsCard(    BuildContext context,
+  Widget _buildPendingItemsCard(
+    BuildContext context,
     List<PendingItemModel> items,
   ) {
     return Container(
@@ -2165,177 +2181,177 @@ class _DashboardViewState extends State<_DashboardView> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${'ui.dash_no_prefix'.tr2} ${bnDigits(strPad(i + 1))}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.inkFaded,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${'ui.dash_no_prefix'.tr2} ${bnDigits(strPad(i + 1))}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.inkFaded,
+                            ),
                           ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.paper,
+                              borderRadius: BorderRadius.circular(DashUI.rBtn),
+                              border: Border.all(color: AppColors.paperLine),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.people_outline_rounded,
+                                  size: 13,
+                                  color: AppColors.inkSoft,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${bnDigits(messes[i].membersCount)} ${'ui.dash_members'.tr2}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.inkSoft,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              messes[i].name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.ink,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: messes[i].isManager
+                                  ? AppColors.brandDark
+                                  : AppColors.paperLine,
+                              borderRadius: BorderRadius.circular(DashUI.rBtn),
+                            ),
+                            child: Text(
+                              messes[i].displayRoleLabel.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w900,
+                                color: messes[i].isManager
+                                    ? Colors.white
+                                    : AppColors.inkSoft,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (messes[i].location.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 14,
+                              color: AppColors.brandDark,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              messes[i].location,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.inkFaded,
+                              ),
+                            ),
+                          ],
                         ),
+                      ],
+                      if (messes[i].activeMonthLabel != null) ...[
+                        const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: AppColors.paper,
-                            borderRadius: BorderRadius.circular(DashUI.rBtn),
+                            borderRadius: BorderRadius.circular(DashUI.rTile),
                             border: Border.all(color: AppColors.paperLine),
                           ),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Icon(
-                                Icons.people_outline_rounded,
-                                size: 13,
-                                color: AppColors.inkSoft,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'ui.dash_active_month'.tr2,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.inkFaded,
+                                    ),
+                                  ),
+                                  Text(
+                                    messes[i].activeMonthLabel!,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.ink,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${bnDigits(messes[i].membersCount)} ${'ui.dash_members'.tr2}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.inkSoft,
-                                ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'ui.dash_bazar_meals'.tr2,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.inkFaded,
+                                    ),
+                                  ),
+                                  Text(
+                                    '৳${bnDigits(messes[i].activeMonthBazar.toInt())} . ${bnDigits(messes[i].activeMonthMeals.toInt())} ${'ui.dash_meals'.tr2}',
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.brandDark,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            messes[i].name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.ink,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: messes[i].isManager
-                                ? AppColors.brandDark
-                                : AppColors.paperLine,
-                            borderRadius: BorderRadius.circular(DashUI.rBtn),
-                          ),
-                          child: Text(
-                            messes[i].displayRoleLabel.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w900,
-                              color: messes[i].isManager
-                                  ? Colors.white
-                                  : AppColors.inkSoft,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (messes[i].location.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on_outlined,
-                            size: 14,
-                            color: AppColors.brandDark,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            messes[i].location,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.inkFaded,
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
-                    if (messes[i].activeMonthLabel != null) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.paper,
-                          borderRadius: BorderRadius.circular(DashUI.rTile),
-                          border: Border.all(color: AppColors.paperLine),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'ui.dash_active_month'.tr2,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.inkFaded,
-                                  ),
-                                ),
-                                Text(
-                                  messes[i].activeMonthLabel!,
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.ink,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'ui.dash_bazar_meals'.tr2,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.inkFaded,
-                                  ),
-                                ),
-                                Text(
-                                  '৳${bnDigits(messes[i].activeMonthBazar.toInt())} . ${bnDigits(messes[i].activeMonthMeals.toInt())} ${'ui.dash_meals'.tr2}',
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.brandDark,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                     ],
-                   ],
-                 ),
-               ),
-               ),
-             ),
-           ),
-         ],
-       ],
-     );
-   }
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 
-   String strPad(int val) {
+  String strPad(int val) {
     return val < 10 ? '0$val' : '$val';
   }
 }

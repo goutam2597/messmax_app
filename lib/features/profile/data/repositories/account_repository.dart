@@ -17,14 +17,18 @@ class AccountRepository {
 
   static AccountResponseModel? getCached() => _cachedAccount;
 
-  Future<AccountResponseModel> fetchAccountDetails({bool forceRefresh = false}) async {
+  Future<AccountResponseModel> fetchAccountDetails({
+    bool forceRefresh = false,
+  }) async {
     if (!forceRefresh && _cachedAccount != null) {
       return _cachedAccount!;
     }
     try {
       final response = await _dio.get(ApiEndpoints.account);
       if (response.data != null && response.data is Map<String, dynamic>) {
-        _cachedAccount = AccountResponseModel.fromJson(response.data as Map<String, dynamic>);
+        _cachedAccount = AccountResponseModel.fromJson(
+          response.data as Map<String, dynamic>,
+        );
         return _cachedAccount!;
       }
       throw Exception('Invalid account API payload');
@@ -41,10 +45,7 @@ class AccountRepository {
     String? avatarFilePath,
   }) async {
     try {
-      final formDataMap = <String, dynamic>{
-        'name': name,
-        'email': email,
-      };
+      final formDataMap = <String, dynamic>{'name': name, 'email': email};
 
       if (avatarFilePath != null && avatarFilePath.isNotEmpty) {
         formDataMap['avatar'] = await MultipartFile.fromFile(
@@ -99,7 +100,9 @@ class AccountRepository {
     try {
       final response = await _dio.delete(
         ApiEndpoints.account,
-        data: password != null && password.isNotEmpty ? {'password': password} : null,
+        data: password != null && password.isNotEmpty
+            ? {'password': password}
+            : null,
       );
       if (response.statusCode == 200 || response.data?['success'] == true) {
         clearCache();

@@ -89,7 +89,9 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> _loadAccountDetails({bool forceRefresh = false}) async {
     try {
-      final res = await _repository.fetchAccountDetails(forceRefresh: forceRefresh);
+      final res = await _repository.fetchAccountDetails(
+        forceRefresh: forceRefresh,
+      );
       if (!mounted) return;
       setState(() {
         _accountData = res;
@@ -113,9 +115,9 @@ class _AccountScreenState extends State<AccountScreen> {
       return;
     }
     if (email.isEmpty || !email.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ui.account_email_invalid'.tr2)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.account_email_invalid'.tr2)));
       return;
     }
 
@@ -132,14 +134,16 @@ class _AccountScreenState extends State<AccountScreen> {
       // Re-hydrate AuthCubit to refresh user profile app-wide
       context.read<AuthCubit>().checkAuth();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ui.account_profile_updated'.tr2)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.account_profile_updated'.tr2)));
       _loadAccountDetails(forceRefresh: true);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${'ui.account_profile_failed'.tr2}: ${e.toString()}')),
+        SnackBar(
+          content: Text('${'ui.account_profile_failed'.tr2}: ${e.toString()}'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isSavingProfile = false);
@@ -158,17 +162,15 @@ class _AccountScreenState extends State<AccountScreen> {
       return;
     }
     if (newPass.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('ui.account_new_pass_short'.tr2),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.account_new_pass_short'.tr2)));
       return;
     }
     if (newPass != confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ui.account_pass_mismatch'.tr2)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.account_pass_mismatch'.tr2)));
       return;
     }
 
@@ -183,13 +185,15 @@ class _AccountScreenState extends State<AccountScreen> {
       _currentPassController.clear();
       _newPassController.clear();
       _confirmPassController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ui.account_pass_updated'.tr2)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ui.account_pass_updated'.tr2)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${'ui.account_pass_failed'.tr2}: ${e.toString()}')),
+        SnackBar(
+          content: Text('${'ui.account_pass_failed'.tr2}: ${e.toString()}'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isUpdatingPassword = false);
@@ -217,9 +221,7 @@ class _AccountScreenState extends State<AccountScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
-          leading: AppBackButton(
-            onPressed: _backToDashboard,
-          ),
+          leading: AppBackButton(onPressed: _backToDashboard),
           title: Text(
             'ui.my_account'.tr2,
             style: const TextStyle(
@@ -259,40 +261,40 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ],
         ),
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.brandDark),
-              )
-            : RefreshIndicator(
-                color: AppColors.brandDark,
-                onRefresh: () => _loadAccountDetails(forceRefresh: true),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildUserHeaderCard(context),
-                      const SizedBox(height: 20),
-                      _buildLanguageCard(context),
-                      const SizedBox(height: 20),
-                      _buildProfileEditCard(),
-                      const SizedBox(height: 20),
-                      _buildPasswordEditCard(),
-                      const SizedBox(height: 20),
-                      if (_accountData != null &&
-                          _accountData!.messes.isNotEmpty) ...[
-                        _buildMyMessesCard(_accountData!.messes),
+        body: SafeArea(
+          child: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.brandDark),
+                )
+              : RefreshIndicator(
+                  color: AppColors.brandDark,
+                  onRefresh: () => _loadAccountDetails(forceRefresh: true),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildUserHeaderCard(context),
                         const SizedBox(height: 20),
+                        _buildLanguageCard(context),
+                        const SizedBox(height: 20),
+                        _buildProfileEditCard(),
+                        const SizedBox(height: 20),
+                        _buildPasswordEditCard(),
+                        const SizedBox(height: 20),
+                        if (_accountData != null &&
+                            _accountData!.messes.isNotEmpty) ...[
+                          _buildMyMessesCard(_accountData!.messes),
+                          const SizedBox(height: 20),
+                        ],
+                        _buildDeleteAccountCard(context),
                       ],
-                      _buildDeleteAccountCard(context),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+        ),
       ),
-    ),
     );
   }
 
@@ -369,123 +371,124 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           Row(
-        children: [
-          GestureDetector(
-            onTap: _pickAvatarImage,
-            child: Stack(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.15),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.35),
-                      width: 2,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: _selectedAvatarPath != null
-                        ? Image.file(
-                            File(_selectedAvatarPath!),
-                            fit: BoxFit.cover,
-                          )
-                        : (avatarUrl != null
-                            ? Image.network(
-                                avatarUrl,
+            children: [
+              GestureDetector(
+                onTap: _pickAvatarImage,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.15),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          width: 2,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: _selectedAvatarPath != null
+                            ? Image.file(
+                                File(_selectedAvatarPath!),
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Center(
-                                  child: Text(
-                                    initials,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
                               )
-                            : Center(
-                                child: Text(
-                                  initials,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              )),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: const BoxDecoration(
-                      color: AppColors.brandDark,
-                      shape: BoxShape.circle,
+                            : (avatarUrl != null
+                                  ? Image.network(
+                                      avatarUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Center(
+                                                child: Text(
+                                                  initials,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 24,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
+                                                ),
+                                              ),
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        initials,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    )),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.camera_alt_rounded,
-                      color: Colors.white,
-                      size: 13,
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: AppColors.brandDark,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          color: Colors.white,
+                          size: 13,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      userName,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      userEmail,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: user?.isIndividual == true
+                            ? AppColors.amber
+                            : AppColors.emerald,
+                        borderRadius: BorderRadius.circular(DashUI.rTile),
+                      ),
+                      child: Text(
+                        roleLabel,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  userName,
-                  style: const TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  userEmail,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: Colors.white.withValues(alpha: 0.8),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: user?.isIndividual == true
-                        ? AppColors.amber
-                        : AppColors.emerald,
-                    borderRadius: BorderRadius.circular(DashUI.rTile),
-                  ),
-                  child: Text(
-                    roleLabel,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
         ],
       ),
     );
@@ -510,7 +513,11 @@ class _AccountScreenState extends State<AccountScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.badge_outlined, color: AppColors.brandDark, size: 20),
+                const Icon(
+                  Icons.badge_outlined,
+                  color: AppColors.brandDark,
+                  size: 20,
+                ),
                 SizedBox(width: 8),
                 Text(
                   'ui.account_personal_title'.tr2,
@@ -522,139 +529,142 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               ],
             ),
-          const SizedBox(height: 16),
-          Text(
-            'ui.account_full_name'.tr2,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkSoft,
-            ),
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _nameController,
-            textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              hintText: 'ui.account_name_hint'.tr2,
-              prefixIcon: Icon(
-                Icons.person_outline_rounded,
-                size: 20,
-                color: AppColors.inkFaded,
+            const SizedBox(height: 16),
+            Text(
+              'ui.account_full_name'.tr2,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkSoft,
               ),
             ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'ui.account_email_label'.tr2,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkSoft,
-            ),
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              hintText: 'ui.account_email_hint'.tr2,
-              prefixIcon: Icon(
-                Icons.email_outlined,
-                size: 20,
-                color: AppColors.inkFaded,
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'ui.account_avatar_label'.tr2,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkSoft,
-            ),
-          ),
-          const SizedBox(height: 6),
-          InkWell(
-            onTap: _pickAvatarImage,
-            borderRadius: BorderRadius.circular(DashUI.rTile),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.paper,
-                borderRadius: BorderRadius.circular(DashUI.rTile),
-                border: Border.all(
-                  color: _selectedAvatarPath != null
-                      ? AppColors.brandDark
-                      : AppColors.paperLine,
-                  width: _selectedAvatarPath != null ? 1.5 : 1,
+            const SizedBox(height: 6),
+            TextField(
+              controller: _nameController,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                hintText: 'ui.account_name_hint'.tr2,
+                prefixIcon: Icon(
+                  Icons.person_outline_rounded,
+                  size: 20,
+                  color: AppColors.inkFaded,
                 ),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(DashUI.rBtn),
-                    ),
-                    child: const Icon(
-                      Icons.add_a_photo_outlined,
-                      size: 18,
-                      color: AppColors.brandDark,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _selectedAvatarPath != null
-                          ? '${'ui.account_photo_selected'.tr2} (${_selectedAvatarPath!.split('/').last})'
-                          : 'ui.account_photo_tap'.tr2,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: _selectedAvatarPath != null
-                            ? FontWeight.w800
-                            : FontWeight.w600,
-                        color: _selectedAvatarPath != null
-                            ? AppColors.brandDark
-                            : AppColors.inkSoft,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (_selectedAvatarPath != null)
-                    GestureDetector(
-                      onTap: () => setState(() => _selectedAvatarPath = null),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        size: 18,
-                        color: AppColors.inkFaded,
-                      ),
-                    ),
-                ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'ui.account_email_label'.tr2,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkSoft,
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: _isSavingProfile ? null : _saveProfile,
-              child: _isSavingProfile
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text('ui.account_save_profile'.tr2),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                hintText: 'ui.account_email_hint'.tr2,
+                prefixIcon: Icon(
+                  Icons.email_outlined,
+                  size: 20,
+                  color: AppColors.inkFaded,
+                ),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            Text(
+              'ui.account_avatar_label'.tr2,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkSoft,
+              ),
+            ),
+            const SizedBox(height: 6),
+            InkWell(
+              onTap: _pickAvatarImage,
+              borderRadius: BorderRadius.circular(DashUI.rTile),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.paper,
+                  borderRadius: BorderRadius.circular(DashUI.rTile),
+                  border: Border.all(
+                    color: _selectedAvatarPath != null
+                        ? AppColors.brandDark
+                        : AppColors.paperLine,
+                    width: _selectedAvatarPath != null ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.brandSoft,
+                        borderRadius: BorderRadius.circular(DashUI.rBtn),
+                      ),
+                      child: const Icon(
+                        Icons.add_a_photo_outlined,
+                        size: 18,
+                        color: AppColors.brandDark,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _selectedAvatarPath != null
+                            ? '${'ui.account_photo_selected'.tr2} (${_selectedAvatarPath!.split('/').last})'
+                            : 'ui.account_photo_tap'.tr2,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: _selectedAvatarPath != null
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: _selectedAvatarPath != null
+                              ? AppColors.brandDark
+                              : AppColors.inkSoft,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (_selectedAvatarPath != null)
+                      GestureDetector(
+                        onTap: () => setState(() => _selectedAvatarPath = null),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: AppColors.inkFaded,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _isSavingProfile ? null : _saveProfile,
+                child: _isSavingProfile
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text('ui.account_save_profile'.tr2),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -675,145 +685,145 @@ class _AccountScreenState extends State<AccountScreen> {
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.lock_reset_rounded,
-                color: AppColors.brandDark,
-                size: 20,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'ui.account_change_pass_title'.tr2,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.lock_reset_rounded,
+                  color: AppColors.brandDark,
+                  size: 20,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'ui.account_current_pass'.tr2,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkSoft,
+                SizedBox(width: 8),
+                Text(
+                  'ui.account_change_pass_title'.tr2,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _currentPassController,
-            obscureText: _obscureCurrent,
-            decoration: InputDecoration(
-              hintText: '••••••••',
-              prefixIcon: const Icon(
-                Icons.lock_outline_rounded,
-                size: 20,
-                color: AppColors.inkFaded,
+            const SizedBox(height: 16),
+            Text(
+              'ui.account_current_pass'.tr2,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkSoft,
               ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscureCurrent
-                      ? Icons.visibility_off_rounded
-                      : Icons.visibility_rounded,
-                  size: 18,
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _currentPassController,
+              obscureText: _obscureCurrent,
+              decoration: InputDecoration(
+                hintText: '••••••••',
+                prefixIcon: const Icon(
+                  Icons.lock_outline_rounded,
+                  size: 20,
                   color: AppColors.inkFaded,
                 ),
-                onPressed: () =>
-                    setState(() => _obscureCurrent = !_obscureCurrent),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureCurrent
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    size: 18,
+                    color: AppColors.inkFaded,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscureCurrent = !_obscureCurrent),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'ui.account_new_pass'.tr2,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkSoft,
-            ),
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _newPassController,
-            obscureText: _obscureNew,
-            decoration: InputDecoration(
-              hintText: 'ui.account_new_pass_hint'.tr2,
-              prefixIcon: const Icon(
-                Icons.key_rounded,
-                size: 20,
-                color: AppColors.inkFaded,
+            const SizedBox(height: 14),
+            Text(
+              'ui.account_new_pass'.tr2,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkSoft,
               ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscureNew
-                      ? Icons.visibility_off_rounded
-                      : Icons.visibility_rounded,
-                  size: 18,
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _newPassController,
+              obscureText: _obscureNew,
+              decoration: InputDecoration(
+                hintText: 'ui.account_new_pass_hint'.tr2,
+                prefixIcon: const Icon(
+                  Icons.key_rounded,
+                  size: 20,
                   color: AppColors.inkFaded,
                 ),
-                onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureNew
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    size: 18,
+                    color: AppColors.inkFaded,
+                  ),
+                  onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'ui.account_confirm_new_pass'.tr2,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkSoft,
-            ),
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _confirmPassController,
-            obscureText: _obscureConfirm,
-            decoration: InputDecoration(
-              hintText: 'ui.account_confirm_hint'.tr2,
-              prefixIcon: const Icon(
-                Icons.check_circle_outline_rounded,
-                size: 20,
-                color: AppColors.inkFaded,
+            const SizedBox(height: 14),
+            Text(
+              'ui.account_confirm_new_pass'.tr2,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkSoft,
               ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscureConfirm
-                      ? Icons.visibility_off_rounded
-                      : Icons.visibility_rounded,
-                  size: 18,
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _confirmPassController,
+              obscureText: _obscureConfirm,
+              decoration: InputDecoration(
+                hintText: 'ui.account_confirm_hint'.tr2,
+                prefixIcon: const Icon(
+                  Icons.check_circle_outline_rounded,
+                  size: 20,
                   color: AppColors.inkFaded,
                 ),
-                onPressed: () =>
-                    setState(() => _obscureConfirm = !_obscureConfirm),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureConfirm
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    size: 18,
+                    color: AppColors.inkFaded,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscureConfirm = !_obscureConfirm),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: _isUpdatingPassword ? null : _updatePassword,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.brandDark,
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _isUpdatingPassword ? null : _updatePassword,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.brandDark,
+                ),
+                child: _isUpdatingPassword
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text('ui.account_update_pass'.tr2),
               ),
-              child: _isUpdatingPassword
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text('ui.account_update_pass'.tr2),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -834,107 +844,113 @@ class _AccountScreenState extends State<AccountScreen> {
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.apartment_rounded,
-                    color: AppColors.brandDark,
-                    size: 20,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.apartment_rounded,
+                      color: AppColors.brandDark,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'ui.account_my_messes'.tr2,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
                   ),
-                  SizedBox(width: 8),
-                  Text(
-                    'ui.account_my_messes'.tr2,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.ink,
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
+                  ),
+                  child: Text(
+                    '${messes.length} ${'ui.account_total'.tr2}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.brandDark,
                     ),
                   ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(DashUI.rBtn),
                 ),
-                child: Text(
-                  '${messes.length} ${'ui.account_total'.tr2}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.brandDark,
+              ],
+            ),
+            const SizedBox(height: 14),
+            for (var i = 0; i < messes.length; i++) ...[
+              if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                  );
+                },
+                borderRadius: BorderRadius.circular(DashUI.rTile),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 4,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.brandSoft,
+                          borderRadius: BorderRadius.circular(DashUI.rBtn),
+                        ),
+                        child: const Icon(
+                          Icons.home_work_rounded,
+                          size: 18,
+                          color: AppColors.brandDark,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              messes[i].name,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.ink,
+                              ),
+                            ),
+                            Text(
+                              '${messes[i].membersCount} ${'ui.messes_members'.tr2} • ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: AppColors.inkFaded,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.inkFaded,
+                        size: 20,
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 14),
-          for (var i = 0; i < messes.length; i++) ...[
-            if (i > 0) const Divider(height: 1, color: AppColors.paperLine),
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                );
-              },
-              borderRadius: BorderRadius.circular(DashUI.rTile),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.brandSoft,
-                        borderRadius: BorderRadius.circular(DashUI.rBtn),
-                      ),
-                      child: const Icon(
-                        Icons.home_work_rounded,
-                        size: 18,
-                        color: AppColors.brandDark,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            messes[i].name,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.ink,
-                            ),
-                          ),
-                          Text(
-                            '${messes[i].membersCount} ${'ui.messes_members'.tr2} • ${'ui.account_role_label'.tr2}: ${messes[i].role.toUpperCase()}',
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              color: AppColors.inkFaded,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: AppColors.inkFaded,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -948,59 +964,59 @@ class _AccountScreenState extends State<AccountScreen> {
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.warning_amber_rounded,
-                color: AppColors.danger,
-                size: 20,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'ui.account_danger_zone'.tr2,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
                   color: AppColors.danger,
+                  size: 20,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'ui.account_danger_desc'.tr2,
-            style: TextStyle(
-              fontSize: 12.5,
-              color: AppColors.inkSoft,
-              height: 1.4,
+                SizedBox(width: 8),
+                Text(
+                  'ui.account_danger_zone'.tr2,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.danger,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 48,
-            child: OutlinedButton.icon(
-              onPressed: _handleDeleteAccount,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.danger,
-                side: const BorderSide(color: AppColors.danger, width: 1.2),
-                minimumSize: const Size(0, 48),
-                fixedSize: const Size.fromHeight(48),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(DashUI.rCard),
-                ),
-              ),
-              icon: const Icon(Icons.delete_forever_rounded, size: 18),
-              label: Text(
-                'ui.account_delete_btn'.tr2,
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+            const SizedBox(height: 6),
+            Text(
+              'ui.account_danger_desc'.tr2,
+              style: TextStyle(
+                fontSize: 12.5,
+                color: AppColors.inkSoft,
+                height: 1.4,
               ),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: _handleDeleteAccount,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: const BorderSide(color: AppColors.danger, width: 1.2),
+                  minimumSize: const Size(0, 48),
+                  fixedSize: const Size.fromHeight(48),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(DashUI.rCard),
+                  ),
+                ),
+                icon: const Icon(Icons.delete_forever_rounded, size: 18),
+                label: Text(
+                  'ui.account_delete_btn'.tr2,
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1023,8 +1039,8 @@ class _AccountScreenState extends State<AccountScreen> {
 
     try {
       await context.read<AuthCubit>().deleteAccount(
-            password: password.isNotEmpty ? password : null,
-          );
+        password: password.isNotEmpty ? password : null,
+      );
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
       Navigator.of(context).pushAndRemoveUntil(
@@ -1042,9 +1058,7 @@ class _AccountScreenState extends State<AccountScreen> {
       Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            e.toString().replaceAll('Exception: ', ''),
-          ),
+          content: Text(e.toString().replaceAll('Exception: ', '')),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -1065,102 +1079,104 @@ class _AccountScreenState extends State<AccountScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: AppColors.brandSoft,
-                  borderRadius: BorderRadius.circular(DashUI.rBtn),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(DashUI.rBtn),
+                  ),
+                  child: const Icon(
+                    Icons.translate_rounded,
+                    color: AppColors.brandDark,
+                    size: 16,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.translate_rounded,
-                  color: AppColors.brandDark,
-                  size: 16,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ui.language'.tr2,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      Text(
+                        'ui.change_language'.tr2,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.inkFaded,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                BlocBuilder<LocaleCubit, Locale>(
+                  builder: (context, locale) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandSoft,
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      child: Text(
+                        locale.languageCode == 'bn'
+                            ? 'ui.bengali'.tr2
+                            : 'ui.english'.tr2,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.brandDark,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            BlocBuilder<LocaleCubit, Locale>(
+              builder: (context, locale) {
+                final isEn = locale.languageCode == 'en';
+                return Row(
                   children: [
-                    Text(
-                      'ui.language'.tr2,
-                      style: const TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink,
+                    Expanded(
+                      child: _buildLangOption(
+                        title: 'English',
+                        subtitle: 'English',
+                        selected: isEn,
+                        onTap: () =>
+                            context.read<LocaleCubit>().setLocale('en'),
                       ),
                     ),
-                    Text(
-                      'ui.change_language'.tr2,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.inkFaded,
-                        fontWeight: FontWeight.w500,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildLangOption(
+                        title: 'বাংলা',
+                        subtitle: 'Bengali',
+                        selected: !isEn,
+                        onTap: () =>
+                            context.read<LocaleCubit>().setLocale('bn'),
                       ),
                     ),
                   ],
-                ),
-              ),
-              BlocBuilder<LocaleCubit, Locale>(
-                builder: (context, locale) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.brandSoft,
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    child: Text(
-                      locale.languageCode == 'bn'
-                          ? 'ui.bengali'.tr2
-                          : 'ui.english'.tr2,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.brandDark,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          BlocBuilder<LocaleCubit, Locale>(
-            builder: (context, locale) {
-              final isEn = locale.languageCode == 'en';
-              return Row(
-                children: [
-                  Expanded(
-                    child: _buildLangOption(
-                      title: 'English',
-                      subtitle: 'English',
-                      selected: isEn,
-                      onTap: () => context.read<LocaleCubit>().setLocale('en'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildLangOption(
-                      title: 'বাংলা',
-                      subtitle: 'Bengali',
-                      selected: !isEn,
-                      onTap: () => context.read<LocaleCubit>().setLocale('bn'),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1199,7 +1215,11 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               ),
               child: selected
-                  ? const Icon(Icons.check_rounded, size: 11, color: Colors.white)
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 11,
+                      color: Colors.white,
+                    )
                   : null,
             ),
             const SizedBox(width: 8),
