@@ -1390,7 +1390,9 @@ class _SheetViewState extends State<_SheetView>
                     ),
                   ),
                   Text(
-                    '${it['qty']} × ৳${it['price']} = ৳${(_toD(it['qty']) * _toD(it['price'])).toStringAsFixed(0)}',
+                    '${it['qty']} × ৳${it['price']}'
+                    '${_toD(it['weight']) > 0 ? ' · ${_toD(it['weight']).toStringAsFixed(_toD(it['weight']) % 1 == 0 ? 0 : 1)}kg' : ''}'
+                    ' = ৳${(_toD(it['qty']) * _toD(it['price'])).toStringAsFixed(0)}',
                     style: const TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
@@ -5775,7 +5777,13 @@ class _SheetViewState extends State<_SheetView>
     for (final it in existingItems) {
       rows.add({
         'name': TextEditingController(text: (it['name'] ?? '').toString()),
-        'qty': TextEditingController(text: (it['qty'] ?? '').toString()),
+        'qty': TextEditingController(
+          text: (it['qty'] ?? '').toString().isEmpty ||
+              _toD(it['qty']) == 0
+          ? '1'
+          : (it['qty'] ?? '').toString(),
+        ),
+        'weight': TextEditingController(text: (it['weight'] ?? '').toString()),
         'price': TextEditingController(text: (it['price'] ?? '').toString()),
       });
     }
@@ -5783,6 +5791,7 @@ class _SheetViewState extends State<_SheetView>
       rows.add({
         'name': TextEditingController(),
         'qty': TextEditingController(text: '1'),
+        'weight': TextEditingController(),
         'price': TextEditingController(),
       });
     }
@@ -6005,6 +6014,30 @@ class _SheetViewState extends State<_SheetView>
                                   ),
                                   const SizedBox(width: 6),
                                   Expanded(
+                                    flex: 1,
+                                    child: TextField(
+                                      controller: rows[i]['weight']!,
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      onChanged: (_) => setS(() {}),
+                                      decoration: InputDecoration(
+                                        hintText: 'kg',
+                                        isDense: true,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 9,
+                                            ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
                                     flex: 2,
                                     child: TextField(
                                       controller: rows[i]['price']!,
@@ -6072,6 +6105,7 @@ class _SheetViewState extends State<_SheetView>
                               rows.add({
                                 'name': TextEditingController(),
                                 'qty': TextEditingController(text: '1'),
+                                'weight': TextEditingController(),
                                 'price': TextEditingController(),
                               });
                             }),
@@ -6414,21 +6448,33 @@ class _SheetViewState extends State<_SheetView>
                               for (final r in rows) {
                                 final n = r['name']!.text.trim();
                                 if (n.isEmpty) continue;
+                                final qTxt = r['qty']!.text.trim();
+                                final wTxt = r['weight']!.text.trim();
                                 items.add({
                                   'name': n,
-                                  'qty': _toD(r['qty']!.text),
+                                  // untouched qty counts as 1
+                                  'qty': qTxt.isEmpty ? 1 : _toD(qTxt),
+                                  'weight': wTxt.isEmpty ? 0 : _toD(wTxt),
                                   'price': _toD(r['price']!.text),
                                 });
                               }
+                              // user removed every row — tell the server to clear this day's items
+                              final hadItemsBefore = existingItems.isNotEmpty;
+                              final clearingItems =
+                                  items.isEmpty &&
+                                  pickedReceipts.isEmpty &&
+                                  hadItemsBefore;
 
                               try {
                                 if (items.isNotEmpty ||
-                                    pickedReceipts.isNotEmpty) {
+                                    pickedReceipts.isNotEmpty ||
+                                    clearingItems) {
                                   await _repo.saveBazarItems(
                                     messId: widget.messId,
                                     monthId: widget.monthId,
                                     day: day,
                                     items: items,
+                                    clearItems: clearingItems,
                                     receiptPaths: pickedReceipts
                                         .map((e) => e.path)
                                         .toList(),

@@ -257,6 +257,7 @@ class MessRepository {
     required int monthId,
     required int day,
     required List<Map<String, dynamic>> items,
+    bool clearItems = false,
     List<String>? receiptPaths,
     String? receiptRemoveIds,
     bool removeAll = false,
@@ -269,6 +270,7 @@ class MessRepository {
       final formData = FormData.fromMap(<String, dynamic>{
         'day': day,
         'items': items.map((e) => e.toString()).toList().toString(),
+        if (clearItems) 'clear_items': true,
         'receipt_remove_ids': ?receiptRemoveIds,
         if (removeAll) 'receipt_remove': true,
         'receipts': files,
@@ -292,6 +294,7 @@ class MessRepository {
       data: {
         'day': day,
         'items': items,
+        if (clearItems) 'clear_items': true,
         'receipt_remove_ids': ?receiptRemoveIds,
         if (removeAll) 'receipt_remove': true,
       },
