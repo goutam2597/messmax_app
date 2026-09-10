@@ -3106,6 +3106,46 @@ class _SheetViewState extends State<_SheetView>
                             ),
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () async {
+                              final ok = await showDialog<bool>(
+                                context: context,
+                                builder: (dCtx) => AlertDialog(
+                                  title: const Text('Remove request?'),
+                                  content: Text('Remove guest request Day ${gr['day']} · ${gr['guest_name'] ?? 'Guest'}?'),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(dCtx, false), child: const Text('Cancel')),
+                                    FilledButton(onPressed: () => Navigator.pop(dCtx, true), child: const Text('Remove')),
+                                  ],
+                                ),
+                              );
+                              if (ok != true) return;
+                              try {
+                                await _repo.removeGuestMealRequest(widget.messId, widget.monthId, gr['id'] as int);
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guest request removed')));
+                                _refresh();
+                              } catch (e) {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(DashUI.rCard),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: AppColors.paper,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.paperLine),
+                              ),
+                              child: const Icon(Icons.delete_outline_rounded, color: AppColors.inkFaded, size: 16),
+                            ),
+                          ),
+                        ),
                       ],
                     ],
                   ),

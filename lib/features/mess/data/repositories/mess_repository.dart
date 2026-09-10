@@ -566,6 +566,11 @@ class MessRepository {
     if ((res.data as Map)['success'] != true) throw Exception((res.data as Map)['message'] ?? 'Failed');
   }
 
+  Future<void> removeGuestMealRequest(int messId, int monthId, int reqId) async {
+    final res = await _dio.delete('${ApiEndpoints.messes}/$messId/months/$monthId/guest-meal-requests/$reqId');
+    if ((res.data as Map)['success'] != true) throw Exception((res.data as Map)['message'] ?? 'Failed');
+  }
+
   Future<void> requestGuestCancel(
     int messId,
     int monthId,
