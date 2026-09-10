@@ -5803,6 +5803,16 @@ class _SheetViewState extends State<_SheetView>
     Map sheet, {
     bool bazarOnly = false,
   }) {
+    final canManage = (sheet['canManage'] == true) || (sheet['canEdit'] == true);
+    final myMemberId = sheet['myMemberId'];
+    final buyerMap = _asMap(sheet['bazarBuyerByDay']);
+    final prevBuyer = buyerMap[day.toString()] ?? buyerMap[day];
+    int? selectedBuyerId;
+    if (canManage) {
+      if (prevBuyer != null) selectedBuyerId = _toI(prevBuyer);
+      else if (myMemberId != null) selectedBuyerId = _toI(myMemberId);
+      else if (members.isNotEmpty) selectedBuyerId = _toI(members.first['id']);
+    }
     final receiptsRaw = _byDay(_asMap(sheet['bazarReceiptsMulti']), day);
     final List<dynamic> existingReceipts = receiptsRaw is List
         ? receiptsRaw
@@ -5969,6 +5979,33 @@ class _SheetViewState extends State<_SheetView>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // 1. Bazar Items Section
+                          if (canManage)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.brandSoft.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(DashUI.rBtn),
+                                border: Border.all(color: AppColors.brandDark.withValues(alpha: 0.14)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('BAZAR DONE BY — auto-deposit to this member', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.brandDark, letterSpacing: 0.5)),
+                                  const SizedBox(height: 6),
+                                  DropdownButtonFormField<int>(
+                                    initialValue: selectedBuyerId,
+                                    decoration: InputDecoration(
+                                      filled: true, fillColor: AppColors.paper, isDense: true,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    items: [for (final m in members) DropdownMenuItem<int>(value: _toI(m['id']), child: Text((m['name'] ?? 'Member').toString(), style: const TextStyle(fontSize: 13)))],
+                                    onChanged: (v) { if (v != null) setS(() => selectedBuyerId = v); },
+                                  ),
+                                ],
+                              ),
+                            ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -6515,6 +6552,7 @@ class _SheetViewState extends State<_SheetView>
                                     day: day,
                                     items: items,
                                     clearItems: clearingItems,
+                                    buyerMemberId: canManage ? selectedBuyerId : null,
                                     receiptPaths: pickedReceipts
                                         .map((e) => e.path)
                                         .toList(),
