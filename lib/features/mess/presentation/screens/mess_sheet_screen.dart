@@ -1303,6 +1303,8 @@ class _SheetViewState extends State<_SheetView>
                     mealsLMap: mealsLMap,
                     mealsDMap: mealsDMap,
                     guestList: guestList,
+                    canManage: _asMap(sheet)['canManage'] == true,
+                    canRemoveGuestMeals: isFuture,
                   ),
                 ],
               ),
@@ -1459,6 +1461,8 @@ class _SheetViewState extends State<_SheetView>
     required Map mealsLMap,
     required Map mealsDMap,
     required List<dynamic> guestList,
+    required bool canManage,
+    required bool canRemoveGuestMeals,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1896,6 +1900,45 @@ class _SheetViewState extends State<_SheetView>
                             color: AppColors.brandDark,
                           ),
                         ),
+                        if (canManage && canRemoveGuestMeals) ...[
+                          const SizedBox(width: 6),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () async {
+                                final ok = await showDialog<bool>(
+                                  context: context,
+                                  builder: (dCtx) => AlertDialog(
+                                    title: const Text('Remove guest meal?'),
+                                    content: Text('Remove guest Day $day · ${g['guest_name'] ?? 'Guest'}?'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(dCtx, false), child: const Text('Cancel')),
+                                      FilledButton(onPressed: () => Navigator.pop(dCtx, true), child: const Text('Remove')),
+                                    ],
+                                  ),
+                                );
+                                if (ok != true) return;
+                                try {
+                                  await _repo.removeGuestMeal(widget.messId, widget.monthId, _toI(g['id']));
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guest meal removed')));
+                                  _refresh();
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(DashUI.rCard),
+                              child: const Tooltip(
+                                message: 'Remove guest meal',
+                                child: Padding(
+                                  padding: EdgeInsets.all(3),
+                                  child: Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 15),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -3142,7 +3185,10 @@ class _SheetViewState extends State<_SheetView>
                                 shape: BoxShape.circle,
                                 border: Border.all(color: AppColors.paperLine),
                               ),
-                              child: const Icon(Icons.delete_outline_rounded, color: AppColors.inkFaded, size: 16),
+                              child: const Tooltip(
+                                message: 'Remove request',
+                                child: Icon(Icons.delete_outline_rounded, color: AppColors.inkFaded, size: 16),
+                              ),
                             ),
                           ),
                         ),
