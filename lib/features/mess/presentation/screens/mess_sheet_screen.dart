@@ -675,6 +675,15 @@ class _SheetViewState extends State<_SheetView>
               onTap: () => _showAddGuestModal(members, todayDay, sheet),
             ),
           ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildActionChip(
+              icon: Icons.receipt_long_rounded,
+              label: 'Audit Trail',
+              color: AppColors.ink,
+              onTap: () => _showAuditTrailModal(sheet),
+            ),
+          ),
         ],
       );
     }
@@ -700,6 +709,172 @@ class _SheetViewState extends State<_SheetView>
           ),
         ),
       ],
+    );
+  }
+
+  void _showAuditTrailModal(Map sheet) {
+    final rawTxs = sheet['ledgerTransactions'];
+    final List<dynamic> txs = rawTxs is List ? rawTxs : [];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.paper,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.65,
+          maxChildSize: 0.9,
+          minChildSize: 0.4,
+          builder: (ctx2, scrollCtrl) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.inkFaded.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: const [
+                      Icon(Icons.receipt_long_rounded, size: 20, color: AppColors.brandDark),
+                      SizedBox(width: 8),
+                      Text(
+                        'Ledger Audit Trail',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Immutable settlement log of cash advances & out-of-pocket bazar.',
+                    style: TextStyle(fontSize: 11, color: AppColors.inkFaded),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: AppColors.paperLine),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: txs.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No ledger transactions recorded yet.',
+                              style: TextStyle(color: AppColors.inkFaded, fontSize: 12),
+                            ),
+                          )
+                        : ListView.separated(
+                            controller: scrollCtrl,
+                            itemCount: txs.length,
+                            separatorBuilder: (_, __) =>
+                                const Divider(height: 1, color: AppColors.paperLine),
+                            itemBuilder: (context, i) {
+                              final tx = txs[i] as Map;
+                              final type = (tx['transaction_type'] ?? '').toString();
+                              final amt = _toD(tx['amount']);
+                              final member = (tx['member_name'] ?? 'Member').toString();
+                              final ref = (tx['reference_code'] ?? '').toString();
+
+                              Color badgeColor = AppColors.brandDark;
+                              String typeLabel = type;
+                              if (type == 'advance_allocation') {
+                                badgeColor = AppColors.emerald;
+                                typeLabel = 'Advance Allocated';
+                              } else if (type == 'bazar_out_of_pocket') {
+                                badgeColor = AppColors.brand;
+                                typeLabel = 'Out of Pocket Bazar';
+                              } else if (type == 'advance_deposit') {
+                                badgeColor = AppColors.brandDark;
+                                typeLabel = 'Cash Advance Deposit';
+                              } else if (type == 'advance_reversion') {
+                                badgeColor = AppColors.danger;
+                                typeLabel = 'Allocation Reverted';
+                              }
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: badgeColor.withValues(alpha: 0.12),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  typeLabel,
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: badgeColor,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                member,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppColors.ink,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            ref,
+                                            style: const TextStyle(
+                                              fontSize: 9.5,
+                                              fontFamily: 'monospace',
+                                              color: AppColors.inkFaded,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      '৳${amt.toStringAsFixed(0)}',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.ink,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -1283,12 +1458,13 @@ class _SheetViewState extends State<_SheetView>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. Bazar items breakdown
-                  _buildDayBazarBreakdown(
-                    bazarTotal: bazarTotal,
-                    items: items,
-                    receipts: receipts,
-                  ),
+	                  // 1. Bazar items breakdown
+	                  _buildDayBazarBreakdown(
+	                    bazarTotal: bazarTotal,
+	                    items: items,
+	                    receipts: receipts,
+	                    paidVia: (_asMap(sheet['bazarPaidViaByDay'])[day.toString()] ?? _asMap(sheet['bazarPaidViaByDay'])[day])?.toString(),
+	                  ),
                   const SizedBox(height: 12),
                   const Divider(height: 1, color: AppColors.paperLine),
                   const SizedBox(height: 12),
@@ -1319,6 +1495,7 @@ class _SheetViewState extends State<_SheetView>
     required double bazarTotal,
     required List<dynamic> items,
     required List<dynamic> receipts,
+    String? paidVia,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1327,14 +1504,14 @@ class _SheetViewState extends State<_SheetView>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
-              children: const [
-                Icon(
+              children: [
+                const Icon(
                   Icons.shopping_bag_outlined,
                   size: 14,
                   color: AppColors.brandDark,
                 ),
-                SizedBox(width: 5),
-                Text(
+                const SizedBox(width: 5),
+                const Text(
                   'BAZAR ENTRIES',
                   style: TextStyle(
                     fontSize: 10.5,
@@ -1343,6 +1520,37 @@ class _SheetViewState extends State<_SheetView>
                     letterSpacing: 0.5,
                   ),
                 ),
+                if (paidVia != null && bazarTotal > 0) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: paidVia == 'advance_cash'
+                          ? AppColors.emeraldSoft
+                          : (paidVia == 'personal_cash'
+                              ? AppColors.brandSoft
+                              : AppColors.paperRaised),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      paidVia == 'advance_cash'
+                          ? 'Deducted'
+                          : (paidVia == 'personal_cash' ? 'Deposited' : 'Split'),
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: paidVia == 'advance_cash'
+                            ? AppColors.emerald
+                            : (paidVia == 'personal_cash'
+                                ? AppColors.brandDark
+                                : AppColors.inkFaded),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
             if (bazarTotal > 0)
@@ -5859,6 +6067,9 @@ class _SheetViewState extends State<_SheetView>
       else if (myMemberId != null) selectedBuyerId = _toI(myMemberId);
       else if (members.isNotEmpty) selectedBuyerId = _toI(members.first['id']);
     }
+    final paidViaMap = _asMap(sheet['bazarPaidViaByDay']);
+    final prevPaidVia = (paidViaMap[day.toString()] ?? paidViaMap[day] ?? 'advance_cash').toString();
+    String selectedPaidVia = prevPaidVia == 'personal_cash' ? 'personal_cash' : 'advance_cash';
     final receiptsRaw = _byDay(_asMap(sheet['bazarReceiptsMulti']), day);
     final List<dynamic> existingReceipts = receiptsRaw is List
         ? receiptsRaw
@@ -6048,6 +6259,30 @@ class _SheetViewState extends State<_SheetView>
                                     ),
                                     items: [for (final m in members) DropdownMenuItem<int>(value: _toI(m['id']), child: Text((m['name'] ?? 'Member').toString(), style: const TextStyle(fontSize: 13)))],
                                     onChanged: (v) { if (v != null) setS(() => selectedBuyerId = v); },
+                                  ),
+                                  const SizedBox(height: 10),
+                                  const Text('FUNDING MODE', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.brandDark, letterSpacing: 0.5)),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ChoiceChip(
+                                          label: const Text('Deduct Advance', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                                          selected: selectedPaidVia == 'advance_cash',
+                                          selectedColor: AppColors.emeraldSoft,
+                                          onSelected: (sel) { if (sel) setS(() => selectedPaidVia = 'advance_cash'); },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ChoiceChip(
+                                          label: const Text('Add Deposit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                                          selected: selectedPaidVia == 'personal_cash',
+                                          selectedColor: AppColors.brandSoft,
+                                          onSelected: (sel) { if (sel) setS(() => selectedPaidVia = 'personal_cash'); },
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -6599,6 +6834,7 @@ class _SheetViewState extends State<_SheetView>
                                     items: items,
                                     clearItems: clearingItems,
                                     buyerMemberId: canManage ? selectedBuyerId : null,
+                                    paidVia: canManage ? selectedPaidVia : null,
                                     receiptPaths: pickedReceipts
                                         .map((e) => e.path)
                                         .toList(),
