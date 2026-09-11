@@ -1735,5 +1735,7 @@
     "ui.sheet_tx_advance_allocation": "Advance Allocated",
     "ui.sheet_tx_bazar_out_of_pocket": "Out of Pocket Bazar",
     "ui.sheet_tx_advance_deposit": "Cash Advance Deposit",
-    "ui.sheet_tx_advance_reversion": "Allocation Reverted"
+    "ui.sheet_tx_advance_reversion": "Allocation Reverted",
+    "ui.sheet_meals": "Meals",
+    "ui.sheet_kg": "kg"
 }

@@ -1735,5 +1735,7 @@
     "ui.sheet_tx_advance_allocation": "এডভান্স বরাদ্দ",
     "ui.sheet_tx_bazar_out_of_pocket": "পকেটের বাজার খরচ",
     "ui.sheet_tx_advance_deposit": "ক্যাশ এডভান্স জমা",
-    "ui.sheet_tx_advance_reversion": "বরাদ্দ বাতিল"
+    "ui.sheet_tx_advance_reversion": "বরাদ্দ বাতিল",
+    "ui.sheet_meals": "মিল",
+    "ui.sheet_kg": "কেজি"
 }

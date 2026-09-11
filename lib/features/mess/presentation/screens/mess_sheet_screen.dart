@@ -6426,9 +6426,9 @@ class _SheetViewState extends State<_SheetView>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'BAZAR ITEMS',
-                                style: TextStyle(
+                              Text(
+                                'ui.sheet_bazar_items'.tr2.toUpperCase(),
+                                style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.inkFaded,
@@ -6445,7 +6445,7 @@ class _SheetViewState extends State<_SheetView>
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    'Total: ৳${bazarTotal.toStringAsFixed(0)}',
+                                    '${'ui.mess_total'.tr2}: ৳${bazarTotal.toStringAsFixed(0).toBnNum()}',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,
@@ -6467,7 +6467,7 @@ class _SheetViewState extends State<_SheetView>
                                       controller: rows[i]['name']!,
                                       onChanged: (_) => setS(() {}),
                                       decoration: InputDecoration(
-                                        hintText: 'Item name',
+                                        hintText: 'ui.sheet_item_name'.tr2,
                                         isDense: true,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
@@ -6491,7 +6491,7 @@ class _SheetViewState extends State<_SheetView>
                                       textAlign: TextAlign.center,
                                       onChanged: (_) => setS(() {}),
                                       decoration: InputDecoration(
-                                        hintText: 'Qty',
+                                        hintText: 'ui.sheet_qty'.tr2,
                                         isDense: true,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
@@ -6515,7 +6515,7 @@ class _SheetViewState extends State<_SheetView>
                                       textAlign: TextAlign.center,
                                       onChanged: (_) => setS(() {}),
                                       decoration: InputDecoration(
-                                        hintText: 'kg',
+                                        hintText: 'ui.sheet_kg'.tr2,
                                         isDense: true,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
@@ -6538,7 +6538,7 @@ class _SheetViewState extends State<_SheetView>
                                       keyboardType: TextInputType.number,
                                       onChanged: (_) => setS(() {}),
                                       decoration: InputDecoration(
-                                        hintText: 'Price ৳',
+                                        hintText: 'ui.sheet_price'.tr2,
                                         isDense: true,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
@@ -6604,8 +6604,8 @@ class _SheetViewState extends State<_SheetView>
                               });
                             }),
                             icon: const Icon(Icons.add_rounded, size: 15),
-                            label: const Text(
-                              'Add Item',
+                            label: Text(
+                              'ui.sheet_add_item'.tr2,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
