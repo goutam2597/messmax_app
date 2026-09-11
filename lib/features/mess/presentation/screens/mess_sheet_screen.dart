@@ -792,16 +792,16 @@ class _SheetViewState extends State<_SheetView>
                               String typeLabel = type;
                               if (type == 'advance_allocation') {
                                 badgeColor = AppColors.emerald;
-                                typeLabel = 'Advance Allocated';
+                                typeLabel = 'ui.sheet_tx_advance_allocation'.tr2;
                               } else if (type == 'bazar_out_of_pocket') {
                                 badgeColor = AppColors.brand;
-                                typeLabel = 'Out of Pocket Bazar';
+                                typeLabel = 'ui.sheet_tx_bazar_out_of_pocket'.tr2;
                               } else if (type == 'advance_deposit') {
                                 badgeColor = AppColors.brandDark;
-                                typeLabel = 'Cash Advance Deposit';
+                                typeLabel = 'ui.sheet_tx_advance_deposit'.tr2;
                               } else if (type == 'advance_reversion') {
                                 badgeColor = AppColors.danger;
-                                typeLabel = 'Allocation Reverted';
+                                typeLabel = 'ui.sheet_tx_advance_reversion'.tr2;
                               }
 
                               return Padding(
@@ -6184,17 +6184,17 @@ class _SheetViewState extends State<_SheetView>
                             children: [
                               Text(
                                 bazarOnly
-                                    ? 'Log Day $day Bazar'
-                                    : 'Edit Day $day (Bazar & Meals)',
+                                    ? '${'ui.sheet_log_day'.tr2} ${day.toBnNum()} ${'ui.sheet_bazar'.tr2}'
+                                    : '${'ui.sheet_edit_day'.tr2} ${day.toBnNum()} (${'ui.sheet_bazar'.tr2} & ${'ui.sheet_meals'.tr2})',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                   color: AppColors.ink,
                                 ),
                               ),
-                              const Text(
-                                'Update market items and daily meals',
-                                style: TextStyle(
+                              Text(
+                                'ui.sheet_edit_day_sub'.tr2,
+                                style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.inkFaded,
                                 ),
@@ -6248,7 +6248,7 @@ class _SheetViewState extends State<_SheetView>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('BAZAR DONE BY — auto-deposit to this member', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.brandDark, letterSpacing: 0.5)),
+                                  Text('${'ui.sheet_bazar_done_by'.tr2} — ${'ui.sheet_auto_deposit_hint'.tr2}'.toUpperCase(), style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.brandDark, letterSpacing: 0.5)),
                                   const SizedBox(height: 6),
                                   DropdownButtonFormField<int>(
                                     initialValue: selectedBuyerId,

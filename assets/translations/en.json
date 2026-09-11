@@ -1730,5 +1730,10 @@
     "ui.delete": "Delete",
     "auth.reset_password_btn": "Reset Password",
     "ui.email_invalid": "Please enter a valid email address",
-    "ui.mess_created": "Mess created successfully"
+    "ui.mess_created": "Mess created successfully",
+    "ui.sheet_auto_deposit_hint": "auto-deposit to this member",
+    "ui.sheet_tx_advance_allocation": "Advance Allocated",
+    "ui.sheet_tx_bazar_out_of_pocket": "Out of Pocket Bazar",
+    "ui.sheet_tx_advance_deposit": "Cash Advance Deposit",
+    "ui.sheet_tx_advance_reversion": "Allocation Reverted"
 }
