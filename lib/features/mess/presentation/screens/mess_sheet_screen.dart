@@ -679,7 +679,7 @@ class _SheetViewState extends State<_SheetView>
           Expanded(
             child: _buildActionChip(
               icon: Icons.receipt_long_rounded,
-              label: 'Audit Trail',
+              label: 'ui.sheet_audit_trail'.tr2,
               color: AppColors.ink,
               onTap: () => _showAuditTrailModal(sheet),
             ),
@@ -747,12 +747,12 @@ class _SheetViewState extends State<_SheetView>
                   ),
                   const SizedBox(height: 12),
                   Row(
-                    children: const [
-                      Icon(Icons.receipt_long_rounded, size: 20, color: AppColors.brandDark),
-                      SizedBox(width: 8),
+                    children: [
+                      const Icon(Icons.receipt_long_rounded, size: 20, color: AppColors.brandDark),
+                      const SizedBox(width: 8),
                       Text(
-                        'Ledger Audit Trail',
-                        style: TextStyle(
+                        'ui.sheet_ledger_audit_trail'.tr2,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: AppColors.ink,
@@ -761,19 +761,19 @@ class _SheetViewState extends State<_SheetView>
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Immutable settlement log of cash advances & out-of-pocket bazar.',
-                    style: TextStyle(fontSize: 11, color: AppColors.inkFaded),
+                  Text(
+                    'ui.sheet_ledger_subtitle'.tr2,
+                    style: const TextStyle(fontSize: 11, color: AppColors.inkFaded),
                   ),
                   const SizedBox(height: 12),
                   const Divider(height: 1, color: AppColors.paperLine),
                   const SizedBox(height: 8),
                   Expanded(
                     child: txs.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
-                              'No ledger transactions recorded yet.',
-                              style: TextStyle(color: AppColors.inkFaded, fontSize: 12),
+                              'ui.sheet_no_ledger_txs'.tr2,
+                              style: const TextStyle(color: AppColors.inkFaded, fontSize: 12),
                             ),
                           )
                         : ListView.separated(
@@ -1537,8 +1537,8 @@ class _SheetViewState extends State<_SheetView>
                     ),
                     child: Text(
                       paidVia == 'advance_cash'
-                          ? 'Deducted'
-                          : (paidVia == 'personal_cash' ? 'Deposited' : 'Split'),
+                          ? 'ui.sheet_status_deducted'.tr2
+                          : (paidVia == 'personal_cash' ? 'ui.sheet_status_deposited'.tr2 : 'ui.sheet_status_split'.tr2),
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
@@ -6261,7 +6261,7 @@ class _SheetViewState extends State<_SheetView>
                                     onChanged: (v) { if (v != null) setS(() => selectedBuyerId = v); },
                                   ),
                                   const SizedBox(height: 10),
-                                  const Text('FUNDING MODE', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.brandDark, letterSpacing: 0.5)),
+                                  Text('ui.sheet_funding_mode'.tr2.toUpperCase(), style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.brandDark, letterSpacing: 0.5)),
                                   const SizedBox(height: 6),
                                   Row(
                                     children: [
@@ -6312,7 +6312,7 @@ class _SheetViewState extends State<_SheetView>
                                                     mainAxisSize: MainAxisSize.min,
                                                     children: [
                                                       Text(
-                                                        'Deduct Advance',
+                                                        'ui.sheet_deduct_advance'.tr2,
                                                         style: TextStyle(
                                                           fontSize: 11.5,
                                                           fontWeight: FontWeight.w800,
@@ -6322,7 +6322,7 @@ class _SheetViewState extends State<_SheetView>
                                                         ),
                                                       ),
                                                       Text(
-                                                        'Uses advance pool',
+                                                        'ui.sheet_uses_advance_pool'.tr2,
                                                         style: TextStyle(
                                                           fontSize: 9.5,
                                                           fontWeight: FontWeight.w600,
@@ -6389,7 +6389,7 @@ class _SheetViewState extends State<_SheetView>
                                                     mainAxisSize: MainAxisSize.min,
                                                     children: [
                                                       Text(
-                                                        'Add Deposit',
+                                                        'ui.sheet_add_deposit'.tr2,
                                                         style: TextStyle(
                                                           fontSize: 11.5,
                                                           fontWeight: FontWeight.w800,
@@ -6399,7 +6399,7 @@ class _SheetViewState extends State<_SheetView>
                                                         ),
                                                       ),
                                                       Text(
-                                                        'Logs new deposit',
+                                                        'ui.sheet_logs_new_deposit'.tr2,
                                                         style: TextStyle(
                                                           fontSize: 9.5,
                                                           fontWeight: FontWeight.w600,

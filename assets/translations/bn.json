@@ -1,4 +1,17 @@
 {
   "ui.sheet_save_entry": "সেভ করুন",
-  "ui.sheet_save": "সেভ করুন"
+  "ui.sheet_save": "সেভ করুন",
+  "ui.sheet_bazar_done_by": "বাজার করেছেন",
+  "ui.sheet_funding_mode": "ফান্ডিং মোড",
+  "ui.sheet_deduct_advance": "এডভান্স থেকে কাটুন",
+  "ui.sheet_add_deposit": "নতুন জমা হিসেবে যোগ করুন",
+  "ui.sheet_uses_advance_pool": "এডভান্স ব্যালেন্স ব্যবহার হবে",
+  "ui.sheet_logs_new_deposit": "নতুন জমা তৈরি হবে",
+  "ui.sheet_audit_trail": "অডিট ট্রেইল",
+  "ui.sheet_ledger_audit_trail": "লেজার অডিট ট্রেইল",
+  "ui.sheet_ledger_subtitle": "ক্যাশ এডভান্স ও পকেটের বাজারের অনমনীয় হিসাব বিবরণী।",
+  "ui.sheet_no_ledger_txs": "এখনো কোনো লেজার লেনদেন রেকর্ড করা হয়নি।",
+  "ui.sheet_status_deducted": "কাটা হয়েছে",
+  "ui.sheet_status_deposited": "জমা হয়েছে",
+  "ui.sheet_status_split": "স্প্লিট"
 }
