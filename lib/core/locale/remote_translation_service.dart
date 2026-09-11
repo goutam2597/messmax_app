@@ -106,6 +106,9 @@ class RemoteTranslationService {
       if ((k == 'ui.sheet_save_entry' || k == 'ui.sheet_save') && v == 'এন্ট্রি সংরক্ষণ করুন') {
         v = 'সেভ করুন';
       }
+      if (k == 'ui.sheet_add_deposit' && v == 'নতুন জমা হিসেবে যোগ করুন') {
+        v = 'নতুন জমা যোগ করুন';
+      }
       out[k] = v;
     }
     return out;

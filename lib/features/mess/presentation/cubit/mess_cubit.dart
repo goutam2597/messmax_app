@@ -16,7 +16,7 @@ class MessCubit extends Cubit<MessState> {
       emit(
         MessListLoaded(messes: cached, canCreate: true, isIndividual: false),
       );
-      return; 
+      return;
     }
     if (state is! MessListLoaded) {
       emit(MessLoading());

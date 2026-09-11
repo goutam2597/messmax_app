@@ -54,6 +54,9 @@ class AppTranslations {
     if (map['ui.sheet_save'] == 'এন্ট্রি সংরক্ষণ করুন') {
       map['ui.sheet_save'] = 'সেভ করুন';
     }
+    if (map['ui.sheet_add_deposit'] == 'নতুন জমা হিসেবে যোগ করুন') {
+      map['ui.sheet_add_deposit'] = 'নতুন জমা যোগ করুন';
+    }
   }
 
   static String t(String key, {String? fallback}) {
