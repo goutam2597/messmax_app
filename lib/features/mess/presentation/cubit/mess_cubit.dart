@@ -13,8 +13,10 @@ class MessCubit extends Cubit<MessState> {
   Future<void> loadMesses({bool forceRefresh = false}) async {
     final cached = _repo.getCachedMesses();
     if (cached != null && !forceRefresh) {
-      emit(MessListLoaded(messes: cached, canCreate: true, isIndividual: false));
-      return;
+      emit(
+        MessListLoaded(messes: cached, canCreate: true, isIndividual: false),
+      );
+      return; 
     }
     if (state is! MessListLoaded) {
       emit(MessLoading());
@@ -26,12 +28,16 @@ class MessCubit extends Cubit<MessState> {
       );
     } catch (e) {
       if (cached != null) {
-        emit(MessListLoaded(messes: cached, canCreate: true, isIndividual: false));
+        emit(
+          MessListLoaded(messes: cached, canCreate: true, isIndividual: false),
+        );
       } else {
-        emit(MessError(
-          NetworkError.subtleMessage(e),
-          code: NetworkError.codeFor(e),
-        ));
+        emit(
+          MessError(
+            NetworkError.subtleMessage(e),
+            code: NetworkError.codeFor(e),
+          ),
+        );
       }
     }
   }
@@ -58,10 +64,12 @@ class MessCubit extends Cubit<MessState> {
       if (cachedAtCatch != null) {
         emit(MessDetailLoaded(cachedAtCatch));
       } else {
-        emit(MessError(
-          NetworkError.subtleMessage(e),
-          code: NetworkError.codeFor(e),
-        ));
+        emit(
+          MessError(
+            NetworkError.subtleMessage(e),
+            code: NetworkError.codeFor(e),
+          ),
+        );
       }
     }
   }

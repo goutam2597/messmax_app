@@ -6263,26 +6263,124 @@ class _SheetViewState extends State<_SheetView>
                                   const SizedBox(height: 10),
                                   const Text('FUNDING MODE', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.brandDark, letterSpacing: 0.5)),
                                   const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ChoiceChip(
-                                          label: const Text('Deduct Advance', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                                          selected: selectedPaidVia == 'advance_cash',
-                                          selectedColor: AppColors.emeraldSoft,
-                                          onSelected: (sel) { if (sel) setS(() => selectedPaidVia = 'advance_cash'); },
+                                  Container(
+                                    height: 38,
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.paperRaised,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: AppColors.paperLine),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: InkWell(
+                                            onTap: () => setS(() => selectedPaidVia = 'advance_cash'),
+                                            borderRadius: BorderRadius.circular(6),
+                                            child: AnimatedContainer(
+                                              duration: const Duration(milliseconds: 150),
+                                              decoration: BoxDecoration(
+                                                color: selectedPaidVia == 'advance_cash' ? AppColors.emerald : Colors.transparent,
+                                                borderRadius: BorderRadius.circular(6),
+                                                boxShadow: selectedPaidVia == 'advance_cash'
+                                                    ? [BoxShadow(color: AppColors.emerald.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))]
+                                                    : null,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    Icons.shield_outlined,
+                                                    size: 14,
+                                                    color: selectedPaidVia == 'advance_cash' ? Colors.white : AppColors.inkSoft,
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    'Deduct Advance',
+                                                    style: TextStyle(
+                                                      fontSize: 11.5,
+                                                      fontWeight: FontWeight.w800,
+                                                      color: selectedPaidVia == 'advance_cash' ? Colors.white : AppColors.inkSoft,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: ChoiceChip(
-                                          label: const Text('Add Deposit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                                          selected: selectedPaidVia == 'personal_cash',
-                                          selectedColor: AppColors.brandSoft,
-                                          onSelected: (sel) { if (sel) setS(() => selectedPaidVia = 'personal_cash'); },
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: InkWell(
+                                            onTap: () => setS(() => selectedPaidVia = 'personal_cash'),
+                                            borderRadius: BorderRadius.circular(6),
+                                            child: AnimatedContainer(
+                                              duration: const Duration(milliseconds: 150),
+                                              decoration: BoxDecoration(
+                                                color: selectedPaidVia == 'personal_cash' ? AppColors.brandDark : Colors.transparent,
+                                                borderRadius: BorderRadius.circular(6),
+                                                boxShadow: selectedPaidVia == 'personal_cash'
+                                                    ? [BoxShadow(color: AppColors.brandDark.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))]
+                                                    : null,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    Icons.account_balance_wallet_outlined,
+                                                    size: 14,
+                                                    color: selectedPaidVia == 'personal_cash' ? Colors.white : AppColors.inkSoft,
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    'Add Deposit',
+                                                    style: TextStyle(
+                                                      fontSize: 11.5,
+                                                      fontWeight: FontWeight.w800,
+                                                      color: selectedPaidVia == 'personal_cash' ? Colors.white : AppColors.inkSoft,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
                                         ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      color: selectedPaidVia == 'advance_cash' ? AppColors.emeraldSoft : AppColors.brandSoft,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: selectedPaidVia == 'advance_cash'
+                                            ? AppColors.emerald.withValues(alpha: 0.2)
+                                            : AppColors.brandDark.withValues(alpha: 0.2),
                                       ),
-                                    ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          selectedPaidVia == 'advance_cash' ? Icons.check_circle_outline_rounded : Icons.add_card_rounded,
+                                          size: 13,
+                                          color: selectedPaidVia == 'advance_cash' ? AppColors.emerald : AppColors.brandDark,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            selectedPaidVia == 'advance_cash'
+                                                ? 'Funded from member\'s cash advance pool. No extra deposit created.'
+                                                : 'Logged as out-of-pocket deposit chit for this member.',
+                                            style: TextStyle(
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w600,
+                                              color: selectedPaidVia == 'advance_cash' ? AppColors.emerald : AppColors.brandDark,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
