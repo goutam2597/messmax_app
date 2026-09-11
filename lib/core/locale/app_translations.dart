@@ -12,6 +12,7 @@ import 'remote_translation_service.dart';
 class AppTranslations {
   static Map<String, String> _current = {};
   static Map<String, String> _english = {};
+  static Map<String, String> _bundledLocale = {};
   static String _locale = 'en';
   static final ValueNotifier<int> _notifier = ValueNotifier(0);
 
@@ -25,22 +26,24 @@ class AppTranslations {
     if (_english.isEmpty) {
       _english = await BundledTranslationService.load('en');
     }
-    // 2. Cached translations load instantly (<1ms); API refresh happens
-    //    in background and calls updateCurrent() when it succeeds.
+    // 2. Bundled translations for the target locale (e.g. bn.json)
+    _bundledLocale = await BundledTranslationService.load(locale);
+
+    // 3. Cached/remote translations for the selected locale (merged on top).
     final remote = await RemoteTranslationService.fetchLocale(locale);
     _sanitize(remote);
-    _current = {..._english, ...remote};
+    _current = {..._english, ..._bundledLocale, ...remote};
     AppLogger.i(
       'Loaded $locale: ${_current.length} keys '
-      '(${remote.length} remote, ${_english.length} bundled en)',
+      '(${remote.length} remote, ${_bundledLocale.length} bundled $locale, ${_english.length} bundled en)',
     );
     _notifier.value++;
   }
 
   static void updateCurrent(Map<String, String> newMap) {
     _sanitize(newMap);
-    // Keep English base underneath so missing keys never show as raw keys.
-    _current = {..._english, ...newMap};
+    // Keep English base + bundled target locale underneath so missing keys never show as raw or English fallback.
+    _current = {..._english, ..._bundledLocale, ...newMap};
     _notifier.value++;
   }
 
