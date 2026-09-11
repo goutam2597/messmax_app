@@ -32,3 +32,13 @@ String numFmt(num? number, {int decimals = 0}) {
   if (AppTranslations.locale != 'bn') return withDec;
   return bnDigits(withDec);
 }
+
+/// Compact stat formatting: whole numbers render without decimals,
+/// fractions keep one decimal (269.5 → "269.5", 52 → "52") — no truncation.
+String smartFmt(num? number) {
+  number ??= 0;
+  final d = number.toDouble();
+  final str = d % 1 == 0 ? d.toInt().toString() : d.toStringAsFixed(1);
+  if (AppTranslations.locale != 'bn') return str;
+  return bnDigits(str);
+}

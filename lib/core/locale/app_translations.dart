@@ -28,6 +28,7 @@ class AppTranslations {
     // 2. Cached translations load instantly (<1ms); API refresh happens
     //    in background and calls updateCurrent() when it succeeds.
     final remote = await RemoteTranslationService.fetchLocale(locale);
+    _sanitize(remote);
     _current = {..._english, ...remote};
     AppLogger.i(
       'Loaded $locale: ${_current.length} keys '
@@ -37,9 +38,19 @@ class AppTranslations {
   }
 
   static void updateCurrent(Map<String, String> newMap) {
+    _sanitize(newMap);
     // Keep English base underneath so missing keys never show as raw keys.
     _current = {..._english, ...newMap};
     _notifier.value++;
+  }
+
+  static void _sanitize(Map<String, String> map) {
+    if (map['ui.sheet_save_entry'] == 'এন্ট্রি সংরক্ষণ করুন') {
+      map['ui.sheet_save_entry'] = 'সেভ করুন';
+    }
+    if (map['ui.sheet_save'] == 'এন্ট্রি সংরক্ষণ করুন') {
+      map['ui.sheet_save'] = 'সেভ করুন';
+    }
   }
 
   static String t(String key, {String? fallback}) {

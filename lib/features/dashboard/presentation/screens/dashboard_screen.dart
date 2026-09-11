@@ -1223,7 +1223,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           Expanded(
                             child: _heroGlassChip(
                               label: 'ui.dash_current_bazar'.tr2,
-                              val: '৳${bnDigits(summary.currentBazar.toInt())}',
+                              val: '৳${smartFmt(summary.currentBazar)}',
                               sub: 'ui.dash_spent'.tr2,
                               onTap:
                                   activeMess != null &&
@@ -1248,7 +1248,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           Expanded(
                             child: _heroGlassChip(
                               label: 'ui.dash_meals'.tr2,
-                              val: bnDigits(summary.currentMeals.toInt()),
+                              val: smartFmt(summary.currentMeals),
                               sub: 'ui.dash_total'.tr2,
                               onTap:
                                   activeMess != null &&
@@ -1346,11 +1346,11 @@ class _DashboardViewState extends State<_DashboardView> {
     LedgerStatsModel stats,
     ActiveMessModel? activeMess,
   ) {
-    final totalMeals = stats.totalMeals.toInt();
-    final totalBazar = stats.totalBazar.toInt();
+    final totalMeals = stats.totalMeals;
+    final totalBazar = stats.totalBazar;
     final mealRate = stats.mealRate;
-    final totalDeposits = stats.totalDeposits.toInt();
-    final restMoney = stats.restMoney.toInt();
+    final totalDeposits = stats.totalDeposits;
+    final restMoney = stats.restMoney;
     final isTablet = _isTablet(context);
 
     final tiles = [
@@ -1360,9 +1360,9 @@ class _DashboardViewState extends State<_DashboardView> {
         iconColor: AppColors.brandDark,
         bgColor: AppColors.brandSoft,
         title: 'ui.dash_total_meals'.tr2,
-        value: bnDigits(totalMeals),
+        value: smartFmt(totalMeals),
         subtitle:
-            '${'ui.dash_today'.tr2}: ${bnDigits(stats.todayMeals)} ${'ui.dash_meals'.tr2}',
+            '${'ui.dash_today'.tr2}: ${smartFmt(stats.todayMeals)} ${'ui.dash_meals'.tr2}',
         onTap: activeMess?.currentMonthId != null
             ? () => Navigator.of(context).push(
                 MaterialPageRoute(
@@ -1382,7 +1382,7 @@ class _DashboardViewState extends State<_DashboardView> {
         bgColor: AppColors.emeraldSoft,
         shape: DashShape.wedge,
         title: 'ui.dash_total_bazar'.tr2,
-        value: '৳${bnDigits(totalBazar)}',
+        value: '৳${smartFmt(totalBazar)}',
         subtitle: 'ui.dash_current_month_spend'.tr2,
         onTap: activeMess?.currentMonthId != null
             ? () => Navigator.of(context).push(
@@ -1403,7 +1403,7 @@ class _DashboardViewState extends State<_DashboardView> {
         bgColor: AppColors.violetSoft,
         shape: DashShape.dots,
         title: 'ui.dash_current_rate'.tr2,
-        value: '৳${bnDigits(mealRate.toStringAsFixed(0))}',
+        value: '৳${smartFmt(mealRate)}',
         subtitle: 'ui.dash_calculated_per_meal'.tr2,
         onTap: activeMess?.currentMonthId != null
             ? () => Navigator.of(context).push(
@@ -1424,8 +1424,8 @@ class _DashboardViewState extends State<_DashboardView> {
         bgColor: AppColors.blueSoft,
         shape: DashShape.arc,
         title: 'ui.dash_cash_deposit'.tr2,
-        value: '৳${bnDigits(totalDeposits)}',
-        subtitle: '${'ui.dash_rest_label'.tr2}: ৳${bnDigits(restMoney)}',
+        value: '৳${smartFmt(totalDeposits)}',
+        subtitle: '${'ui.dash_rest_label'.tr2}: ৳${smartFmt(restMoney)}',
         onTap: activeMess?.currentMonthId != null
             ? () => Navigator.of(context).push(
                 MaterialPageRoute(
@@ -1876,7 +1876,7 @@ class _DashboardViewState extends State<_DashboardView> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${duties[i].messName} � ${'ui.dash_day_prefix'.tr2} ${bnDigits(duties[i].day)}',
+                              '${duties[i].messName} - ${'ui.dash_day_prefix'.tr2} ${bnDigits(duties[i].day)}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.inkFaded,
@@ -2327,7 +2327,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                     ),
                                   ),
                                   Text(
-                                    '৳${bnDigits(messes[i].activeMonthBazar.toInt())} . ${bnDigits(messes[i].activeMonthMeals.toInt())} ${'ui.dash_meals'.tr2}',
+                                    '৳${smartFmt(messes[i].activeMonthBazar)} . ${smartFmt(messes[i].activeMonthMeals)} ${'ui.dash_meals'.tr2}',
                                     style: const TextStyle(
                                       fontSize: 12.5,
                                       fontWeight: FontWeight.w900,

@@ -102,7 +102,10 @@ class RemoteTranslationService {
       final idx = line.indexOf('=');
       if (idx <= 0) continue;
       final k = _unescape(line.substring(0, idx));
-      final v = _unescape(line.substring(idx + 1));
+      var v = _unescape(line.substring(idx + 1));
+      if ((k == 'ui.sheet_save_entry' || k == 'ui.sheet_save') && v == 'এন্ট্রি সংরক্ষণ করুন') {
+        v = 'সেভ করুন';
+      }
       out[k] = v;
     }
     return out;
