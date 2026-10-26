@@ -1,0 +1,9 @@
+# Local-only template. DO NOT commit the real key.properties with passwords.
+# Copy to android/key.properties and fill in your local paths.
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=upload
+# Local absolute path example:
+# storeFile=C:/Users/YOU/Desktop/messmax-release-keys/upload-keystore.jks
+# CI uses env vars instead, so this file is ignored by GitHub Actions.
+storeFile=C:/Users/YOU/Desktop/messmax-release-keys/upload-keystore.jks

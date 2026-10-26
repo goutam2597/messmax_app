@@ -35,10 +35,23 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String?
-            keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
-            storePassword = keystoreProperties["storePassword"] as String?
+            // CI (GitHub Actions) provides these via env vars.
+            // Local builds fall back to android/key.properties.
+            val envStoreFile = System.getenv("KEYSTORE_FILE")
+                ?: System.getenv("ANDROID_KEYSTORE_FILE")
+            keyAlias = System.getenv("KEY_ALIAS")
+                ?: keystoreProperties["keyAlias"] as String?
+            keyPassword = System.getenv("KEY_PASSWORD")
+                ?: keystoreProperties["keyPassword"] as String?
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+                ?: System.getenv("STORE_PASSWORD")
+                ?: keystoreProperties["storePassword"] as String?
+            storeFile = when {
+                !envStoreFile.isNullOrBlank() -> file(envStoreFile)
+                keystoreProperties["storeFile"] != null ->
+                    file(keystoreProperties["storeFile"] as String)
+                else -> null
+            }
         }
     }
 
