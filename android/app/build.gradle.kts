@@ -57,7 +57,13 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
+            // Use release signing when a key is available via CI env vars
+            // or local key.properties; otherwise fall back to debug so
+            // local debug builds don't break.
+            val hasReleaseKey = keystorePropertiesFile.exists() ||
+                !System.getenv("KEYSTORE_FILE").isNullOrBlank() ||
+                !System.getenv("ANDROID_KEYSTORE_FILE").isNullOrBlank()
+            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
