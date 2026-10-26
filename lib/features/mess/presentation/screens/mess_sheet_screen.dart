@@ -6129,6 +6129,8 @@ class _SheetViewState extends State<_SheetView>
       };
     }
 
+    bool saving = false;
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -6906,94 +6908,112 @@ class _SheetViewState extends State<_SheetView>
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () => Navigator.pop(ctx2),
+                            onPressed: saving ? null : () => Navigator.pop(ctx2),
                             child: Text('ui.cancel'.tr2),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: FilledButton.icon(
-                            onPressed: () async {
-                              if (!bazarOnly) {
-                                for (final m in members) {
-                                  final mid = _toI(m['id']);
-                                  final ctrls = mealCtrls[mid]!;
-                                  final bTxt = ctrls['b']!.text.trim();
-                                  final lTxt = ctrls['l']!.text.trim();
-                                  final dTxt = ctrls['d']!.text.trim();
-                                  if (bTxt.isEmpty &&
-                                      lTxt.isEmpty &&
-                                      dTxt.isEmpty) {
-                                    continue;
-                                  }
-                                  try {
-                                    await _repo.saveMeal(
-                                      messId: widget.messId,
-                                      monthId: widget.monthId,
-                                      memberId: mid,
-                                      day: day,
-                                      breakfast: bTxt.isEmpty
-                                          ? null
-                                          : _toD(bTxt),
-                                      lunch: lTxt.isEmpty ? null : _toD(lTxt),
-                                      dinner: dTxt.isEmpty ? null : _toD(dTxt),
-                                    );
-                                  } catch (_) {}
-                                }
-                              }
+                            onPressed: saving
+                                ? null
+                                : () async {
+                                    setS(() => saving = true);
+                                    try {
+                                      if (!bazarOnly) {
+                                        for (final m in members) {
+                                          final mid = _toI(m['id']);
+                                          final ctrls = mealCtrls[mid]!;
+                                          final bTxt = ctrls['b']!.text.trim();
+                                          final lTxt = ctrls['l']!.text.trim();
+                                          final dTxt = ctrls['d']!.text.trim();
+                                          if (bTxt.isEmpty &&
+                                              lTxt.isEmpty &&
+                                              dTxt.isEmpty) {
+                                            continue;
+                                          }
+                                          try {
+                                            await _repo.saveMeal(
+                                              messId: widget.messId,
+                                              monthId: widget.monthId,
+                                              memberId: mid,
+                                              day: day,
+                                              breakfast: bTxt.isEmpty
+                                                  ? null
+                                                  : _toD(bTxt),
+                                              lunch: lTxt.isEmpty ? null : _toD(lTxt),
+                                              dinner: dTxt.isEmpty ? null : _toD(dTxt),
+                                            );
+                                          } catch (_) {}
+                                        }
+                                      }
 
-                              final items = <Map<String, dynamic>>[];
-                              for (final r in rows) {
-                                final n = r['name']!.text.trim();
-                                if (n.isEmpty) continue;
-                                final qTxt = r['qty']!.text.trim();
-                                final wTxt = r['weight']!.text.trim();
-                                items.add({
-                                  'name': n,
-                                  // untouched qty counts as 1
-                                  'qty': qTxt.isEmpty ? 1 : _toD(qTxt),
-                                  'weight': wTxt.isEmpty ? 0 : _toD(wTxt),
-                                  'price': _toD(r['price']!.text),
-                                });
-                              }
-                              // user removed every row — tell the server to clear this day's items
-                              final hadItemsBefore = existingItems.isNotEmpty;
-                              final clearingItems =
-                                  items.isEmpty &&
-                                  pickedReceipts.isEmpty &&
-                                  hadItemsBefore;
+                                      final items = <Map<String, dynamic>>[];
+                                      for (final r in rows) {
+                                        final n = r['name']!.text.trim();
+                                        if (n.isEmpty) continue;
+                                        final qTxt = r['qty']!.text.trim();
+                                        final wTxt = r['weight']!.text.trim();
+                                        items.add({
+                                          'name': n,
+                                          // untouched qty counts as 1
+                                          'qty': qTxt.isEmpty ? 1 : _toD(qTxt),
+                                          'weight': wTxt.isEmpty ? 0 : _toD(wTxt),
+                                          'price': _toD(r['price']!.text),
+                                        });
+                                      }
+                                      // user removed every row — tell the server to clear this day's items
+                                      final hadItemsBefore =
+                                          existingItems.isNotEmpty;
+                                      final clearingItems = items.isEmpty &&
+                                          pickedReceipts.isEmpty &&
+                                          hadItemsBefore;
 
-                              try {
-                                if (items.isNotEmpty ||
-                                    pickedReceipts.isNotEmpty ||
-                                    clearingItems) {
-                                  await _repo.saveBazarItems(
-                                    messId: widget.messId,
-                                    monthId: widget.monthId,
-                                    day: day,
-                                    items: items,
-                                    clearItems: clearingItems,
-                                    buyerMemberId: canManage ? selectedBuyerId : null,
-                                    paidVia: canManage ? selectedPaidVia : null,
-                                    receiptPaths: pickedReceipts
-                                        .map((e) => e.path)
-                                        .toList(),
-                                  );
-                                }
-                                if (context.mounted) {
-                                  Navigator.pop(ctx2);
-                                  _refresh();
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(ctx2).showSnackBar(
-                                    SnackBar(content: Text('Save failed: $e')),
-                                  );
-                                }
-                              }
-                            },
-                            icon: const Icon(Icons.check_rounded, size: 16),
-                            label: Text('ui.sheet_save_entry'.tr2),
+                                      if (items.isNotEmpty ||
+                                          pickedReceipts.isNotEmpty ||
+                                          clearingItems) {
+                                        await _repo.saveBazarItems(
+                                          messId: widget.messId,
+                                          monthId: widget.monthId,
+                                          day: day,
+                                          items: items,
+                                          clearItems: clearingItems,
+                                          buyerMemberId:
+                                              canManage ? selectedBuyerId : null,
+                                          paidVia:
+                                              canManage ? selectedPaidVia : null,
+                                          receiptPaths: pickedReceipts
+                                              .map((e) => e.path)
+                                              .toList(),
+                                        );
+                                      }
+                                      if (context.mounted) {
+                                        Navigator.pop(ctx2);
+                                        _refresh();
+                                      }
+                                    } catch (e) {
+                                      if (ctx2.mounted) {
+                                        setS(() => saving = false);
+                                        ScaffoldMessenger.of(ctx2).showSnackBar(
+                                          SnackBar(
+                                              content: Text('Save failed: $e')),
+                                        );
+                                      }
+                                    }
+                                  },
+                            icon: saving
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.check_rounded, size: 16),
+                            label: Text(
+                              saving ? 'Saving...' : 'ui.sheet_save_entry'.tr2,
+                            ),
                             style: FilledButton.styleFrom(
                               backgroundColor: AppColors.brandDark,
                             ),
