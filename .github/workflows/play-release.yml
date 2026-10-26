@@ -14,9 +14,6 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
     steps:
       - uses: actions/checkout@v4
 
@@ -35,21 +32,18 @@ jobs:
 
       - name: Flutter pub get
         run: flutter pub get
-        working-directory: messmax_app
 
       - name: Analyze
         run: flutter analyze
-        working-directory: messmax_app
 
       # Uncomment when you have widget tests you trust in CI:
       # - name: Test
       #   run: flutter test
-      #   working-directory: messmax_app
 
       - name: Decode upload keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > messmax_app/android/app/upload-keystore.jks
-          ls -lh messmax_app/android/app/upload-keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
+          ls -lh android/app/upload-keystore.jks
 
       - name: Build signed AAB
         run: |
@@ -59,18 +53,17 @@ jobs:
           BUILD_NUMBER=$((5 + ${{ github.run_number }}))
           echo "Building with versionCode=$BUILD_NUMBER"
           flutter build appbundle --release --build-number=$BUILD_NUMBER
-        working-directory: messmax_app
         env:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEYSTORE_FILE: app/upload-keystore.jks
+          KEYSTORE_FILE: upload-keystore.jks
 
       - name: Upload AAB artifact (backup)
         uses: actions/upload-artifact@v4
         with:
           name: appbundle-${{ github.ref_name }}-${{ github.run_number }}
-          path: messmax_app/build/app/outputs/bundle/release/*.aab
+          path: build/app/outputs/bundle/release/*.aab
           retention-days: 30
 
       - name: Publish to Google Play
@@ -78,6 +71,6 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.messmax.net.app
-          releaseFiles: messmax_app/build/app/outputs/bundle/release/*.aab
+          releaseFiles: build/app/outputs/bundle/release/*.aab
           track: ${{ inputs.track || 'closed' }}
           status: completed
