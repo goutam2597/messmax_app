@@ -779,7 +779,7 @@ class _SheetViewState extends State<_SheetView>
                         : ListView.separated(
                             controller: scrollCtrl,
                             itemCount: txs.length,
-                            separatorBuilder: (_, __) =>
+                            separatorBuilder: (_, _) =>
                                 const Divider(height: 1, color: AppColors.paperLine),
                             itemBuilder: (context, i) {
                               final tx = txs[i] as Map;
@@ -6063,9 +6063,13 @@ class _SheetViewState extends State<_SheetView>
     final prevBuyer = buyerMap[day.toString()] ?? buyerMap[day];
     int? selectedBuyerId;
     if (canManage) {
-      if (prevBuyer != null) selectedBuyerId = _toI(prevBuyer);
-      else if (myMemberId != null) selectedBuyerId = _toI(myMemberId);
-      else if (members.isNotEmpty) selectedBuyerId = _toI(members.first['id']);
+      if (prevBuyer != null) {
+        selectedBuyerId = _toI(prevBuyer);
+      } else if (myMemberId != null) {
+        selectedBuyerId = _toI(myMemberId);
+      } else if (members.isNotEmpty) {
+        selectedBuyerId = _toI(members.first['id']);
+      }
     }
     final paidViaMap = _asMap(sheet['bazarPaidViaByDay']);
     final prevPaidVia = (paidViaMap[day.toString()] ?? paidViaMap[day] ?? 'advance_cash').toString();
