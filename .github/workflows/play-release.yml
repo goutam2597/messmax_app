@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       track:
-        description: "Play track (closed, internal, production)"
+        description: "Play track (alpha=closed, internal, beta=open, production)"
         required: false
-        default: "closed"
+        default: "alpha"
 
 jobs:
   build-and-publish:
@@ -72,5 +72,5 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.messmax.net.app
           releaseFiles: build/app/outputs/bundle/release/*.aab
-          track: ${{ inputs.track || 'closed' }}
+          track: ${{ inputs.track || 'alpha' }}
           status: completed
